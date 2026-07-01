@@ -92,6 +92,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 6. User session is created (JWT, cookie, or state management).
 7. User is redirected to the protected application area.
 
+## Design
+
+https://stitch.withgoogle.com/projects/4138051788955982573
+
 ## License
 
 [MIT](LICENSE)
