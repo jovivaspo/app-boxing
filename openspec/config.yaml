@@ -1,0 +1,58 @@
+schema: spec-driven
+project: google-auth-login
+persistence: openspec
+strict_tdd: false
+
+context: |
+  Tech stack: TypeScript 5, Next.js 16.2.9 (App Router, breaking changes — read node_modules/next/dist/docs/), React 19.2.4, Tailwind CSS v4 (@tailwindcss/postcss).
+  Package manager: npm (package-lock.json). Runtime: Node.js.
+  Architecture: src/app App Router root; Clean/Hexagonal scaffolding folders present and empty: application/, domain/, infraestructure/ (note: project spelling "infraestructure"). Dependency direction: domain <- application <- infraestructure (ports/adapters).
+  Testing: NONE configured. No test runner, no testing-library, no vitest/jest/playwright. strict_tdd disabled until a runner is added.
+  Style: ESLint 9 flat config (eslint-config-next core-web-vitals + typescript) + eslint-config-prettier; Prettier 3.9.4 (double quotes, semi, tabWidth 2, es5 trailing comma, tailwind plugin). Path alias @/* -> project root.
+
+testing:
+  strict_tdd: false
+  runner: null
+  test_command: ""
+  test_layers:
+    unit: null
+    integration: null
+    e2e: null
+  coverage:
+    available: false
+    command: ""
+  quality:
+    linter: "npm run lint"
+    type_checker: "npx tsc --noEmit"
+    formatter: "npm run format"
+    format_check: "npm run format:check"
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes (auth, sessions, external OAuth).
+    - Reference the Google OAuth integration user flow in scope.
+  specs:
+    - Use Given/When/Then for scenarios.
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY).
+    - Domain requirements MUST be UI/framework-agnostic.
+  design:
+    - Follow Clean/Hexagonal layering: domain has no React/Next/fetch imports.
+    - Document where the Google OAuth adapter/port lives and the token/session boundary.
+    - Consult node_modules/next/dist/docs/ before citing Next.js APIs (breaking changes).
+  tasks:
+    - Group by phase, use hierarchical numbering.
+    - Keep tasks completable in one session.
+    - First implementable task SHOULD add a test runner if logic is introduced.
+  apply:
+    - Follow existing code patterns (App Router, Server Components default).
+    - Respect Prettier/ESLint config; do not change quote style.
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: "npm run build"
+    typecheck_command: "npx tsc --noEmit"
+    lint_command: "npm run lint"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas.

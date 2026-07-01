@@ -25,7 +25,8 @@ A production-ready **Next.js 16** starter template for Google OAuth authenticati
 This project follows **Clean / Hexagonal Architecture** to keep business logic independent from frameworks and external services.
 
 ```
-src/app/
+src
+├── app/
 ├── domain/          # Entities, value objects, domain errors
 ├── application/     # Use cases, ports (interfaces)
 ├── infraestructure/ # Adapters: API clients, external services, dtos, mappers

@@ -20,6 +20,8 @@
 # production
 /build
 
+.atl/
+
 # misc
 .DS_Store
 *.pem
