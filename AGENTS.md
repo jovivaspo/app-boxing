@@ -13,19 +13,19 @@ Production-ready Next.js 16 starter for Google OAuth authentication. The archite
 
 ## Tech Stack
 
-| Layer            | Technology                                    |
-| ---------------- | --------------------------------------------- |
-| Framework        | Next.js 16 (App Router)                       |
-| UI               | React 19                                      |
-| Language         | TypeScript 5 (strict mode)                    |
-| Styling          | Tailwind CSS v4 (`@import`-based, no config)  |
-| UI Components    | shadcn/ui (radix-nova style)                  |
-| Validation       | Zod v4                                        |
-| State            | Zustand 5                                     |
-| Testing          | Vitest 4 (node environment)                   |
-| Linting          | ESLint 9 flat config                          |
-| Formatting       | Prettier 3.9                                  |
-| Package Manager  | npm                                           |
+| Layer           | Technology                                   |
+| --------------- | -------------------------------------------- |
+| Framework       | Next.js 16 (App Router)                      |
+| UI              | React 19                                     |
+| Language        | TypeScript 5 (strict mode)                   |
+| Styling         | Tailwind CSS v4 (`@import`-based, no config) |
+| UI Components   | shadcn/ui (radix-nova style)                 |
+| Validation      | Zod v4                                       |
+| State           | Zustand 5                                    |
+| Testing         | Vitest 4 (node environment)                  |
+| Linting         | ESLint 9 flat config                         |
+| Formatting      | Prettier 3.9                                 |
+| Package Manager | npm                                          |
 
 ## Architecture: Clean / Hexagonal
 
@@ -55,11 +55,11 @@ src/
 "@/*": ["./src/*"]
 ```
 
-| Alias               | Resolves to               |
-| ------------------- | ------------------------- |
-| `@/lib/utils`       | `src/lib/utils.ts`        |
-| `@/ui/components/*` | `src/ui/components/*`     |
-| `@/ui/hooks/*`      | `src/ui/hooks/*`          |
+| Alias               | Resolves to           |
+| ------------------- | --------------------- |
+| `@/lib/utils`       | `src/lib/utils.ts`    |
+| `@/ui/components/*` | `src/ui/components/*` |
+| `@/ui/hooks/*`      | `src/ui/hooks/*`      |
 
 ## Code Style
 
