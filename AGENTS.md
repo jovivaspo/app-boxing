@@ -116,7 +116,7 @@ This project uses OpenSpec for spec-driven development.
 
 ## Flow Diagram
 
-See `flow.png` for the Google OAuth authentication flow (7-step: redirect → code → token exchange → session → protected area).
+See `flow.png` and `flow-frontend-layer.png` for the Google OAuth authentication flow (7-step: redirect → code → token exchange → session → protected area).
 
 ## Design
 
