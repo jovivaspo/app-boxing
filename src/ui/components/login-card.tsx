@@ -47,13 +47,13 @@ export function LoginCard() {
   useGoogleAuth(buttonContainerRef, handleSuccess, handleError);
 
   return (
-    <Card className="w-full max-w-[440px] rounded-2xl border-border p-4 sm:p-8">
+    <Card className="w-full max-w-[440px] border-border border-l-4 border-l-primary p-4 sm:p-8">
       <CardHeader className="p-0">
-        <CardTitle className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Bienvenido
+        <CardTitle className="text-2xl tracking-tight sm:text-3xl">
+          IRON PULSE
         </CardTitle>
         <CardDescription className="text-sm text-muted-foreground">
-          Inicia sesión en tu cuenta
+          Entrena duro, pelea inteligente.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6 p-0 pt-6">
@@ -66,10 +66,14 @@ export function LoginCard() {
         )}
 
         {error && (
-          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-center text-sm text-destructive">
+          <p className="bg-destructive/10 px-3 py-2 text-center text-sm text-destructive">
             {error}
           </p>
         )}
+
+        <p className="text-center font-mono text-xs tracking-widest text-muted-foreground">
+          SISTEMA DE AUTENTICACIÓN SEGURA V1.0
+        </p>
 
         <SecurityBadges />
       </CardContent>
