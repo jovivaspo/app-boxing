@@ -74,10 +74,10 @@ Chain strategy: pending
 
 ## Phase 8: GSI Loader Adapter + Hook
 
-- [ ] 8.1 [RED] Test (jsdom pragma): idempotent script tag; `onload`→init; `onerror`→`script-load-failed`; missing clientId→`missing-client-id`; empty credential→`no-credential` — `src/infraestructure/auth/gsi-loader.adapter.test.ts`
-- [ ] 8.2 [GREEN] Implement `GoogleIdentityPort` — `src/infraestructure/auth/gsi-loader.adapter.ts`
-- [ ] 8.3 [RED] Test (jsdom, fake port): hook wires ref+callbacks; maps `GsiError`→Spanish copy — `src/ui/hooks/use-google-auth.test.ts`
-- [ ] 8.4 [GREEN] Rewrite hook to consume injected `GoogleIdentityPort` (default = real adapter) — `src/ui/hooks/use-google-auth.ts`
+- [x] 8.1 [RED] Test (jsdom pragma): idempotent script tag; `onload`→init; `onerror`→`script-load-failed`; missing clientId→`missing-client-id`; empty credential→`no-credential` — `src/infraestructure/auth/gsi-loader.adapter.test.ts`
+- [x] 8.2 [GREEN] Implement `GoogleIdentityPort` — `src/infraestructure/auth/gsi-loader.adapter.ts`
+- [x] 8.3 [RED] Test (jsdom, fake port): hook wires ref+callbacks; maps `GsiError`→Spanish copy — `src/ui/hooks/use-google-auth.test.ts`
+- [x] 8.4 [GREEN] Rewrite hook to consume injected `GoogleIdentityPort` (default = real adapter) — `src/ui/hooks/use-google-auth.ts`
 
 ## Phase 9: Composition Root + Entry-Point Rewiring
 
