@@ -43,7 +43,7 @@ Chain strategy: pending
 
 ## Phase 3: Characterization Contract (RED — scaffold tests, adapters don't exist yet)
 
-- [ ] 3.1 [RED] Test scaffold: `jwt` httpOnly/secure(prod)/lax/`/`/7d maxAge; `user` now httpOnly true, same flags; legacy unsigned `user` cookie → `get()` null — `src/infraestructure/session/cookie-session.adapter.test.ts`
+- [x] 3.1 [RED] Test scaffold: `jwt` httpOnly/secure(prod)/lax/`/`/7d maxAge; `user` now httpOnly true, same flags; legacy unsigned `user` cookie → `get()` null — `src/infraestructure/session/cookie-session.adapter.test.ts`
 - [x] 3.2 [RED] Test scaffold: `POST ${BACKEND_URL}/api/v1/auth/google`, header `content-type: application/json`, body `{idToken}`; console spy proves no idToken/response logging — `src/infraestructure/auth/backend-auth.adapter.test.ts` (plus a legacy characterization/approval test suite added for current `src/app/login/actions.ts` behavior — `src/app/login/actions.characterization.test.ts`, passes immediately, no production code touched)
 
 ## Phase 4: Mapper
@@ -67,10 +67,10 @@ Chain strategy: pending
 
 ## Phase 7: Session Cookie + HMAC Adapter
 
-- [ ] 7.1 [RED] Test: sign/verify roundtrip + tamper detection — `src/infraestructure/session/hmac.test.ts`
-- [ ] 7.2 [GREEN] Implement `sign`/`verify` (HMAC-SHA256, timing-safe) — `src/infraestructure/session/hmac.ts`
-- [ ] 7.3 [RED] Extend 3.1 test: `create` sets signed `user`(httpOnly)+`jwt`; `get` verifies/null (tampered/missing/legacy); `clear` deletes both; missing `SESSION_SECRET` fails closed
-- [ ] 7.4 [GREEN] Implement `SessionPort` via `next/headers` `cookies()` — `src/infraestructure/session/cookie-session.adapter.ts`
+- [x] 7.1 [RED] Test: sign/verify roundtrip + tamper detection — `src/infraestructure/session/hmac.test.ts`
+- [x] 7.2 [GREEN] Implement `sign`/`verify` (HMAC-SHA256, timing-safe) — `src/infraestructure/session/hmac.ts`
+- [x] 7.3 [RED] Extend 3.1 test: `create` sets signed `user`(httpOnly)+`jwt`; `get` verifies/null (tampered/missing/legacy); `clear` deletes both; missing `SESSION_SECRET` fails closed
+- [x] 7.4 [GREEN] Implement `SessionPort` via `next/headers` `cookies()` — `src/infraestructure/session/cookie-session.adapter.ts`
 
 ## Phase 8: GSI Loader Adapter + Hook
 
