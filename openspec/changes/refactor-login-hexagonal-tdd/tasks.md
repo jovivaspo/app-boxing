@@ -44,12 +44,12 @@ Chain strategy: pending
 ## Phase 3: Characterization Contract (RED — scaffold tests, adapters don't exist yet)
 
 - [ ] 3.1 [RED] Test scaffold: `jwt` httpOnly/secure(prod)/lax/`/`/7d maxAge; `user` now httpOnly true, same flags; legacy unsigned `user` cookie → `get()` null — `src/infraestructure/session/cookie-session.adapter.test.ts`
-- [ ] 3.2 [RED] Test scaffold: `POST ${BACKEND_URL}/api/v1/auth/google`, header `content-type: application/json`, body `{idToken}`; console spy proves no idToken/response logging — `src/infraestructure/auth/backend-auth.adapter.test.ts`
+- [x] 3.2 [RED] Test scaffold: `POST ${BACKEND_URL}/api/v1/auth/google`, header `content-type: application/json`, body `{idToken}`; console spy proves no idToken/response logging — `src/infraestructure/auth/backend-auth.adapter.test.ts` (plus a legacy characterization/approval test suite added for current `src/app/login/actions.ts` behavior — `src/app/login/actions.characterization.test.ts`, passes immediately, no production code touched)
 
 ## Phase 4: Mapper
 
-- [ ] 4.1 [RED] Test: DTO→User (role passthrough, `pictureUrl` null-coalesce, `createdAt` passthrough); `toSession` wraps token+user — `src/infraestructure/auth/mappers/user.mapper.test.ts`
-- [ ] 4.2 [GREEN] Implement `backendAuthResponseSchema` (Zod) + `toUser`/`toSession` — `src/infraestructure/auth/dto/backend-auth.dto.ts`, `src/infraestructure/auth/mappers/user.mapper.ts`
+- [x] 4.1 [RED] Test: DTO→User (role passthrough, `pictureUrl` null-coalesce, `createdAt` passthrough); `toSession` wraps token+user — `src/infraestructure/auth/mappers/user.mapper.test.ts`
+- [x] 4.2 [GREEN] Implement `backendAuthResponseSchema` (Zod) + `toUser`/`toSession` — `src/infraestructure/auth/dto/backend-auth.dto.ts`, `src/infraestructure/auth/mappers/user.mapper.ts`
 
 ## Phase 5: Use Cases (mocked ports)
 
@@ -62,8 +62,8 @@ Chain strategy: pending
 
 ## Phase 6: Backend HTTP Adapter
 
-- [ ] 6.1 [RED] Extend 3.2 test: 200→Session; 401/403→`InvalidCredentials`; 5xx/network→`BackendUnavailable`; malformed→`BackendUnavailable`
-- [ ] 6.2 [GREEN] Implement `AuthPort` — required `BACKEND_URL` (no IP fallback, D8), fetch+mapper, zero logging — `src/infraestructure/auth/backend-auth.adapter.ts`
+- [x] 6.1 [RED] Extend 3.2 test: 200→Session; 401/403→`InvalidCredentials`; 5xx/network→`BackendUnavailable`; malformed→`BackendUnavailable`
+- [x] 6.2 [GREEN] Implement `AuthPort` — required `BACKEND_URL` (no IP fallback, D8), fetch+mapper, zero logging — `src/infraestructure/auth/backend-auth.adapter.ts`
 
 ## Phase 7: Session Cookie + HMAC Adapter
 
