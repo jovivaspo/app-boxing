@@ -1,21 +1,21 @@
 schema: spec-driven
 project: google-auth-login
 persistence: openspec
-strict_tdd: false
+strict_tdd: true
 
 context: |
   Tech stack: TypeScript 5, Next.js 16.2.9 (App Router, breaking changes — read node_modules/next/dist/docs/), React 19.2.4, Tailwind CSS v4 (@tailwindcss/postcss).
   Package manager: npm (package-lock.json). Runtime: Node.js.
   Architecture: src/app App Router root; Clean/Hexagonal scaffolding folders present and empty: application/, domain/, infraestructure/ (note: project spelling "infraestructure"). Dependency direction: domain <- application <- infraestructure (ports/adapters).
-  Testing: NONE configured. No test runner, no testing-library, no vitest/jest/playwright. strict_tdd disabled until a runner is added.
+  Testing: Vitest 4 configured (vitest.config.mts, node environment, globals enabled), no test files written yet. No @testing-library/react or jsdom installed — required before testing components. strict_tdd enabled per user's global Strict TDD Mode setting.
   Style: ESLint 9 flat config (eslint-config-next core-web-vitals + typescript) + eslint-config-prettier; Prettier 3.9.4 (double quotes, semi, tabWidth 2, es5 trailing comma, tailwind plugin). Path alias @/* -> project root.
 
 testing:
-  strict_tdd: false
-  runner: null
-  test_command: ""
+  strict_tdd: true
+  runner: vitest
+  test_command: "npm run test"
   test_layers:
-    unit: null
+    unit: "npm run test"
     integration: null
     e2e: null
   coverage:
@@ -46,10 +46,10 @@ rules:
   apply:
     - Follow existing code patterns (App Router, Server Components default).
     - Respect Prettier/ESLint config; do not change quote style.
-    tdd: false
-    test_command: ""
+    tdd: true
+    test_command: "npm run test"
   verify:
-    test_command: ""
+    test_command: "npm run test"
     build_command: "npm run build"
     typecheck_command: "npx tsc --noEmit"
     lint_command: "npm run lint"
