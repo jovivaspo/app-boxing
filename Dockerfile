@@ -3,6 +3,11 @@ FROM node:20-bullseye-slim AS builder
 
 WORKDIR /app
 
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time,
+# so they must be passed as build args, not just runtime env vars.
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+
 # Install dependencies and build the app
 COPY package*.json ./
 COPY tsconfig.json ./
@@ -35,3 +40,19 @@ COPY package-lock.json ./package-lock.json
 RUN npm ci --omit=dev
 
 CMD ["node", "server.js"]
+
+# Development stage — hot reload, source mounted as a volume via docker-compose.
+# Build/run with: docker compose up
+FROM node:20-bullseye-slim AS dev
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+EXPOSE 3000
+
+# -H 0.0.0.0 is required: Next's dev server only binds to loopback by
+# default, which Docker's port mapping can't reach from outside the
+# container's network namespace.
+CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0"]

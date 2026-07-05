@@ -12,3 +12,4 @@ dist
 .gitignore
 .env
 .env.*
+!.env.example
