@@ -159,7 +159,7 @@ describe("createGsiLoaderAdapter", () => {
 
     expect(renderButton).toHaveBeenCalledWith(
       container,
-      expect.objectContaining({ theme: "outline", size: "large" })
+      expect.objectContaining({ theme: "filled_black", size: "large" })
     );
   });
 });
