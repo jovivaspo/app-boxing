@@ -91,7 +91,7 @@ export function createGsiLoaderAdapter(): GoogleIdentityPort {
     renderButton(container: HTMLElement): void {
       if (!window.google) return;
       window.google.accounts.id.renderButton(container, {
-        theme: "outline",
+        theme: "filled_black",
         size: "large",
         width: container.clientWidth,
       });
