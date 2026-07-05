@@ -120,4 +120,4 @@ See `flow.png` and `flow-frontend-layer.png` for the Google OAuth authentication
 
 ## Design
 
-Stitch project: https://stitch.withgoogle.com/projects/4138051788955982573
+Stitch project: https://stitch.withgoogle.com/projects/6380251267090136078
