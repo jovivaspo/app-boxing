@@ -47,7 +47,7 @@ export function LoginCard() {
   useGoogleAuth(buttonContainerRef, handleSuccess, handleError);
 
   return (
-    <Card className="w-full max-w-[440px] border-border border-l-4 border-l-primary p-4 sm:p-8">
+    <Card className="w-full bg-transparent p-4 ring-0 sm:p-6 lg:max-w-[440px] lg:border-border lg:border-l-4 lg:border-l-primary lg:bg-card lg:p-8 lg:ring-1 lg:ring-foreground/10">
       <CardHeader className="p-0">
         <CardTitle className="text-2xl tracking-tight sm:text-3xl">
           IRON PULSE
