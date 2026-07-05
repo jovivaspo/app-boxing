@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "nextjs-16-complete-guide": {
+      "source": "fernandofuc/nextjs-claude-setup",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/nextjs-16-complete-guide/SKILL.md",
+      "computedHash": "a272b9e46ff9510aacf7d7ebb34fe6fffdf918140ee55a503e20bca5184061a3"
+    },
+    "react-expert": {
+      "source": "jeffallan/claude-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-expert/SKILL.md",
+      "computedHash": "498e8247c701522e0a63496a439680a409dafe67c3d8d7d5e4902db0e6222252"
+    }
+  }
+}
