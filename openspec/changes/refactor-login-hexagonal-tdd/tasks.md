@@ -81,17 +81,17 @@ Chain strategy: pending
 
 ## Phase 9: Composition Root + Entry-Point Rewiring
 
-- [ ] 9.1 Implement `createAuthAdapter()`/`createSessionAdapter()` — `src/infraestructure/composition.ts`
-- [ ] 9.2 Rewrite `googleLogin`: composition→`signInWithGoogle`→redirect `/`; typed-error catch→`{ok:false,code}`; remove logging + IP fallback — `src/app/login/actions.ts`
-- [ ] 9.3 Update `LoginCard` to map action `code`→Spanish copy — `src/ui/components/login-card.tsx`
-- [ ] 9.4 Rewire `page.tsx`: `getCurrentSession()` null⇒redirect `/login`; render `session.user.name` — `src/app/page.tsx`
-- [ ] 9.5 Rewire `profile/page.tsx`: same guard; drop local `User` interface; render domain `User`; guard `pictureUrl===null` — `src/app/profile/page.tsx`
-- [ ] 9.6 Rewire logout route: `signOut()`→redirect `/login` 303 — `src/app/api/logout/route.ts`
+- [x] 9.1 Implement `createAuthAdapter()`/`createSessionAdapter()` — `src/infraestructure/composition.ts`
+- [x] 9.2 Rewrite `googleLogin`: composition→`signInWithGoogle`→redirect `/`; typed-error catch→`{ok:false,code}`; remove logging + IP fallback — `src/app/login/actions.ts` ([RED] `src/app/login/actions.test.ts`; deleted `actions.characterization.test.ts` — superseded, see apply-progress)
+- [x] 9.3 Update `LoginCard` to map action `code`→Spanish copy — `src/ui/components/login-card.tsx`
+- [x] 9.4 Rewire `page.tsx`: `getCurrentSession()` null⇒redirect `/login`; render `session.user.name` — `src/app/page.tsx` ([RED] `src/app/page.test.tsx`; deleted `page.characterization.test.ts` — superseded; added `export const dynamic = "force-dynamic"`)
+- [x] 9.5 Rewire `profile/page.tsx`: same guard; drop local `User` interface; render domain `User`; guard `pictureUrl===null` — `src/app/profile/page.tsx` ([RED] `src/app/profile/page.test.tsx`; deleted `profile/page.characterization.test.tsx` — superseded; added `export const dynamic = "force-dynamic"`)
+- [x] 9.6 Rewire logout route: `signOut()`→redirect `/login` 303 — `src/app/api/logout/route.ts` (pure wiring, no new test; `route.characterization.test.ts` passes unchanged)
 
 ## Phase 10: Final Verification
 
-- [ ] 10.1 `npm run test` — all suites green
-- [ ] 10.2 `npx tsc --noEmit`
-- [ ] 10.3 `npm run lint`
-- [ ] 10.4 `npm run build`
-- [ ] 10.5 Confirm `SESSION_SECRET`/`BACKEND_URL` required, no fallback, documented (`.env.example` if present)
+- [x] 10.1 `npm run test` — all suites green (14 files / 64 tests)
+- [x] 10.2 `npx tsc --noEmit` — clean
+- [x] 10.3 `npm run lint` — clean
+- [x] 10.4 `npm run build` — clean; `/` and `/profile` correctly `ƒ` Dynamic (see apply-progress for the force-dynamic fix)
+- [x] 10.5 `BACKEND_URL`/`SESSION_SECRET` confirmed required/no-fallback in code; `.env.local.example` content prepared documenting both + `NEXT_PUBLIC_GOOGLE_CLIENT_ID` — blocked from being written into the repo by sandbox permissions denying all writes to `.env*`-pattern paths (see apply-progress for the exact content and manual-creation instructions)
