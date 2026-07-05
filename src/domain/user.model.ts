@@ -2,9 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  isActive: boolean;
-  role: Role;
-  picture: string | null;
+  role: string;
+  pictureUrl: string | null;
+  createdAt: string; // ISO-8601
 }
-
-export type Role = "admin" | "user";
