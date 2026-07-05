@@ -1,45 +1,40 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  pictureUrl: string;
-  createdAt: string;
-}
+import { createGetCurrentSessionUseCase } from "@/infraestructure/composition";
+
+// See src/app/page.tsx for why session-gated routes must force dynamic
+// rendering rather than rely on Next.js's build-time dynamic-API detection.
+export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
-  const cookieStore = await cookies();
-  const jwt = cookieStore.get("jwt")?.value;
-  const userCookie = cookieStore.get("user")?.value;
+  const session = await createGetCurrentSessionUseCase()();
 
-  if (!jwt || !userCookie) {
+  if (!session) {
     redirect("/login");
   }
 
-  let user: User;
-  try {
-    user = JSON.parse(userCookie) as User;
-  } catch {
-    redirect("/login");
-  }
+  const { user } = session;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 p-4">
       <div className="flex w-full max-w-sm flex-col items-center gap-6">
         {/* Avatar */}
-        <div className="relative size-24 overflow-hidden rounded-full ring-2 ring-zinc-200">
-          <Image
-            src={user.pictureUrl}
-            alt={user.name}
-            fill
-            className="object-cover"
-            unoptimized
-          />
+        <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-full bg-zinc-100 ring-2 ring-zinc-200">
+          {user.pictureUrl ? (
+            <Image
+              src={user.pictureUrl}
+              alt={user.name}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          ) : (
+            <span className="text-3xl font-semibold text-zinc-500">
+              {user.name.charAt(0).toUpperCase()}
+            </span>
+          )}
         </div>
 
         {/* Name & Role */}
