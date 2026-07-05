@@ -9,7 +9,10 @@ import {
   CardTitle,
 } from "@/ui/components/card"
 import { SecurityBadges } from "@/ui/components/security-badges"
-import { googleLogin, type GoogleLoginErrorCode } from "@/app/login/actions";
+import {
+  googleLogin,
+  type GoogleLoginErrorCode,
+} from "@/infraestructure/actions/google-login.action";
 import { useGoogleAuth } from "@/ui/hooks/use-google-auth";
 
 const ERROR_CODE_COPY: Record<GoogleLoginErrorCode, string> = {
