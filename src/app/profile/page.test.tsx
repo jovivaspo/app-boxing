@@ -18,11 +18,23 @@ vi.mock("next/image", () => ({
   },
 }));
 
-const getCurrentSessionMock = vi.fn();
+// Per-entry-point dependency wiring revision: `profile/page.tsx` now
+// constructs `getCurrentSession` inline with `createCookieSessionAdapter()`
+// instead of going through a shared factory module — mock both directly.
+
+const getCurrentSessionExecuteMock = vi.fn();
+const getCurrentSessionMock = vi.fn<(deps: unknown) => typeof getCurrentSessionExecuteMock>(
+  () => getCurrentSessionExecuteMock
+);
+const createCookieSessionAdapterMock = vi.fn(() => ({}));
 const redirectMock = vi.fn();
 
-vi.mock("@/infraestructure/composition", () => ({
-  createGetCurrentSessionUseCase: () => getCurrentSessionMock,
+vi.mock("@/application/use-cases/get-current-session", () => ({
+  getCurrentSession: (deps: unknown) => getCurrentSessionMock(deps),
+}));
+
+vi.mock("@/infraestructure/session/cookie-session.adapter", () => ({
+  createCookieSessionAdapter: () => createCookieSessionAdapterMock(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -43,12 +55,14 @@ const validUser = {
 
 describe("ProfilePage (rewired)", () => {
   afterEach(() => {
-    getCurrentSessionMock.mockReset();
+    getCurrentSessionExecuteMock.mockReset();
+    getCurrentSessionMock.mockClear();
+    createCookieSessionAdapterMock.mockClear();
     redirectMock.mockClear();
   });
 
   it("redirects to /login when getCurrentSession() returns null", async () => {
-    getCurrentSessionMock.mockResolvedValue(null);
+    getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: ProfilePage } = await import("./page");
 
     await expect(ProfilePage()).rejects.toThrow("NEXT_REDIRECT");
@@ -57,7 +71,7 @@ describe("ProfilePage (rewired)", () => {
   });
 
   it("renders the profile fields when a valid session exists", async () => {
-    getCurrentSessionMock.mockResolvedValue({
+    getCurrentSessionExecuteMock.mockResolvedValue({
       token: "backend-jwt",
       user: validUser,
     });
@@ -72,7 +86,7 @@ describe("ProfilePage (rewired)", () => {
   });
 
   it("renders a fallback avatar (no <img>) when pictureUrl is null", async () => {
-    getCurrentSessionMock.mockResolvedValue({
+    getCurrentSessionExecuteMock.mockResolvedValue({
       token: "backend-jwt",
       user: { ...validUser, pictureUrl: null },
     });

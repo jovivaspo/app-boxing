@@ -21,7 +21,7 @@ untestable window-global GSI hook. Follows the project's flat layer layout
 | D3 | Force re-login on invalid/unsigned cookie: `get()` returns `null`. No dual-format read path. | Legacy plain-JSON fallback / migration shim. | Per scope decision #4. Simpler, fail-closed, no drift risk. |
 | D4 | `SessionPort` = `create/get/clear`; verification folded into fail-closed `get(): Session\|null`. | Separate `verify()` per proposal sketch. | A standalone `verify` is redundant and opens a TOCTOU gap; `create` is required (use case must persist the session — the proposal's sketch omitted it). |
 | D5 | GSI isolated behind `GoogleIdentityPort`; per-file `@vitest-environment jsdom` pragma for its non-visual tests. | Global jsdom env; keep window-globals in the hook. | Keeps pure domain/application tests on `node`; makes the adapter fakeable and the hook DOM-light. |
-| D6 | Composition root at each entry point (action/RSC/route) via a light `infraestructure/composition.ts` factory; DI into use cases. | Singletons; module-level instances; DI container. | RSC/actions are the sanctioned composition roots (skill). Factory centralizes env reads, avoids 4× wiring duplication. |
+| D6 | **(Superseded — see revision note below)** Each entry point (Server Action, RSC, Route Handler) constructs its own dependencies inline, at the point of use, instead of importing a shared factory module. | Centralized `infraestructure/composition.ts` factory (original D6, PR6); singletons; module-level instances; DI container. | User-directed revision after reviewing PR6: a shared composition-root file was rejected in favor of per-entry-point inline wiring — each Server Action/RSC/Route Handler is itself the composition root (still consistent with "RSC/actions are the sanctioned composition roots"), just without an intermediate shared module. Adapters (`createBackendAuthAdapter()`, `createCookieSessionAdapter()`) and use cases (`signInWithGoogle`, `getCurrentSession`, `signOut`) are imported directly and called inline. This trades a small amount of per-entry-point repetition for removing an indirection layer the user didn't want; `BACKEND_URL`/`SESSION_SECRET` reads remain adapter-local (unchanged). |
 | D7 | Domain errors as tagged `Error` objects built via factory functions (`_tag` discriminant, e.g. `invalidCredentials()`); UI owns Spanish copy. **(Revised in PR1 — see below)** | ES6 classes (`class X extends Error`); Result objects; raw strings (current). | Preserves error *meaning* across layers; localization stays out of domain/infra. Classes rejected because this codebase is functional-only (no `class` anywhere in `src/`) — factory functions returning `Object.assign(new Error(...), {_tag})` keep `instanceof Error` true while staying idiomatic. **Consumers MUST discriminate on `_tag`, not `instanceof InvalidCredentials`/etc., since those are TS interfaces with no runtime representation.** |
 | D8 | No hardcoded `BACKEND_URL` fallback — missing env fails closed. | Keep `?? "http://10.142…"`. | Security fix; a private LAN IP must never ship as default. |
 
@@ -93,12 +93,12 @@ signOut({session}) => () => Promise<void>
   - `clear`: delete `jwt` + `user`.
 - **`session/hmac.ts`**: `sign(payload,secret)` / `verify(value,secret)` via `crypto.createHmac('sha256')` + `timingSafeEqual`; value format `base64url(payload).base64url(mac)`. Missing `SESSION_SECRET` ⇒ config error on `create`, fail-closed `null` on `get`.
 - **`auth/gsi-loader.adapter.ts`** (implements `GoogleIdentityPort`): moves ALL `window.google` / `__googleAuthInitDone` / script-injection logic out of the hook. Idempotent `<script>` inject → `onload` init, `onerror` ⇒ `script-load-failed`; missing clientId ⇒ `missing-client-id`; empty credential ⇒ `no-credential`.
-- **`composition.ts`** (D6): `createAuthAdapter()`, `createSessionAdapter()` — env reads centralized here.
+- **`actions/google-login.action.ts`** (D6, revised): the `"use server"` Server Action, relocated here from `src/app/login/` — constructs `signInWithGoogle({ auth: createBackendAuthAdapter(), session: createCookieSessionAdapter() })` inline, no shared factory module.
 
 ### App/UI changes (before → after responsibility; not full code)
 | File | After |
 |------|-------|
-| `src/app/login/actions.ts` | Thin `"use server"` adapter: build adapters via `composition`, run `signInWithGoogle`, `redirect("/")` on success; catch typed errors → return `{ ok:false, code }`. No logging, no IP fallback. |
+| `src/infraestructure/actions/google-login.action.ts` | Thin `"use server"` adapter (moved out of `app/`): builds adapters inline, runs `signInWithGoogle`, `redirect("/")` on success; catch typed errors → return `{ ok:false, code }`. No logging, no IP fallback. |
 | `src/ui/hooks/use-google-auth.ts` | Thin UI hook: consumes injected `GoogleIdentityPort` (default = real adapter, fake in tests); wires container ref + callbacks; maps `GsiError` → Spanish copy. No window/script logic. |
 | `src/ui/components/login-card.tsx` | Keeps local loading/error UI state (legit UI state); maps action's `code` → Spanish copy via a small UI map. Rendering tests deferred. |
 | `src/app/page.tsx` | `getCurrentSession()` → `null` ⇒ `redirect("/login")`; render `session.user.name`. No inline parse/verify. |
@@ -112,7 +112,7 @@ signOut({session}) => () => Promise<void>
       LoginCard ─▶ useGoogleAuth ◀─ GoogleIdentityPort (GSI adapter: script + window.google)
                         │ credential(idToken)
                         ▼
-              googleLogin(idToken)  [Server Action = composition root]
+              googleLogin(idToken)  [Server Action, infra/actions, builds its own deps inline]
                         ▼
               signInWithGoogle({auth,session})
                    ├─▶ AuthPort.exchange ─▶ POST /api/v1/auth/google ─▶ mapper ─▶ Session

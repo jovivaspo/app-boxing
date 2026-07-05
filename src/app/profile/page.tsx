@@ -2,14 +2,17 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-import { createGetCurrentSessionUseCase } from "@/infraestructure/composition";
+import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
+import { getCurrentSession } from "@/application/use-cases/get-current-session";
 
 // See src/app/page.tsx for why session-gated routes must force dynamic
 // rendering rather than rely on Next.js's build-time dynamic-API detection.
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
-  const session = await createGetCurrentSessionUseCase()();
+  const session = await getCurrentSession({
+    session: createCookieSessionAdapter(),
+  })();
 
   if (!session) {
     redirect("/login");

@@ -7,8 +7,8 @@ import { sign } from "./hmac";
 // - Preserves current `jwt`/`user` cookie NAMES, `maxAge` (7d), `secure`
 //   (prod-only), `sameSite` (lax), `path` (/).
 // - Hardens `user` cookie to `httpOnly: true` (was `false` on the legacy
-//   plain-JSON cookie set by `src/app/login/actions.ts` — see
-//   `src/app/login/actions.characterization.test.ts` for that old flag).
+//   plain-JSON cookie set by the pre-refactor login Server Action — see
+//   the deleted legacy characterization test for that old flag).
 // - `user` cookie value is now an HMAC-signed string, never plain JSON.
 // - `get()` fails closed to `null` on missing, tampered, or legacy
 //   plain-JSON cookies (D3) — no dual-format compatibility path.

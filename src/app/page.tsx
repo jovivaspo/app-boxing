@@ -1,18 +1,21 @@
 import { redirect } from "next/navigation";
 
-import { createGetCurrentSessionUseCase } from "@/infraestructure/composition";
+import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
+import { getCurrentSession } from "@/application/use-cases/get-current-session";
 
 // Force per-request rendering: `getCurrentSession()` reaches `cookies()`
-// only through several layers of indirection (composition root → use case →
-// adapter). If `SESSION_SECRET`/`BACKEND_URL` are ever unset at build time,
-// the session adapter fails closed to `null` BEFORE calling `cookies()`,
-// which would otherwise let Next.js's build-time static analysis miss the
-// dynamic-API usage entirely and bake this session-gated redirect into a
-// static page. Session-gated routes must never be statically prerendered.
+// only through the session adapter. If `SESSION_SECRET`/`BACKEND_URL` are
+// ever unset at build time, the session adapter fails closed to `null`
+// BEFORE calling `cookies()`, which would otherwise let Next.js's
+// build-time static analysis miss the dynamic-API usage entirely and bake
+// this session-gated redirect into a static page. Session-gated routes
+// must never be statically prerendered.
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const session = await createGetCurrentSessionUseCase()();
+  const session = await getCurrentSession({
+    session: createCookieSessionAdapter(),
+  })();
 
   if (!session) {
     redirect("/login");
