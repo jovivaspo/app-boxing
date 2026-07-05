@@ -9,8 +9,15 @@ import {
   CardTitle,
 } from "@/ui/components/card"
 import { SecurityBadges } from "@/ui/components/security-badges"
-import { googleLogin } from "@/app/login/actions";
+import { googleLogin, type GoogleLoginErrorCode } from "@/app/login/actions";
 import { useGoogleAuth } from "@/ui/hooks/use-google-auth";
+
+const ERROR_CODE_COPY: Record<GoogleLoginErrorCode, string> = {
+  "invalid-credentials": "Credenciales inválidas. Intenta de nuevo.",
+  "backend-unavailable":
+    "No pudimos conectar con el servidor. Intenta más tarde.",
+  unknown: "Ocurrió un error al iniciar sesión. Intenta de nuevo.",
+};
 
 export function LoginCard() {
   const [error, setError] = useState<string | null>(null);
@@ -23,8 +30,8 @@ export function LoginCard() {
 
     const result = await googleLogin(idToken);
 
-    if (result && !result.success) {
-      setError(result.error ?? "Error al iniciar sesión.");
+    if (result && !result.ok) {
+      setError(ERROR_CODE_COPY[result.code]);
       setIsLoading(false);
     }
   }, []);
