@@ -1,23 +1,27 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default async function Home() {
-  const cookieStore = await cookies();
-  const jwt = cookieStore.get("jwt")?.value;
-  const userCookie = cookieStore.get("user")?.value;
+import { createGetCurrentSessionUseCase } from "@/infraestructure/composition";
 
-  if (!jwt) {
+// Force per-request rendering: `getCurrentSession()` reaches `cookies()`
+// only through several layers of indirection (composition root → use case →
+// adapter). If `SESSION_SECRET`/`BACKEND_URL` are ever unset at build time,
+// the session adapter fails closed to `null` BEFORE calling `cookies()`,
+// which would otherwise let Next.js's build-time static analysis miss the
+// dynamic-API usage entirely and bake this session-gated redirect into a
+// static page. Session-gated routes must never be statically prerendered.
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const session = await createGetCurrentSessionUseCase()();
+
+  if (!session) {
     redirect("/login");
   }
-
-  const userName = userCookie
-    ? (JSON.parse(userCookie) as { name?: string }).name ?? "Usuario"
-    : "Usuario";
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-4">
       <h1 className="text-3xl font-semibold tracking-tight">
-        ¡Hola, {userName}!
+        ¡Hola, {session.user.name}!
       </h1>
       <p className="text-muted-foreground">
         Estás autenticado correctamente.
