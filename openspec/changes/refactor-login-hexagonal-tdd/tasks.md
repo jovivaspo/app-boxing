@@ -53,12 +53,12 @@ Chain strategy: pending
 
 ## Phase 5: Use Cases (mocked ports)
 
-- [ ] 5.1 [RED] Test: success persists+returns; empty idToken→`InvalidCredentials`; port errors propagate — `src/application/use-cases/sign-in-with-google.test.ts`
-- [ ] 5.2 [GREEN] Implement `signInWithGoogle({auth,session})` — `src/application/use-cases/sign-in-with-google.ts`
-- [ ] 5.3 [RED] Test: returns session or null — `src/application/use-cases/get-current-session.test.ts`
-- [ ] 5.4 [GREEN] Implement `getCurrentSession({session})` — `src/application/use-cases/get-current-session.ts`
-- [ ] 5.5 [RED] Test: calls `session.clear()` — `src/application/use-cases/sign-out.test.ts`
-- [ ] 5.6 [GREEN] Implement `signOut({session})` — `src/application/use-cases/sign-out.ts`
+- [x] 5.1 [RED] Test: success persists+returns; empty idToken→`InvalidCredentials`; port errors propagate — `src/application/use-cases/sign-in-with-google.test.ts`
+- [x] 5.2 [GREEN] Implement `signInWithGoogle({auth,session})` — `src/application/use-cases/sign-in-with-google.ts`
+- [x] 5.3 [RED] Test: returns session or null — `src/application/use-cases/get-current-session.test.ts`
+- [x] 5.4 [GREEN] Implement `getCurrentSession({session})` — `src/application/use-cases/get-current-session.ts`
+- [x] 5.5 [RED] Test: calls `session.clear()` — `src/application/use-cases/sign-out.test.ts`
+- [x] 5.6 [GREEN] Implement `signOut({session})` — `src/application/use-cases/sign-out.ts`
 
 ## Phase 6: Backend HTTP Adapter
 
