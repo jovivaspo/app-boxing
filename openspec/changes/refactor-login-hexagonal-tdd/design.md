@@ -22,7 +22,7 @@ untestable window-global GSI hook. Follows the project's flat layer layout
 | D4 | `SessionPort` = `create/get/clear`; verification folded into fail-closed `get(): Session\|null`. | Separate `verify()` per proposal sketch. | A standalone `verify` is redundant and opens a TOCTOU gap; `create` is required (use case must persist the session — the proposal's sketch omitted it). |
 | D5 | GSI isolated behind `GoogleIdentityPort`; per-file `@vitest-environment jsdom` pragma for its non-visual tests. | Global jsdom env; keep window-globals in the hook. | Keeps pure domain/application tests on `node`; makes the adapter fakeable and the hook DOM-light. |
 | D6 | Composition root at each entry point (action/RSC/route) via a light `infraestructure/composition.ts` factory; DI into use cases. | Singletons; module-level instances; DI container. | RSC/actions are the sanctioned composition roots (skill). Factory centralizes env reads, avoids 4× wiring duplication. |
-| D7 | Domain errors as tagged `Error` subclasses; UI owns Spanish copy. | Result objects; raw strings (current). | Preserves error *meaning* across layers; localization stays out of domain/infra. |
+| D7 | Domain errors as tagged `Error` objects built via factory functions (`_tag` discriminant, e.g. `invalidCredentials()`); UI owns Spanish copy. **(Revised in PR1 — see below)** | ES6 classes (`class X extends Error`); Result objects; raw strings (current). | Preserves error *meaning* across layers; localization stays out of domain/infra. Classes rejected because this codebase is functional-only (no `class` anywhere in `src/`) — factory functions returning `Object.assign(new Error(...), {_tag})` keep `instanceof Error` true while staying idiomatic. **Consumers MUST discriminate on `_tag`, not `instanceof InvalidCredentials`/etc., since those are TS interfaces with no runtime representation.** |
 | D8 | No hardcoded `BACKEND_URL` fallback — missing env fails closed. | Keep `?? "http://10.142…"`. | Security fix; a private LAN IP must never ship as default. |
 
 ## Interfaces / Contracts
@@ -36,12 +36,15 @@ export interface User { id: string; name: string; email: string;
 // session.model.ts  (new)
 export interface Session { token: string; user: User; } // token = opaque backend JWT
 
-// errors/auth-errors.ts  (new — tagged, D7)
-export class InvalidCredentials extends Error { readonly _tag = "InvalidCredentials"; }
-export class BackendUnavailable extends Error { readonly _tag = "BackendUnavailable";
-  constructor(readonly cause?: unknown, msg = "Auth backend unavailable") { super(msg); } }
-export class SessionInvalid extends Error { readonly _tag = "SessionInvalid"; }
+// errors/auth-errors.ts  (implemented in PR1 — tagged factory functions, D7 revised: no classes)
+export interface InvalidCredentials extends Error { readonly _tag: "InvalidCredentials"; }
+export function invalidCredentials(message?: string): InvalidCredentials;
+export interface BackendUnavailable extends Error { readonly _tag: "BackendUnavailable"; }
+export function backendUnavailable(cause?: unknown, message?: string): BackendUnavailable;
+export interface SessionInvalid extends Error { readonly _tag: "SessionInvalid"; }
+export function sessionInvalid(message?: string): SessionInvalid;
 export type AuthError = InvalidCredentials | BackendUnavailable | SessionInvalid;
+// Discriminate with `error._tag === "InvalidCredentials"`, NOT `instanceof InvalidCredentials`.
 ```
 
 ### Application ports — `src/application/ports/`

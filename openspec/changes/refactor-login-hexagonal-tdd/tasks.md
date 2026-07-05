@@ -29,17 +29,17 @@ Chain strategy: pending
 
 ## Phase 1: Test Tooling & Domain Foundation
 
-- [ ] 1.1 Install devDeps `jsdom`, `@testing-library/react`, `@testing-library/jest-dom` — `package.json`
-- [ ] 1.2 [RED] Test: tagged errors construct w/ correct `_tag` — `src/domain/errors/auth-errors.test.ts`
-- [ ] 1.3 [GREEN] Implement `InvalidCredentials`, `BackendUnavailable`, `SessionInvalid` — `src/domain/errors/auth-errors.ts`
-- [ ] 1.4 Evolve `User`: drop `isActive`/`Role`, add `role: string`, `pictureUrl: string | null`, `createdAt: string` — `src/domain/user.model.ts`
-- [ ] 1.5 Add `Session { token, user }` — `src/domain/session.model.ts`
+- [x] 1.1 Install devDeps `jsdom`, `@testing-library/react`, `@testing-library/jest-dom` — `package.json`
+- [x] 1.2 [RED] Test: tagged errors construct w/ correct `_tag` — `src/domain/errors/auth-errors.test.ts`
+- [x] 1.3 [GREEN] Implement `InvalidCredentials`, `BackendUnavailable`, `SessionInvalid` — `src/domain/errors/auth-errors.ts` (implemented as tagged factory functions `invalidCredentials`/`backendUnavailable`/`sessionInvalid`, not classes — see Deviations)
+- [x] 1.4 Evolve `User`: drop `isActive`/`Role`, add `role: string`, `pictureUrl: string | null`, `createdAt: string` — `src/domain/user.model.ts`
+- [x] 1.5 Add `Session { token, user }` — `src/domain/session.model.ts`
 
 ## Phase 2: Application Ports
 
-- [ ] 2.1 Define `AuthPort.exchange(idToken): Promise<Session>` — `src/application/ports/auth.port.ts`
-- [ ] 2.2 Define `SessionPort.create/get/clear` — `src/application/ports/session.port.ts`
-- [ ] 2.3 Define `GoogleIdentityPort.load/renderButton` + `GsiError` — `src/application/ports/google-identity.port.ts`
+- [x] 2.1 Define `AuthPort.exchange(idToken): Promise<Session>` — `src/application/ports/auth.port.ts`
+- [x] 2.2 Define `SessionPort.create/get/clear` — `src/application/ports/session.port.ts`
+- [x] 2.3 Define `GoogleIdentityPort.load/renderButton` + `GsiError` — `src/application/ports/google-identity.port.ts`
 
 ## Phase 3: Characterization Contract (RED — scaffold tests, adapters don't exist yet)
 
