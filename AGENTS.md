@@ -48,6 +48,7 @@ src/
 - **Infrastructure** implements ports defined in application.
 - Components use Server Components by default; add `"use client"` only when necessary.
 - New shadcn/ui components go in `src/ui/components/` (NOT `src/components/ui/`).
+- Representational components will not be tested; only their hooks will be tested.
 
 ## Path Aliases
 
@@ -100,6 +101,7 @@ This project uses OpenSpec for spec-driven development.
 - `openspec/config.yaml` — project context, testing config, phase rules.
 - `openspec/specs/` — canonical specs.
 - `openspec/changes/` — active change artifacts.
+- `docs/pending-tasks/pending-tasks.md` - list of pending tasks.
 - **Init**: run `sdd-init` before any SDD work. Testing capabilities are cached in Engram.
 
 ## Tailwind CSS v4 Notes
@@ -121,3 +123,5 @@ See `flow.png` and `flow-frontend-layer.png` for the Google OAuth authentication
 ## Design
 
 Stitch project: https://stitch.withgoogle.com/projects/6380251267090136078
+
+
