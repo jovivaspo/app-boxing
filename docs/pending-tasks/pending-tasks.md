@@ -1,6 +1,6 @@
 # List of pending tasks
 
-They must be mark as done when thery are implemented.
+They must be marked as done when they are implemented.
 
 ## Pending tasks
 
