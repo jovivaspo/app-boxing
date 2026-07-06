@@ -7,6 +7,13 @@ They must be marked as done when they are implemented.
 [x] Implementación de revisión de PRs mediante github actions. Tras la implementación de una tarea, se crearán las prs correspondientes.
 De forma automática se debe lanzar una revisión de la misma.
 
+[] Crear un template de PR. Debe contener estas secciones:
+- Title
+- Context
+- Solution
+- Changes
+- How to test
+
 [] Los componentes deben estar ubicados dentro de una carpeta con su mismo nombre. Por ejemplo:
 ├── ui/components
         ├── button/
