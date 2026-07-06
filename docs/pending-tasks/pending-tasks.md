@@ -4,7 +4,7 @@ They must be mark as done when thery are implemented.
 
 ## Pending tasks
 
-[] Implementación de revisión de PRs mediante github actions. Tras la implementación de una tarea, se crearán las prs correspondientes.
+[x] Implementación de revisión de PRs mediante github actions. Tras la implementación de una tarea, se crearán las prs correspondientes.
 De forma automática se debe lanzar una revisión de la misma.
 
 [] Los componentes deben estar ubicados dentro de una carpeta con su mismo nombre. Por ejemplo:
