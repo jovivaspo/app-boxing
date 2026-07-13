@@ -104,6 +104,13 @@ This project uses OpenSpec for spec-driven development.
 - `docs/pending-tasks/pending-tasks.md` - list of pending tasks.
 - **Init**: run `sdd-init` before any SDD work. Testing capabilities are cached in Engram.
 
+## Mobile Workflow
+
+Driving SDD phases, code reviews, and quick fixes from the GitHub mobile app via
+`@claude` comments is documented in `docs/mobile-workflow.md`, including the
+command surface (`@claude /sdd-continue`, `@claude /code-review`, etc.) and the
+proposed `claude.yml` authorization hardening.
+
 ## Tailwind CSS v4 Notes
 
 - No `tailwind.config.js` — use CSS `@theme inline {}` in `src/app/globals.css`.
