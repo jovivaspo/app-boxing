@@ -140,7 +140,7 @@ npm run test:watch   # Vitest (watch mode)
 npx tsc --noEmit     # Type-check without emitting
 ```
 
-Definition of done — before committing, all of these must pass: `npm run lint`, `npx tsc --noEmit`, `npm run test`.
+Definition of done — before committing, all of these must pass: `npm run lint`, `npx tsc --noEmit`, `npm run test`. Husky enforces part of this automatically: `pre-commit` runs `lint-staged` (ESLint + Prettier on staged files), `pre-push` runs `tsc --noEmit` and the full test suite. Do not bypass with `--no-verify`; CI (`.github/workflows/ci.yml`) re-runs lint, type-check, and tests on every push and PR regardless.
 
 ## Commits
 
