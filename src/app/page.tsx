@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
-import { getCurrentSession } from "@/application/use-cases/get-current-session";
+import { getCurrentSession } from "@/application/use-cases/get-current-session/get-current-session";
 
 // Force per-request rendering: `getCurrentSession()` reaches `cookies()`
 // only through the session adapter. If `SESSION_SECRET`/`BACKEND_URL` are
@@ -26,9 +26,7 @@ export default async function Home() {
       <h1 className="text-3xl font-semibold tracking-tight">
         ¡Hola, {session.user.name}!
       </h1>
-      <p className="text-muted-foreground">
-        Estás autenticado correctamente.
-      </p>
+      <p className="text-muted-foreground">Estás autenticado correctamente.</p>
       <div className="flex gap-3">
         <a
           href="/profile"

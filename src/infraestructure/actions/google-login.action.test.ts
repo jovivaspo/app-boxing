@@ -24,9 +24,12 @@ const createCookieSessionAdapterMock = vi.fn(() => ({
 }));
 const redirectMock = vi.fn();
 
-vi.mock("@/application/use-cases/sign-in-with-google", () => ({
-  signInWithGoogle: (deps: unknown) => signInWithGoogleMock(deps),
-}));
+vi.mock(
+  "@/application/use-cases/sign-in-with-google/sign-in-with-google",
+  () => ({
+    signInWithGoogle: (deps: unknown) => signInWithGoogleMock(deps),
+  })
+);
 
 vi.mock("@/infraestructure/auth/backend-auth.adapter", () => ({
   createBackendAuthAdapter: () => createBackendAuthAdapterMock(),

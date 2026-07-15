@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
-import { getCurrentSession } from "@/application/use-cases/get-current-session";
+import { getCurrentSession } from "@/application/use-cases/get-current-session/get-current-session";
 
 // See src/app/page.tsx for why session-gated routes must force dynamic
 // rendering rather than rely on Next.js's build-time dynamic-API detection.
@@ -42,10 +42,8 @@ export default async function ProfilePage() {
 
         {/* Name & Role */}
         <div className="text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {user.name}
-          </h1>
-          <span className="mt-1 inline-block rounded-full bg-zinc-100 px-3 py-0.5 text-xs font-medium uppercase tracking-wider text-zinc-600">
+          <h1 className="text-2xl font-semibold tracking-tight">{user.name}</h1>
+          <span className="mt-1 inline-block rounded-full bg-zinc-100 px-3 py-0.5 text-xs font-medium tracking-wider text-zinc-600 uppercase">
             {user.role}
           </span>
         </div>
@@ -59,7 +57,7 @@ export default async function ProfilePage() {
           <div className="h-px bg-zinc-100" />
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">ID</span>
-            <span className="font-medium tabular-nums text-zinc-500">
+            <span className="font-medium text-zinc-500 tabular-nums">
               {user.id.slice(0, 8)}…
             </span>
           </div>

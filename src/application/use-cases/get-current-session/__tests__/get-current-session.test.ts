@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Session } from "@/domain/session.model";
 import type { SessionPort } from "@/application/ports/session.port";
 
-import { getCurrentSession } from "./get-current-session";
+import { getCurrentSession } from "../get-current-session";
 
 const fakeSession: Session = {
   token: "backend-jwt",

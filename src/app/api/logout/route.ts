@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
-import { signOut } from "@/application/use-cases/sign-out";
+import { signOut } from "@/application/use-cases/sign-out/sign-out";
 
 export async function POST(request: NextRequest) {
   await signOut({ session: createCookieSessionAdapter() })();

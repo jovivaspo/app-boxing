@@ -4,12 +4,10 @@ import { redirect } from "next/navigation";
 
 import { createBackendAuthAdapter } from "@/infraestructure/auth/backend-auth.adapter";
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
-import { signInWithGoogle } from "@/application/use-cases/sign-in-with-google";
+import { signInWithGoogle } from "@/application/use-cases/sign-in-with-google/sign-in-with-google";
 
 export type GoogleLoginErrorCode =
-  | "invalid-credentials"
-  | "backend-unavailable"
-  | "unknown";
+  "invalid-credentials" | "backend-unavailable" | "unknown";
 
 export interface GoogleLoginFailure {
   ok: false;

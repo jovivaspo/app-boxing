@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { SessionPort } from "@/application/ports/session.port";
 
-import { signOut } from "./sign-out";
+import { signOut } from "../sign-out";
 
 function makeSession(overrides?: Partial<SessionPort>): SessionPort {
   return {

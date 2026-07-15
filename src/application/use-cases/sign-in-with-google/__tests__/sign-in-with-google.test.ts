@@ -5,7 +5,7 @@ import type { Session } from "@/domain/session.model";
 import type { AuthPort } from "@/application/ports/auth.port";
 import type { SessionPort } from "@/application/ports/session.port";
 
-import { signInWithGoogle } from "./sign-in-with-google";
+import { signInWithGoogle } from "../sign-in-with-google";
 
 const fakeSession: Session = {
   token: "backend-jwt",
