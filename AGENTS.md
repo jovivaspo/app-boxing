@@ -115,6 +115,17 @@ Everything under `src/` is importable via `@/` (e.g. `@/lib/utils`, `@/ui/compon
 - **Test files**: same base name as the module under test, placed in a sibling `__tests__/` folder — e.g. `formatDate.ts` → `__tests__/formatDate.test.ts` (see [Testing](#testing))
 - **Own components in `src/ui/components/`**: exception to the `PascalCase` rule above — `kebab-case` folder with lowercase filenames matching the folder name (see the component folder pattern in [Architecture](#architecture-clean--hexagonal)). shadcn/ui primitives stay flat under `src/ui/components/shadcn/` and are untouched by this rule.
 
+## Environment Setup
+
+- Copy `.env.example` to `.env` and fill in the values. The app reads `BACKEND_URL`, `SESSION_SECRET` (server-only), and `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+- Docker is optional for development: `docker compose up` builds the `dev` target and serves the app on port 3000 with `.env` loaded and live-reload volumes.
+
+## Security
+
+- Never commit `.env` — it is gitignored. `.env.example` is the committed template; keep it updated with placeholder values when adding a new variable.
+- `BACKEND_URL` and `SESSION_SECRET` are server-only. Never expose a secret to the client by prefixing it with `NEXT_PUBLIC_`; only `NEXT_PUBLIC_GOOGLE_CLIENT_ID` is intentionally public.
+- Auth is session-cookie based: the Google ID token is exchanged server-side via a Server Action — never call the backend with credentials from client components.
+
 ## Commands
 
 ```bash
@@ -130,6 +141,12 @@ npx tsc --noEmit     # Type-check without emitting
 ```
 
 Definition of done — before committing, all of these must pass: `npm run lint`, `npx tsc --noEmit`, `npm run test`.
+
+## Commits
+
+- Conventional Commits, no scope by default: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `ci:`. Subject in imperative mood, lowercase.
+- Never add `Co-Authored-By` or any AI-attribution trailer.
+- One reviewable work unit per commit — tests and docs travel with the code they accompany.
 
 ## Pull Requests
 
