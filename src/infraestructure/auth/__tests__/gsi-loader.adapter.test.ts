@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { createGsiLoaderAdapter } from "./gsi-loader.adapter";
+import { createGsiLoaderAdapter } from "../gsi-loader.adapter";
 
 const SCRIPT_ID = "google-identity-services";
 

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createBackendAuthAdapter } from "./backend-auth.adapter";
+import { createBackendAuthAdapter } from "../backend-auth.adapter";
 
 const BACKEND_URL = "http://backend.test";
 
