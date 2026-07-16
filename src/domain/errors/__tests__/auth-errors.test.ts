@@ -4,7 +4,7 @@ import {
   backendUnavailable,
   invalidCredentials,
   sessionInvalid,
-} from "./auth-errors";
+} from "../auth-errors";
 
 describe("invalidCredentials", () => {
   it("creates an Error tagged 'InvalidCredentials'", () => {

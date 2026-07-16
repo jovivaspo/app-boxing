@@ -16,15 +16,18 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 // going through a shared factory module — mock both directly.
 
 const getCurrentSessionExecuteMock = vi.fn();
-const getCurrentSessionMock = vi.fn<(deps: unknown) => typeof getCurrentSessionExecuteMock>(
-  () => getCurrentSessionExecuteMock
-);
+const getCurrentSessionMock = vi.fn<
+  (deps: unknown) => typeof getCurrentSessionExecuteMock
+>(() => getCurrentSessionExecuteMock);
 const createCookieSessionAdapterMock = vi.fn(() => ({}));
 const redirectMock = vi.fn();
 
-vi.mock("@/application/use-cases/get-current-session", () => ({
-  getCurrentSession: (deps: unknown) => getCurrentSessionMock(deps),
-}));
+vi.mock(
+  "@/application/use-cases/get-current-session/get-current-session",
+  () => ({
+    getCurrentSession: (deps: unknown) => getCurrentSessionMock(deps),
+  })
+);
 
 vi.mock("@/infraestructure/session/cookie-session.adapter", () => ({
   createCookieSessionAdapter: () => createCookieSessionAdapterMock(),
