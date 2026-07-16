@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { BackendAuthResponseDto } from "@/infraestructure/auth/dto/backend-auth.dto";
 
-import { toSession, toUser } from "./user.mapper";
+import { toSession, toUser } from "../user.mapper";
 
 function makeDto(
   overrides?: Partial<BackendAuthResponseDto["user"]>

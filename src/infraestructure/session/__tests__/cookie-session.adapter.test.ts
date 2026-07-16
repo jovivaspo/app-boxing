@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Session } from "@/domain/session.model";
-import { sign } from "./hmac";
+import { sign } from "../hmac";
 
 // Characterization + new-behavior scaffold (Phase 3.1 + 7.3):
 // - Preserves current `jwt`/`user` cookie NAMES, `maxAge` (7d), `secure`
@@ -67,7 +67,7 @@ describe("createCookieSessionAdapter", () => {
   describe("create", () => {
     it("sets the jwt cookie with the current flags (httpOnly, secure prod-only, lax, /, 7d)", async () => {
       const { createCookieSessionAdapter } =
-        await import("./cookie-session.adapter");
+        await import("../cookie-session.adapter");
       const adapter = createCookieSessionAdapter();
 
       await adapter.create(validSession);
@@ -83,7 +83,7 @@ describe("createCookieSessionAdapter", () => {
 
     it("sets a signed user cookie, hardened to httpOnly: true, with the same flags as jwt", async () => {
       const { createCookieSessionAdapter } =
-        await import("./cookie-session.adapter");
+        await import("../cookie-session.adapter");
       const adapter = createCookieSessionAdapter();
 
       await adapter.create(validSession);
@@ -109,7 +109,7 @@ describe("createCookieSessionAdapter", () => {
     it("throws when SESSION_SECRET is not configured (config error, fail closed)", async () => {
       vi.stubEnv("SESSION_SECRET", "");
       const { createCookieSessionAdapter } =
-        await import("./cookie-session.adapter");
+        await import("../cookie-session.adapter");
       const adapter = createCookieSessionAdapter();
 
       await expect(adapter.create(validSession)).rejects.toThrow();
@@ -120,7 +120,7 @@ describe("createCookieSessionAdapter", () => {
   describe("get", () => {
     it("returns the session when the cookies were set via create() (round trip)", async () => {
       const { createCookieSessionAdapter } =
-        await import("./cookie-session.adapter");
+        await import("../cookie-session.adapter");
       const adapter = createCookieSessionAdapter();
       await adapter.create(validSession);
 
@@ -131,7 +131,7 @@ describe("createCookieSessionAdapter", () => {
 
     it("returns null when no cookies are present", async () => {
       const { createCookieSessionAdapter } =
-        await import("./cookie-session.adapter");
+        await import("../cookie-session.adapter");
       const adapter = createCookieSessionAdapter();
 
       const result = await adapter.get();
@@ -141,7 +141,7 @@ describe("createCookieSessionAdapter", () => {
 
     it("returns null when the jwt cookie is missing but user cookie is present", async () => {
       const { createCookieSessionAdapter } =
-        await import("./cookie-session.adapter");
+        await import("../cookie-session.adapter");
       const adapter = createCookieSessionAdapter();
       fakeCookieStore.set(
         "user",
@@ -156,7 +156,7 @@ describe("createCookieSessionAdapter", () => {
 
     it("returns null when the user cookie's signature has been tampered with", async () => {
       const { createCookieSessionAdapter } =
-        await import("./cookie-session.adapter");
+        await import("../cookie-session.adapter");
       const adapter = createCookieSessionAdapter();
       await adapter.create(validSession);
       const tampered = `${fakeCookieStore.__store.get("user")!.value}tampered`;
@@ -169,7 +169,7 @@ describe("createCookieSessionAdapter", () => {
 
     it("returns null for a legacy unsigned plain-JSON user cookie (D3 — no dual-format path)", async () => {
       const { createCookieSessionAdapter } =
-        await import("./cookie-session.adapter");
+        await import("../cookie-session.adapter");
       const adapter = createCookieSessionAdapter();
       fakeCookieStore.set("jwt", "backend-jwt", {});
       fakeCookieStore.set("user", JSON.stringify(validUser), {});
@@ -181,7 +181,7 @@ describe("createCookieSessionAdapter", () => {
 
     it("returns null when SESSION_SECRET is not configured (fail closed)", async () => {
       const { createCookieSessionAdapter } =
-        await import("./cookie-session.adapter");
+        await import("../cookie-session.adapter");
       const adapter = createCookieSessionAdapter();
       await adapter.create(validSession);
       vi.stubEnv("SESSION_SECRET", "");
@@ -195,7 +195,7 @@ describe("createCookieSessionAdapter", () => {
   describe("clear", () => {
     it("deletes both the jwt and user cookies", async () => {
       const { createCookieSessionAdapter } =
-        await import("./cookie-session.adapter");
+        await import("../cookie-session.adapter");
       const adapter = createCookieSessionAdapter();
       await adapter.create(validSession);
 

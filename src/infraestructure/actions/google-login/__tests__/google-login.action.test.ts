@@ -9,8 +9,8 @@ import {
 // Action now constructs its `signInWithGoogle` use case inline from the
 // auth/session adapters instead of going through a shared factory module.
 // Also relocated out of `src/app/login/` (the Server Action's old home) to
-// `src/infraestructure/actions/google-login.action.ts` — Server Actions are
-// infrastructure adapters, not app-routing code.
+// `src/infraestructure/actions/google-login/google-login.action.ts` — Server
+// Actions are infrastructure adapters, not app-routing code.
 
 const executeMock = vi.fn();
 const signInWithGoogleMock = vi.fn<(deps: unknown) => typeof executeMock>(
@@ -57,7 +57,7 @@ describe("googleLogin (inline dependency wiring Server Action)", () => {
   });
 
   it("exchanges the idToken via signInWithGoogle and redirects to / on success", async () => {
-    const { googleLogin } = await import("./google-login.action");
+    const { googleLogin } = await import("../google-login.action");
     executeMock.mockResolvedValue({
       token: "backend-jwt",
       user: {
@@ -80,7 +80,7 @@ describe("googleLogin (inline dependency wiring Server Action)", () => {
   });
 
   it("maps InvalidCredentials to { ok: false, code: 'invalid-credentials' } without redirecting", async () => {
-    const { googleLogin } = await import("./google-login.action");
+    const { googleLogin } = await import("../google-login.action");
     executeMock.mockRejectedValue(invalidCredentials());
 
     const result = await googleLogin("fake-id-token");
@@ -90,7 +90,7 @@ describe("googleLogin (inline dependency wiring Server Action)", () => {
   });
 
   it("maps BackendUnavailable to { ok: false, code: 'backend-unavailable' } without redirecting", async () => {
-    const { googleLogin } = await import("./google-login.action");
+    const { googleLogin } = await import("../google-login.action");
     executeMock.mockRejectedValue(backendUnavailable());
 
     const result = await googleLogin("fake-id-token");
@@ -100,7 +100,7 @@ describe("googleLogin (inline dependency wiring Server Action)", () => {
   });
 
   it("maps any other thrown error to { ok: false, code: 'unknown' } without redirecting", async () => {
-    const { googleLogin } = await import("./google-login.action");
+    const { googleLogin } = await import("../google-login.action");
     executeMock.mockRejectedValue(new Error("boom"));
 
     const result = await googleLogin("fake-id-token");

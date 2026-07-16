@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { sign, verify } from "./hmac";
+import { sign, verify } from "../hmac";
 
 const SECRET = "test-secret-value";
 
