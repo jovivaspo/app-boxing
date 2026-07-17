@@ -1,5 +1,6 @@
 "use client";
 
+import { unstable_rethrow } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 
 import {
@@ -26,10 +27,16 @@ export function useLoginCard(): UseLoginCardResult {
     setIsLoading(true);
     setError(null);
 
-    const result = await googleLogin(idToken);
+    try {
+      const result = await googleLogin(idToken);
 
-    if (result && !result.ok) {
-      setError(ERROR_CODE_COPY[result.code]);
+      if (result && !result.ok) {
+        setError(ERROR_CODE_COPY[result.code]);
+        setIsLoading(false);
+      }
+    } catch (err) {
+      unstable_rethrow(err);
+      setError(ERROR_CODE_COPY.unknown);
       setIsLoading(false);
     }
   }, []);
