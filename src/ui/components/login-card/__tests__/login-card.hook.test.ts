@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
+import { redirect } from "next/navigation";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { GoogleLoginErrorCode } from "@/infraestructure/actions/google-login/google-login.action";
@@ -82,6 +83,81 @@ describe("useLoginCard", () => {
       expect(result.current.isLoading).toBe(false);
     }
   );
+
+  it("should surface the generic error and reset loading when googleLogin rejects", async () => {
+    googleLoginMock.mockRejectedValue(new Error("network failure"));
+    const { result } = renderHook(() => useLoginCard());
+    const { onSuccess } = capturedCallbacks();
+
+    await act(async () => {
+      await onSuccess("real-id-token");
+    });
+
+    expect(result.current.error).toBe(
+      "Ocurrió un error al iniciar sesión. Intenta de nuevo."
+    );
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it.each([
+    [
+      "a domain failure",
+      () =>
+        googleLoginMock.mockResolvedValueOnce({ ok: false, code: "unknown" }),
+    ],
+    [
+      "a rejected RPC call",
+      () => googleLoginMock.mockRejectedValueOnce(new Error("network failure")),
+    ],
+  ] satisfies [string, () => void][])(
+    "should clear the previous error when %s is followed by a successful retry",
+    async (_label, mockFirstAttempt) => {
+      mockFirstAttempt();
+      const { result } = renderHook(() => useLoginCard());
+      const { onSuccess } = capturedCallbacks();
+
+      await act(async () => {
+        await onSuccess("first-attempt");
+      });
+
+      expect(result.current.error).toBe(
+        "Ocurrió un error al iniciar sesión. Intenta de nuevo."
+      );
+
+      googleLoginMock.mockResolvedValueOnce(undefined);
+
+      await act(async () => {
+        await onSuccess("second-attempt");
+      });
+
+      expect(result.current.error).toBeNull();
+    }
+  );
+
+  it("should rethrow a Next.js redirect signal instead of treating it as an application error", async () => {
+    let redirectError: unknown;
+    try {
+      redirect("/");
+    } catch (e) {
+      redirectError = e;
+    }
+    googleLoginMock.mockRejectedValue(redirectError);
+    const { result } = renderHook(() => useLoginCard());
+    const { onSuccess } = capturedCallbacks();
+
+    let caughtError: unknown;
+    await act(async () => {
+      try {
+        await onSuccess("real-id-token");
+      } catch (e) {
+        caughtError = e;
+      }
+    });
+
+    expect(caughtError).toBe(redirectError);
+    expect(result.current.error).toBeNull();
+    expect(result.current.isLoading).toBe(true);
+  });
 
   it("sets the error message and clears loading when useGoogleAuth reports an error", () => {
     const { result } = renderHook(() => useLoginCard());
