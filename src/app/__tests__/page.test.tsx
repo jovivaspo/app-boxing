@@ -50,7 +50,7 @@ describe("Home page (rewired)", () => {
 
   it("redirects to /login when getCurrentSession() returns null", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
-    const { default: Home } = await import("./page");
+    const { default: Home } = await import("../page");
 
     await expect(Home()).rejects.toThrow("NEXT_REDIRECT");
 
@@ -69,7 +69,7 @@ describe("Home page (rewired)", () => {
         createdAt: "2026-01-01T00:00:00.000Z",
       },
     });
-    const { default: Home } = await import("./page");
+    const { default: Home } = await import("../page");
 
     render(await Home());
 

@@ -6,7 +6,7 @@ import type {
   GoogleIdentityPort,
   GsiError,
 } from "@/application/ports/google-identity.port";
-import { useGoogleAuth } from "./use-google-auth";
+import { useGoogleAuth } from "../use-google-auth";
 
 function fakePort(overrides?: Partial<GoogleIdentityPort>): GoogleIdentityPort {
   return {
