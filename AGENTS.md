@@ -88,6 +88,7 @@ sign-in-with-google/
 - New shadcn/ui components go in `src/ui/components/shadcn/` (NOT `src/components/ui/`).
 - Own (non-shadcn) components, Server Actions, and use cases each get their own `kebab-case` folder — follow the folder patterns above exactly, including the `__tests__/` placement.
 - Presentational components are not tested; only their hooks are.
+- Use the ‘caveman’ skill to give clear and effective answers.
 
 ## Path Aliases
 
