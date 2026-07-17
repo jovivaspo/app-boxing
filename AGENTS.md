@@ -185,6 +185,10 @@ Do not bypass with `--no-verify`; CI (`.github/workflows/ci.yml`) re-runs lint, 
 - **Mock at port boundaries only** (ports/adapters). Never mock internals of the unit under test. Domain tests use no mocks at all.
 - **Deterministic**: no real network, timers, or system time — use `vi.useFakeTimers()` / `vi.setSystemTime()` and manual mocks. Tests must pass in any order and in isolation.
 
+## Codebase Indexing
+
+This project is indexed in `codebase-memory-mcp` (project name `home-jorge-Code-app-boxing`). Before starting a new task, ask the user whether to refresh the index (`index_repository`, `mode: fast`) so structural queries (`search_graph`, `trace_path`, `get_architecture`, etc.) reflect the current code.
+
 ## SDD
 
 This project uses spec-driven development with Engram as the artifact store: SDD artifacts (explorations, proposals, specs, tasks) are persisted as Engram memories under `sdd/<change>/<phase>` topic keys. The `openspec/` directory holds file snapshots of SDD artifacts (config, main specs, active and archived changes) — Engram is the source of truth for SDD state; do not treat `openspec/` files as canonical on their own.
