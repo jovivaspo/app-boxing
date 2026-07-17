@@ -1,11 +1,11 @@
-import { Menu } from "lucide-react"
-import Image from "next/image"
+import { Menu } from "lucide-react";
+import Image from "next/image";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 export function LoginHeader() {
   return (
-    <header className="border-b border-border bg-background">
+    <header className="border-border bg-background border-b">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <a href="#" className="flex items-center">
           <Image
@@ -22,7 +22,7 @@ export function LoginHeader() {
             href="#"
             aria-current="page"
             className={cn(
-              "border-b-2 border-primary px-3 py-1.5 text-sm font-medium text-foreground",
+              "border-primary text-foreground border-b-2 px-3 py-1.5 text-sm font-medium",
               "hover:text-foreground"
             )}
           >
@@ -30,25 +30,25 @@ export function LoginHeader() {
           </a>
           <span
             aria-disabled="true"
-            className="cursor-not-allowed px-3 py-1.5 text-sm font-medium text-muted-foreground"
+            className="text-muted-foreground cursor-not-allowed px-3 py-1.5 text-sm font-medium"
           >
             Registrarse
           </span>
           <a
             href="#"
-            className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground px-3 py-1.5 text-sm font-medium"
           >
             Ayuda
           </a>
           <button
             type="button"
             aria-label="Abrir menú"
-            className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground ml-1 inline-flex h-9 w-9 items-center justify-center rounded-md"
           >
             <Menu aria-hidden="true" className="size-5" />
           </button>
         </nav>
       </div>
     </header>
-  )
+  );
 }

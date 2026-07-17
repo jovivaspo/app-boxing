@@ -66,7 +66,7 @@ describe("ProfilePage (rewired)", () => {
 
   it("redirects to /login when getCurrentSession() returns null", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
-    const { default: ProfilePage } = await import("./page");
+    const { default: ProfilePage } = await import("../page");
 
     await expect(ProfilePage()).rejects.toThrow("NEXT_REDIRECT");
 
@@ -78,7 +78,7 @@ describe("ProfilePage (rewired)", () => {
       token: "backend-jwt",
       user: validUser,
     });
-    const { default: ProfilePage } = await import("./page");
+    const { default: ProfilePage } = await import("../page");
 
     render(await ProfilePage());
 
@@ -93,7 +93,7 @@ describe("ProfilePage (rewired)", () => {
       token: "backend-jwt",
       user: { ...validUser, pictureUrl: null },
     });
-    const { default: ProfilePage } = await import("./page");
+    const { default: ProfilePage } = await import("../page");
 
     render(await ProfilePage());
 

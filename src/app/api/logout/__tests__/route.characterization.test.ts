@@ -21,7 +21,7 @@ describe("POST /api/logout (legacy route.ts characterization)", () => {
   });
 
   it("deletes the jwt and user cookies and redirects to /login with a 303 status", async () => {
-    const { POST } = await import("./route");
+    const { POST } = await import("../route");
     const request = new NextRequest("http://localhost:3000/api/logout", {
       method: "POST",
     });

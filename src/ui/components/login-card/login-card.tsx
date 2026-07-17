@@ -1,50 +1,18 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/ui/components/card";
+} from "@/ui/components/shadcn/card";
 import { SecurityBadges } from "@/ui/components/security-badges";
-import {
-  googleLogin,
-  type GoogleLoginErrorCode,
-} from "@/infraestructure/actions/google-login/google-login.action";
-import { useGoogleAuth } from "@/ui/hooks/use-google-auth";
 
-const ERROR_CODE_COPY: Record<GoogleLoginErrorCode, string> = {
-  "invalid-credentials": "Credenciales inválidas. Intenta de nuevo.",
-  "backend-unavailable":
-    "No pudimos conectar con el servidor. Intenta más tarde.",
-  unknown: "Ocurrió un error al iniciar sesión. Intenta de nuevo.",
-};
+import { useLoginCard } from "./login-card.hook";
 
 export function LoginCard() {
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const buttonContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleSuccess = useCallback(async (idToken: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    const result = await googleLogin(idToken);
-
-    if (result && !result.ok) {
-      setError(ERROR_CODE_COPY[result.code]);
-      setIsLoading(false);
-    }
-  }, []);
-
-  const handleError = useCallback((err: string) => {
-    setError(err);
-    setIsLoading(false);
-  }, []);
-
-  useGoogleAuth(buttonContainerRef, handleSuccess, handleError);
+  const { error, isLoading, buttonContainerRef } = useLoginCard();
 
   return (
     <Card className="lg:border-border lg:border-l-primary lg:bg-card lg:ring-foreground/10 w-full bg-transparent p-4 ring-0 sm:p-6 lg:max-w-[440px] lg:border-l-4 lg:p-8 lg:ring-1">

@@ -1,4 +1,4 @@
-import { FingerprintPattern, Lock, ShieldCheck } from "lucide-react"
+import { FingerprintPattern, Lock, ShieldCheck } from "lucide-react";
 
 /**
  * Row of three trust badges: verified, encrypted, secure.
@@ -23,5 +23,5 @@ export function SecurityBadges() {
         <span>Seguro</span>
       </li>
     </ul>
-  )
+  );
 }
