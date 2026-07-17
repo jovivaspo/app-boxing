@@ -99,49 +99,40 @@ describe("useLoginCard", () => {
     expect(result.current.isLoading).toBe(false);
   });
 
-  it("should clear the previous error when handleSuccess runs again on retry", async () => {
-    googleLoginMock.mockResolvedValueOnce({ ok: false, code: "unknown" });
-    const { result } = renderHook(() => useLoginCard());
-    const { onSuccess } = capturedCallbacks();
+  it.each([
+    [
+      "a domain failure",
+      () =>
+        googleLoginMock.mockResolvedValueOnce({ ok: false, code: "unknown" }),
+    ],
+    [
+      "a rejected RPC call",
+      () => googleLoginMock.mockRejectedValueOnce(new Error("network failure")),
+    ],
+  ] satisfies [string, () => void][])(
+    "should clear the previous error when %s is followed by a successful retry",
+    async (_label, mockFirstAttempt) => {
+      mockFirstAttempt();
+      const { result } = renderHook(() => useLoginCard());
+      const { onSuccess } = capturedCallbacks();
 
-    await act(async () => {
-      await onSuccess("first-attempt");
-    });
+      await act(async () => {
+        await onSuccess("first-attempt");
+      });
 
-    expect(result.current.error).toBe(
-      "Ocurrió un error al iniciar sesión. Intenta de nuevo."
-    );
+      expect(result.current.error).toBe(
+        "Ocurrió un error al iniciar sesión. Intenta de nuevo."
+      );
 
-    googleLoginMock.mockResolvedValueOnce(undefined);
+      googleLoginMock.mockResolvedValueOnce(undefined);
 
-    await act(async () => {
-      await onSuccess("second-attempt");
-    });
+      await act(async () => {
+        await onSuccess("second-attempt");
+      });
 
-    expect(result.current.error).toBeNull();
-  });
-
-  it("should clear the previous error when a rejected attempt is followed by a successful retry", async () => {
-    googleLoginMock.mockRejectedValueOnce(new Error("network failure"));
-    const { result } = renderHook(() => useLoginCard());
-    const { onSuccess } = capturedCallbacks();
-
-    await act(async () => {
-      await onSuccess("first-attempt");
-    });
-
-    expect(result.current.error).toBe(
-      "Ocurrió un error al iniciar sesión. Intenta de nuevo."
-    );
-
-    googleLoginMock.mockResolvedValueOnce(undefined);
-
-    await act(async () => {
-      await onSuccess("second-attempt");
-    });
-
-    expect(result.current.error).toBeNull();
-  });
+      expect(result.current.error).toBeNull();
+    }
+  );
 
   it("should rethrow a Next.js redirect signal instead of treating it as an application error", async () => {
     let redirectError: unknown;
