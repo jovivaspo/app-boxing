@@ -50,7 +50,7 @@ export interface TimerConfiguration {
 }
 
 export function calculateTimerLevel(
-  config: Pick<TimerConfiguration, "rounds" | "roundDuration" | "restDuration">
+  config: Pick<TimerConfiguration, "rounds">
 ): TimerLevel;
 
 export interface InvalidTimerConfiguration extends Error {
@@ -61,9 +61,10 @@ export function invalidTimerConfiguration(
   message?: string
 ): InvalidTimerConfiguration;
 
+/** @throws {InvalidTimerConfiguration} */
 export function validateTimerConfiguration(
   input: TimerConfiguration
-): TimerConfiguration | InvalidTimerConfiguration;
+): TimerConfiguration;
 ```
 
 No classes, zero framework imports. `level` is NOT a stored field — it is 100% derivable from
@@ -77,10 +78,14 @@ interface has no encapsulation and such a factory couldn't have enforced anythin
 **`validateTimerConfiguration` is a different, later addition** — not a resurrection of the
 rejected factory. Its job is genuine input validation at a trust boundary (rounds/durations must
 be positive), not deriving a value that didn't need storing. It follows the existing
-`auth-errors.ts` functional-error pattern: returns either the valid input unchanged or a typed
-`InvalidTimerConfiguration` error object — no throwing, no class, consistent with how `AuthError`
-is modeled. `rounds ≤ 0`, `roundDuration ≤ 0`, or `restDuration ≤ 0` are all rejected (user
-confirmed all three, not just `rounds`).
+`auth-errors.ts` functional-error pattern exactly, including how errors propagate: it **throws**
+`InvalidTimerConfiguration` (no class), matching every real consumer of that pattern in this
+codebase (`sign-in-with-google.ts` throws `invalidCredentials`, asserted via `toThrow` in
+`backend-auth.adapter.test.ts`) — not a Result-style return. (An earlier revision of this
+proposal had it return the error as a value instead of throwing, describing that as mirroring
+`auth-errors.ts`; a PR review caught that this contradicted the actual convention, since every
+existing consumer throws. Fixed to throw.) `rounds ≤ 0`, `roundDuration ≤ 0`, or `restDuration ≤
+0` are all rejected (user confirmed all three, not just `rounds`).
 
 **Level thresholds (confirmed by user):** classify by round count.
 
@@ -90,12 +95,13 @@ confirmed all three, not just `rounds`).
 | `pro`     | 8–12   |
 | `elite`   | ≥ 13   |
 
-`calculateTimerLevel` takes all three fields (per locked decision) so duration can refine the
-default later, but the v1 heuristic keys on `rounds` alone for clarity. Round-boundary tests:
-7→amateur, 8→pro, 12→pro, 13→elite. `calculateTimerLevel` stays a total function (never throws,
-`rounds ≤ 0` still classifies as `amateur` as a defensive default) — it is a separate concern
-from `validateTimerConfiguration`, which is the actual rejection gate for invalid input before a
-`TimerConfiguration` is used at all.
+`calculateTimerLevel` takes only `rounds` — an earlier revision kept `roundDuration`/
+`restDuration` in the signature unused "for future refinement," but a PR review correctly flagged
+this as speculative design AGENTS.md prohibits; narrowed to `Pick<TimerConfiguration, "rounds">`.
+Round-boundary tests: 7→amateur, 8→pro, 12→pro, 13→elite. `calculateTimerLevel` stays a total
+function (never throws, `rounds ≤ 0` still classifies as `amateur` as a defensive default) — it
+is a separate concern from `validateTimerConfiguration`, which is the actual rejection gate
+(throws) for invalid input before a `TimerConfiguration` is used at all.
 
 ## Affected Areas
 
@@ -127,6 +133,6 @@ Delete `src/domain/timer-configuration/`. No other layer imports it yet (domain-
 - [ ] `TimerConfiguration` interface exists under `src/domain/timer-configuration/`, no `level` field, no classes, no framework imports.
 - [ ] `calculateTimerLevel` is a standalone pure function, never stored/cached on the entity.
 - [ ] `calculateTimerLevel` covered by boundary tests (amateur/pro/elite) that pass in `node` env with no mocks.
-- [ ] `validateTimerConfiguration` rejects `rounds ≤ 0`, `roundDuration ≤ 0`, and `restDuration ≤ 0`, each with a dedicated test, returning `InvalidTimerConfiguration` (no throw).
+- [ ] `validateTimerConfiguration` throws `InvalidTimerConfiguration` on `rounds ≤ 0` (zero and negative), `roundDuration ≤ 0`, and `restDuration ≤ 0`, each with a dedicated test.
 - [ ] `__builders__/` builder used by the tests; not tested itself.
 - [ ] `npm run lint`, `npx tsc --noEmit`, `npm run test` all pass.

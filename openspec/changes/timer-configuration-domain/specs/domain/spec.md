@@ -39,9 +39,11 @@ requirement below for input validation, which is a distinct concern.)
 ### Requirement: calculateTimerLevel pure function
 
 The system MUST expose `calculateTimerLevel(config: Pick<TimerConfiguration,
-"rounds" | "roundDuration" | "restDuration">): TimerLevel` as a standalone
-pure function. It MUST NOT be a method on an object, MUST NOT cache or store
-its result, and MUST be callable on demand with only the three listed fields.
+"rounds">): TimerLevel` as a standalone pure function. It MUST NOT be a
+method on an object, MUST NOT cache or store its result. The signature MUST
+NOT include `roundDuration`/`restDuration` unless a real requirement uses
+them in classification — carrying unread parameters "for future refinement"
+is the speculative design AGENTS.md prohibits.
 
 `TimerLevel` MUST be the union type `"amateur" | "pro" | "elite"`.
 
@@ -91,11 +93,16 @@ it reaches `calculateTimerLevel`; this scenario only documents what
 
 ### Requirement: validateTimerConfiguration rejects non-positive input
 
-The system MUST expose `validateTimerConfiguration(input: TimerConfiguration):
-TimerConfiguration | InvalidTimerConfiguration`. It MUST reject (return
-`InvalidTimerConfiguration`, never throw) when `rounds <= 0`, OR
-`roundDuration <= 0`, OR `restDuration <= 0`. When all three are positive, it
-MUST return the input unchanged.
+The system MUST expose `validateTimerConfiguration(input:
+TimerConfiguration): TimerConfiguration`. It MUST throw an
+`InvalidTimerConfiguration` when `rounds <= 0`, OR `roundDuration <= 0`, OR
+`restDuration <= 0`. When all three are positive, it MUST return the input
+unchanged (no throw). This matches the existing `src/domain/errors/auth-errors.ts`
+convention, where every consumer of a tagged domain error (`invalidCredentials`,
+`backendUnavailable`, `sessionInvalid`) throws it rather than returning it as
+a value — `validateTimerConfiguration` MUST follow the same throw-based
+convention, not a Result-style return, to avoid two different error-handling
+conventions for the same tagged-error shape in `src/domain/errors/`.
 
 `InvalidTimerConfiguration` MUST follow the existing `src/domain/errors/auth-errors.ts`
 functional pattern: `interface InvalidTimerConfiguration extends Error { readonly
@@ -106,32 +113,32 @@ _tag: "InvalidTimerConfiguration" }` plus a factory function
 
 - GIVEN a `TimerConfiguration` with `rounds: 0`
 - WHEN `validateTimerConfiguration` is called
-- THEN it MUST return an `InvalidTimerConfiguration` (not throw)
+- THEN it MUST throw an `InvalidTimerConfiguration`
 
 #### Scenario: Negative rounds is rejected
 
 - GIVEN a `TimerConfiguration` with `rounds: -1`
 - WHEN `validateTimerConfiguration` is called
-- THEN it MUST return an `InvalidTimerConfiguration` (not throw)
+- THEN it MUST throw an `InvalidTimerConfiguration`
 
 #### Scenario: Zero or negative roundDuration is rejected
 
 - GIVEN a `TimerConfiguration` with `roundDuration: 0` and otherwise valid fields
 - WHEN `validateTimerConfiguration` is called
-- THEN it MUST return an `InvalidTimerConfiguration` (not throw)
+- THEN it MUST throw an `InvalidTimerConfiguration`
 
 #### Scenario: Zero or negative restDuration is rejected
 
 - GIVEN a `TimerConfiguration` with `restDuration: 0` and otherwise valid fields
 - WHEN `validateTimerConfiguration` is called
-- THEN it MUST return an `InvalidTimerConfiguration` (not throw)
+- THEN it MUST throw an `InvalidTimerConfiguration`
 
 #### Scenario: Valid configuration passes through unchanged
 
 - GIVEN a `TimerConfiguration` with `rounds`, `roundDuration`, and
   `restDuration` all greater than 0
 - WHEN `validateTimerConfiguration` is called
-- THEN it MUST return the same `TimerConfiguration`, not an error
+- THEN it MUST return the same `TimerConfiguration`, and MUST NOT throw
 
 ### Requirement: Domain layer purity
 

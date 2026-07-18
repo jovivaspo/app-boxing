@@ -12,15 +12,18 @@ export function invalidTimerConfiguration(
   });
 }
 
+/**
+ * @throws {InvalidTimerConfiguration} rounds, roundDuration, or restDuration is <= 0.
+ */
 export function validateTimerConfiguration(
   input: TimerConfiguration
-): TimerConfiguration | InvalidTimerConfiguration {
+): TimerConfiguration {
   if (
     input.rounds <= 0 ||
     input.roundDuration <= 0 ||
     input.restDuration <= 0
   ) {
-    return invalidTimerConfiguration(
+    throw invalidTimerConfiguration(
       "rounds, roundDuration, and restDuration must be greater than 0"
     );
   }

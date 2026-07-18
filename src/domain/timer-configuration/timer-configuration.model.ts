@@ -9,9 +9,8 @@ export interface TimerConfiguration {
   bellSound: boolean;
 }
 
-// roundDuration/restDuration unused in v1; kept for future refinement.
 export function calculateTimerLevel(
-  config: Pick<TimerConfiguration, "rounds" | "roundDuration" | "restDuration">
+  config: Pick<TimerConfiguration, "rounds">
 ): TimerLevel {
   const { rounds } = config;
   if (rounds <= 7) return "amateur";

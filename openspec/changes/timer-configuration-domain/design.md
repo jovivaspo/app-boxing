@@ -14,11 +14,11 @@ A second, separate module — `src/domain/errors/timer-configuration-errors.ts` 
 **Alternatives considered**: `createTimerConfiguration` factory + stored `level` field.
 **Rationale**: No classes allowed (AGENTS.md), so a factory enforces no invariant — callers can build the literal directly. Storing a derived value invites drift. Both rejected by the user after design discussion.
 
-### Decision: v1 heuristic keys on `rounds` only
+### Decision: v1 heuristic keys on `rounds` only — narrow signature accordingly
 
-**Choice**: Signature takes `Pick<TimerConfiguration, "rounds" | "roundDuration" | "restDuration">` but branches on `rounds` alone.
-**Alternatives considered**: Branch on total workout time now.
-**Rationale**: Locked thresholds are round-based (amateur ≤7, pro 8–12, elite ≥13). Keeping the two durations in the signature lets a future refinement use them without a call-site rewrite; `roundDuration`/`restDuration` are intentionally unused in v1.
+**Choice**: Signature is `Pick<TimerConfiguration, "rounds">`; branches on `rounds` alone.
+**Alternatives considered**: (a) Branch on total workout time now. (b) Keep `roundDuration`/`restDuration` in the signature unused, "for future refinement" (this PR's original draft).
+**Rationale**: Locked thresholds are round-based (amateur ≤7, pro 8–12, elite ≥13) — only `rounds` is needed. **Revised after PR review**: the original draft kept `roundDuration`/`restDuration` in the signature unread, justified as "future refinement" — a reviewer correctly flagged this as exactly the speculative design AGENTS.md prohibits ("Don't design for hypothetical future requirements"). Narrowed to `Pick<TimerConfiguration, "rounds">`; widen again only if/when a real requirement needs the durations in classification.
 
 ### Decision: `calculateTimerLevel` is a total function (no guards) — defensive default only
 
@@ -26,11 +26,11 @@ A second, separate module — `src/domain/errors/timer-configuration-errors.ts` 
 **Alternatives considered**: Guard `rounds <= 0` and throw / return a domain error directly inside `calculateTimerLevel`.
 **Rationale**: `calculateTimerLevel` stays a pure classifier with no rejection responsibility — that responsibility now belongs entirely to `validateTimerConfiguration` (see next decision), which runs before a `TimerConfiguration` is used at all. Keeping `calculateTimerLevel` total means it never needs to be called on already-invalid data through the normal flow, but if it ever is (e.g. called directly, bypassing validation), it still can't throw or misbehave.
 
-### Decision: Add `validateTimerConfiguration` domain validation
+### Decision: Add `validateTimerConfiguration` domain validation — throws, does not return a Result
 
-**Choice**: `validateTimerConfiguration(input: TimerConfiguration): TimerConfiguration | InvalidTimerConfiguration`, in a new `src/domain/errors/timer-configuration-errors.ts` module, mirroring the existing `auth-errors.ts` pattern (`interface InvalidTimerConfiguration extends Error { readonly _tag: "InvalidTimerConfiguration" }` + `invalidTimerConfiguration(message?)` factory). Rejects when `rounds <= 0` OR `roundDuration <= 0` OR `restDuration <= 0`; returns the input unchanged otherwise. Never throws.
-**Alternatives considered**: (a) No validation at all, matching the flat/untested `session.model.ts`/`user.model.ts` precedent. (b) Reviving the earlier-rejected `createTimerConfiguration` factory to also carry validation.
-**Rationale**: The user explicitly required non-positive rounds/durations to be un-creatable — real input validation at a trust boundary, which is a different concern from the earlier rejected factory (whose only job was deriving/storing `level`, a value that didn't need to exist as state at all). The "interfaces have no encapsulation, so a factory enforces nothing" argument that killed the level-deriving factory does NOT apply here: this function's value isn't compiler-enforced exclusivity, it's being the single, tested place validation logic lives — matching the project's existing errors-as-values convention (`AuthError`) instead of duplicating `<= 0` checks at every future call site (use-cases, UI). Named `validateTimerConfiguration`, not `createTimerConfiguration`, to avoid resurrecting the rejected name/semantics.
+**Choice**: `validateTimerConfiguration(input: TimerConfiguration): TimerConfiguration`, in a new `src/domain/errors/timer-configuration-errors.ts` module, mirroring the existing `auth-errors.ts` pattern (`interface InvalidTimerConfiguration extends Error { readonly _tag: "InvalidTimerConfiguration" }` + `invalidTimerConfiguration(message?)` factory). **Throws** `InvalidTimerConfiguration` when `rounds <= 0` OR `roundDuration <= 0` OR `restDuration <= 0`; returns the input unchanged otherwise.
+**Alternatives considered**: (a) No validation at all, matching the flat/untested `session.model.ts`/`user.model.ts` precedent. (b) Reviving the earlier-rejected `createTimerConfiguration` factory to also carry validation. (c) Result-style return (`TimerConfiguration | InvalidTimerConfiguration`, never throwing) — this PR's original draft.
+**Rationale**: The user explicitly required non-positive rounds/durations to be un-creatable — real input validation at a trust boundary, which is a different concern from the earlier rejected factory (whose only job was deriving/storing `level`, a value that didn't need to exist as state at all). **Revised after PR review**: the original draft returned a `TimerConfiguration | InvalidTimerConfiguration` union instead of throwing, and its own description claimed this "mirrors" `auth-errors.ts` including "no throwing" — but every actual consumer of that pattern (`sign-in-with-google.ts`'s `throw invalidCredentials(...)`, asserted via `toThrow` in `backend-auth.adapter.test.ts`) throws the tagged error rather than returning it. Having two different error-propagation conventions for the same tagged-error shape in `src/domain/errors/` would confuse the next consumer (unsure whether to `try/catch` or narrow a return value). Switched to throw-based to match the one real precedent in this codebase.
 
 ### Decision: Defer `openspec/specs/domain-structure/spec.md`
 
@@ -70,9 +70,8 @@ export interface TimerConfiguration {
   bellSound: boolean;
 }
 
-// roundDuration/restDuration unused in v1; kept for future refinement.
 export function calculateTimerLevel(
-  config: Pick<TimerConfiguration, "rounds" | "roundDuration" | "restDuration">
+  config: Pick<TimerConfiguration, "rounds">
 ): TimerLevel {
   const { rounds } = config;
   if (rounds <= 7) return "amateur";
@@ -81,7 +80,7 @@ export function calculateTimerLevel(
 }
 ```
 
-`src/domain/errors/timer-configuration-errors.ts` (mirrors `auth-errors.ts`):
+`src/domain/errors/timer-configuration-errors.ts` (mirrors `auth-errors.ts`, throw-based):
 
 ```ts
 export interface InvalidTimerConfiguration extends Error {
@@ -96,15 +95,18 @@ export function invalidTimerConfiguration(
   });
 }
 
+/**
+ * @throws {InvalidTimerConfiguration} rounds, roundDuration, or restDuration is <= 0.
+ */
 export function validateTimerConfiguration(
   input: TimerConfiguration
-): TimerConfiguration | InvalidTimerConfiguration {
+): TimerConfiguration {
   if (
     input.rounds <= 0 ||
     input.roundDuration <= 0 ||
     input.restDuration <= 0
   ) {
-    return invalidTimerConfiguration(
+    throw invalidTimerConfiguration(
       "rounds, roundDuration, and restDuration must be greater than 0"
     );
   }
@@ -132,12 +134,12 @@ export function buildTimerConfiguration(
 
 ## Testing Strategy
 
-| Layer         | What to Test                                                                                                  | Approach                                                                               |
-| ------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Domain (unit) | `calculateTimerLevel` boundaries: 7→amateur, 8→pro, 12→pro, 13→elite                                          | Vitest `node` env, no mocks, builder for inputs                                        |
-| Domain (edge) | `calculateTimerLevel` with non-positive `rounds` (e.g. 0) → amateur (defensive default, documented)           | Same                                                                                   |
-| Domain (unit) | `validateTimerConfiguration` rejects `rounds ≤ 0`, `roundDuration ≤ 0`, `restDuration ≤ 0` (3 separate tests) | Vitest `node` env, no mocks, builder for base valid input, override one field per test |
-| Domain (unit) | `validateTimerConfiguration` returns input unchanged when all fields valid                                    | Same                                                                                   |
+| Layer         | What to Test                                                                                                                              | Approach                                                                                                                                  |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain (unit) | `calculateTimerLevel` boundaries: 7→amateur, 8→pro, 12→pro, 13→elite                                                                      | Vitest `node` env, no mocks, builder for inputs                                                                                           |
+| Domain (edge) | `calculateTimerLevel` with non-positive `rounds` (e.g. 0) → amateur (defensive default, documented)                                       | Same                                                                                                                                      |
+| Domain (unit) | `validateTimerConfiguration` throws on `rounds ≤ 0` (zero AND negative, 2 tests), `roundDuration ≤ 0`, `restDuration ≤ 0` (4 tests total) | Vitest `node` env, no mocks, `toThrow(expect.objectContaining({ _tag: ... }))`, builder for base valid input, override one field per test |
+| Domain (unit) | `validateTimerConfiguration` returns input unchanged (no throw) when all fields valid                                                     | Same                                                                                                                                      |
 
 - **Strict TDD**: write failing tests first (level boundaries, then validation rejections), then the implementation. Each `it` starts with `should` and asserts one behavior.
 - The interface and builder get NO dedicated tests (data shape + untested builder per AGENTS.md); the builder is exercised only through the `calculateTimerLevel`/`validateTimerConfiguration` tests.

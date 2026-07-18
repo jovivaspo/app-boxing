@@ -52,3 +52,13 @@ Confirmed non-tautological: each `calculateTimerLevel` boundary test builds a co
 ## Final Verdict
 
 **PASS** — all 11 tasks complete and match code state, full spec compliance with real passing tests behind every scenario, zero lint/type/test failures, domain purity confirmed by direct inspection. Ready for `sdd-archive`.
+
+## Addendum — Post-PR-Review Fixes (2026-07-18)
+
+An automated review on PR #23 found 3 real issues this verify pass missed or under-weighted. All confirmed against the code and fixed:
+
+1. **`calculateTimerLevel` dead params** — the "Design Deviations Reviewed" section above called the unused `roundDuration`/`restDuration` params "expected per design," but this design decision itself violated AGENTS.md's explicit anti-speculative-design rule. Fixed: signature narrowed to `Pick<TimerConfiguration, "rounds">`.
+2. **Missing negative-rounds test** — the spec's "Negative rounds is rejected" (`rounds: -1`) scenario had no dedicated test; only `rounds: 0` was ever tested. This verify pass's compliance matrix (row "validateTimerConfiguration / rejects rounds ≤ 0") should have caught that the scenario name promised more than the single test covered. Fixed: added a dedicated `rounds: -1` test.
+3. **Error-propagation convention mismatch** — `validateTimerConfiguration` returned a `TimerConfiguration | InvalidTimerConfiguration` union and this report's compliance matrix accepted that as "COMPLIANT," but every real consumer of the `auth-errors.ts` tagged-error pattern in this codebase throws rather than returns (verified: `sign-in-with-google.ts`, `backend-auth.adapter.test.ts`). Fixed: `validateTimerConfiguration` now throws.
+
+Post-fix: `npm run lint` clean, `npx tsc --noEmit` clean, `npm run test` 84/84 passing (was 83; +1 for the negative-rounds test). Spec (`specs/domain/spec.md`) and design (`design.md`) updated to match. This verify report's original body is left unedited above as the historical record of what the first pass found (and missed); this addendum is the corrected final state.
