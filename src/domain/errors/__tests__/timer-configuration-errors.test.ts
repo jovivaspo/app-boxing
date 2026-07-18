@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders__/timer-configuration.builder";
-import { validateTimerConfiguration } from "../timer-configuration-errors";
+import {
+  timerConfigurationNotFound,
+  validateTimerConfiguration,
+} from "../timer-configuration-errors";
 
 describe("validateTimerConfiguration", () => {
   it("should throw when rounds is zero", () => {
@@ -41,5 +44,19 @@ describe("validateTimerConfiguration", () => {
     const result = validateTimerConfiguration(config);
 
     expect(result).toBe(config);
+  });
+});
+
+describe("timerConfigurationNotFound", () => {
+  it("should return an error tagged as TimerConfigurationNotFound", () => {
+    const error = timerConfigurationNotFound("tc-1");
+
+    expect(error._tag).toBe("TimerConfigurationNotFound");
+  });
+
+  it("should embed the given id in the error message", () => {
+    const error = timerConfigurationNotFound("tc-1");
+
+    expect(error.message).toBe("Timer configuration not found: tc-1");
   });
 });

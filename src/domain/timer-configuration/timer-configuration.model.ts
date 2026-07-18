@@ -1,6 +1,7 @@
 export type TimerLevel = "amateur" | "pro" | "elite";
 
 export interface TimerConfiguration {
+  id: string;
   name: string;
   rounds: number;
   roundDuration: number; // seconds
