@@ -56,19 +56,24 @@ async function parseBody<T>(
  * Creates the `TimerConfigurationRepositoryPort` implementation backed by the
  * real HTTP backend — used for the logged-in path. Reads `BACKEND_URL`
  * (required — no hardcoded fallback) and throws immediately (fail-closed) if
- * it is not configured.
+ * it is not configured. `token` is the session's opaque backend JWT
+ * (`Session.token`), sent as a `Bearer` token on every request so the backend
+ * can identify whose timer configurations are being read/written.
  *
  * Non-404 failures (network error, non-2xx status, non-JSON body, or Zod
  * validation failure) all throw a generic `Error` (D6) — no domain error
  * exists for backend unavailability in this slice.
  */
-export function createBackendTimerConfigurationAdapter(): TimerConfigurationRepositoryPort {
+export function createBackendTimerConfigurationAdapter(
+  token: string
+): TimerConfigurationRepositoryPort {
   const backendUrl = process.env.BACKEND_URL;
   if (!backendUrl) {
     throw new Error("BACKEND_URL is not configured");
   }
 
   const baseUrl = `${backendUrl}/api/v1/timer-configurations`;
+  const authHeader = { Authorization: `Bearer ${token}` };
 
   return {
     async create(
@@ -76,7 +81,7 @@ export function createBackendTimerConfigurationAdapter(): TimerConfigurationRepo
     ): Promise<TimerConfiguration> {
       const response = await requestJson(baseUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeader },
         body: JSON.stringify(config),
       });
       ensureOk(response);
@@ -85,7 +90,10 @@ export function createBackendTimerConfigurationAdapter(): TimerConfigurationRepo
     },
 
     async list(): Promise<TimerConfiguration[]> {
-      const response = await requestJson(baseUrl, { method: "GET" });
+      const response = await requestJson(baseUrl, {
+        method: "GET",
+        headers: { ...authHeader },
+      });
       ensureOk(response);
       const dtos = await parseBody(
         response,
@@ -97,7 +105,7 @@ export function createBackendTimerConfigurationAdapter(): TimerConfigurationRepo
     async update(config: TimerConfiguration): Promise<TimerConfiguration> {
       const response = await requestJson(`${baseUrl}/${config.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeader },
         body: JSON.stringify(config),
       });
       ensureOk(response, config.id);
@@ -108,6 +116,7 @@ export function createBackendTimerConfigurationAdapter(): TimerConfigurationRepo
     async delete(id: string): Promise<void> {
       const response = await requestJson(`${baseUrl}/${id}`, {
         method: "DELETE",
+        headers: { ...authHeader },
       });
       ensureOk(response, id);
     },

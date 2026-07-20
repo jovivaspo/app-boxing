@@ -4,6 +4,8 @@ import { createBackendTimerConfigurationAdapter } from "../backend-timer-configu
 
 const BACKEND_URL = "http://backend.test";
 const BASE_PATH = `${BACKEND_URL}/api/v1/timer-configurations`;
+const TOKEN = "test-session-token";
+const AUTH_HEADER = { Authorization: `Bearer ${TOKEN}` };
 
 const validDto = {
   id: "config-1",
@@ -38,21 +40,21 @@ describe("createBackendTimerConfigurationAdapter", () => {
   it("should throw when BACKEND_URL is not configured", () => {
     vi.stubEnv("BACKEND_URL", "");
 
-    expect(() => createBackendTimerConfigurationAdapter()).toThrow();
+    expect(() => createBackendTimerConfigurationAdapter(TOKEN)).toThrow();
   });
 
   it("should POST the config to the base path and resolve with the mapped configuration", async () => {
     vi.mocked(fetch).mockResolvedValue(
       jsonResponse(validDto, true, 201) as Response
     );
-    const adapter = createBackendTimerConfigurationAdapter();
+    const adapter = createBackendTimerConfigurationAdapter(TOKEN);
     const { id: _id, ...configWithoutId } = validDto;
 
     const result = await adapter.create(configWithoutId);
 
     expect(fetch).toHaveBeenCalledWith(BASE_PATH, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...AUTH_HEADER },
       body: JSON.stringify(configWithoutId),
     });
     expect(result).toEqual(validDto);
@@ -60,23 +62,26 @@ describe("createBackendTimerConfigurationAdapter", () => {
 
   it("should GET the base path and resolve with the mapped configuration list", async () => {
     vi.mocked(fetch).mockResolvedValue(jsonResponse([validDto]) as Response);
-    const adapter = createBackendTimerConfigurationAdapter();
+    const adapter = createBackendTimerConfigurationAdapter(TOKEN);
 
     const result = await adapter.list();
 
-    expect(fetch).toHaveBeenCalledWith(BASE_PATH, { method: "GET" });
+    expect(fetch).toHaveBeenCalledWith(BASE_PATH, {
+      method: "GET",
+      headers: { ...AUTH_HEADER },
+    });
     expect(result).toEqual([validDto]);
   });
 
   it("should PUT the config to /{id} and resolve with the mapped configuration", async () => {
     vi.mocked(fetch).mockResolvedValue(jsonResponse(validDto) as Response);
-    const adapter = createBackendTimerConfigurationAdapter();
+    const adapter = createBackendTimerConfigurationAdapter(TOKEN);
 
     const result = await adapter.update(validDto);
 
     expect(fetch).toHaveBeenCalledWith(`${BASE_PATH}/${validDto.id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...AUTH_HEADER },
       body: JSON.stringify(validDto),
     });
     expect(result).toEqual(validDto);
@@ -86,7 +91,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
     vi.mocked(fetch).mockResolvedValue(
       jsonResponse({}, false, 404) as Response
     );
-    const adapter = createBackendTimerConfigurationAdapter();
+    const adapter = createBackendTimerConfigurationAdapter(TOKEN);
 
     await expect(adapter.update(validDto)).rejects.toMatchObject({
       _tag: "TimerConfigurationNotFound",
@@ -97,12 +102,13 @@ describe("createBackendTimerConfigurationAdapter", () => {
     vi.mocked(fetch).mockResolvedValue(
       jsonResponse(undefined, true, 204) as Response
     );
-    const adapter = createBackendTimerConfigurationAdapter();
+    const adapter = createBackendTimerConfigurationAdapter(TOKEN);
 
     const result = await adapter.delete(validDto.id);
 
     expect(fetch).toHaveBeenCalledWith(`${BASE_PATH}/${validDto.id}`, {
       method: "DELETE",
+      headers: { ...AUTH_HEADER },
     });
     expect(result).toBeUndefined();
   });
@@ -111,7 +117,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
     vi.mocked(fetch).mockResolvedValue(
       jsonResponse({}, false, 404) as Response
     );
-    const adapter = createBackendTimerConfigurationAdapter();
+    const adapter = createBackendTimerConfigurationAdapter(TOKEN);
 
     await expect(adapter.delete(validDto.id)).rejects.toMatchObject({
       _tag: "TimerConfigurationNotFound",
@@ -123,11 +129,12 @@ describe("createBackendTimerConfigurationAdapter", () => {
 
     const operations = {
       create: () =>
-        createBackendTimerConfigurationAdapter().create(configWithoutId),
-      list: () => createBackendTimerConfigurationAdapter().list(),
-      update: () => createBackendTimerConfigurationAdapter().update(validDto),
+        createBackendTimerConfigurationAdapter(TOKEN).create(configWithoutId),
+      list: () => createBackendTimerConfigurationAdapter(TOKEN).list(),
+      update: () =>
+        createBackendTimerConfigurationAdapter(TOKEN).update(validDto),
       delete: () =>
-        createBackendTimerConfigurationAdapter().delete(validDto.id),
+        createBackendTimerConfigurationAdapter(TOKEN).delete(validDto.id),
     } as const;
 
     function rows(...names: (keyof typeof operations)[]) {
