@@ -31,9 +31,9 @@ Single-pr was confirmed conditional on staying within the ~400-line budget. Esti
 
 ## Phase 2: DTO + Mapper (node) — can run in parallel with Phase 1
 
-- [ ] 2.1 `timer-configuration/dto/timer-configuration.dto.ts` — Zod object schema + inferred `TimerConfigurationDto` (declarative, no dedicated test; exercised via 2.3/4.x).
-- [ ] 2.2 RED: `mappers/__tests__/timer-configuration.mapper.test.ts` — `toTimerConfiguration(dto)` field mapping.
-- [ ] 2.3 GREEN: `mappers/timer-configuration.mapper.ts` — implement to pass 2.2.
+- [x] 2.1 `timer-configuration/dto/timer-configuration.dto.ts` — Zod object schema + inferred `TimerConfigurationDto` (declarative, no dedicated test; exercised via 2.3/4.x).
+- [x] 2.2 RED: `mappers/__tests__/timer-configuration.mapper.test.ts` — `toTimerConfiguration(dto)` field mapping.
+- [x] 2.3 GREEN: `mappers/timer-configuration.mapper.ts` — implement to pass 2.2.
 
 ## Phase 3: Local Adapter (`jsdom`, depends on Phase 1)
 
@@ -50,18 +50,18 @@ Single-pr was confirmed conditional on staying within the ~400-line budget. Esti
 
 ## Phase 4: Backend Adapter (node, stubs `fetch`, depends on Phase 2)
 
-- [ ] 4.1 RED: adapter test — factory throws when `BACKEND_URL` is unset (fail-closed).
-- [ ] 4.2 GREEN: implement `BACKEND_URL` read + throw in `createBackendTimerConfigurationAdapter()`.
-- [ ] 4.3 RED: adapter test — `create()` `POST /api/v1/timer-configurations` with JSON body; 200/201 → mapped `TimerConfiguration`.
-- [ ] 4.4 GREEN: implement `create()`.
-- [ ] 4.5 RED: adapter test — `list()` `GET /` → mapped `TimerConfiguration[]`.
-- [ ] 4.6 GREEN: implement `list()`.
-- [ ] 4.7 RED: adapter test — `update()` `PUT /{id}` → mapped result; 404 → `timerConfigurationNotFound(id)`.
-- [ ] 4.8 GREEN: implement `update()` (happy + 404 branch).
-- [ ] 4.9 RED: adapter test — `delete()` `DELETE /{id}` resolves; 404 → `timerConfigurationNotFound(id)`.
-- [ ] 4.10 GREEN: implement `delete()` (happy + 404 branch).
-- [ ] 4.11 RED: adapter test — network reject / non-404 non-2xx / malformed JSON / Zod-fail → throws generic `Error` for each op.
-- [ ] 4.12 GREEN: implement shared try/catch + status/JSON/Zod handling across all four methods to pass 4.11.
+- [x] 4.1 RED: adapter test — factory throws when `BACKEND_URL` is unset (fail-closed).
+- [x] 4.2 GREEN: implement `BACKEND_URL` read + throw in `createBackendTimerConfigurationAdapter()`.
+- [x] 4.3 RED: adapter test — `create()` `POST /api/v1/timer-configurations` with JSON body; 200/201 → mapped `TimerConfiguration`.
+- [x] 4.4 GREEN: implement `create()`.
+- [x] 4.5 RED: adapter test — `list()` `GET /` → mapped `TimerConfiguration[]`.
+- [x] 4.6 GREEN: implement `list()`.
+- [x] 4.7 RED: adapter test — `update()` `PUT /{id}` → mapped result; 404 → `timerConfigurationNotFound(id)`.
+- [x] 4.8 GREEN: implement `update()` (happy + 404 branch).
+- [x] 4.9 RED: adapter test — `delete()` `DELETE /{id}` resolves; 404 → `timerConfigurationNotFound(id)`.
+- [x] 4.10 GREEN: implement `delete()` (happy + 404 branch).
+- [x] 4.11 RED: adapter test — network reject / non-404 non-2xx / malformed JSON / Zod-fail → throws generic `Error` for each op. (Each per-method GREEN in 4.4/4.6/4.8/4.10 already included its own try/catch + status/JSON/Zod handling, mirroring `backend-auth.adapter.ts`; these tests passed immediately with zero implementation change — same "already covered" pattern as PR 1's 3.9/3.10.)
+- [x] 4.12 GREEN: implement shared try/catch + status/JSON/Zod handling across all four methods to pass 4.11. (No new behavior needed — instead refactored the already-passing per-method duplication into shared `requestJson`/`ensureOk`/`parseBody` helpers to remove duplication, tests re-verified green after the refactor.)
 
 ## Dependency & Parallelism Notes
 

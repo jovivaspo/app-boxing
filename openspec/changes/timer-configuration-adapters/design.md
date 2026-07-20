@@ -50,10 +50,10 @@ src/infraestructure/
 
 ## Data flow
 
-- **Guest / local**: UI hook (future) → `createLocalTimerConfigurationAdapter()` → `local-storage.util`
+- **Guest / local**: UI hook (future) → `createLocalTimerConfigurationAdapter()` → `localStorage.ts`
   → browser `localStorage` (single JSON blob).
-- **Logged-in / backend**: Server Component composition root (future) → `createBackendTimerConfigurationAdapter()`
-  → `fetch` `/api/v1/timer-configurations` → Zod `safeParse` (DTO) → mapper → domain `TimerConfiguration`.
+- **Logged-in / backend**: Server Component composition root (future) → `createBackendTimerConfigurationAdapter(session.token)`
+  → `fetch` `/api/v1/timer-configurations` (with `Authorization: Bearer` header, D9) → Zod `safeParse` (DTO) → mapper → domain `TimerConfiguration`.
 
 Both return/accept the identical domain types the port declares; DTO shape never leaks past the mapper.
 
@@ -88,11 +88,14 @@ export function createLocalTimerConfigurationAdapter(): TimerConfigurationReposi
 ### `backend-timer-configuration.adapter.ts`
 
 ```ts
-export function createBackendTimerConfigurationAdapter(): TimerConfigurationRepositoryPort;
+export function createBackendTimerConfigurationAdapter(
+  token: string
+): TimerConfigurationRepositoryPort;
 ```
 
 - Reads `process.env.BACKEND_URL` inline at factory time; if unset → throw (fail-closed, mirrors auth). See D-Errors below for the thrown error.
 - Base path: `${BACKEND_URL}/api/v1/timer-configurations`.
+- `token` is `Session.token` (the opaque backend JWT) — sent as `Authorization: Bearer ${token}` on every request (D9, addendum below). Without it the backend has no way to identify whose configurations are being read/written.
 
 | Op       | HTTP           | Request body                  | Success                                    | Not-found                              | Other failure        |
 | -------- | -------------- | ----------------------------- | ------------------------------------------ | -------------------------------------- | -------------------- |
@@ -174,14 +177,20 @@ past the mapper and the boundary stays explicit.
 - **Decision**: only `toTimerConfiguration` (DTO→domain) exists; requests `JSON.stringify` the domain object directly.
 - **Rationale**: DTO and domain are identical flat primitives → a domain→DTO request mapper is pure identity boilerplate. Auth precedent likewise had only a response mapper.
 
+### D9 — Backend adapter factory takes `token: string`, sent as `Authorization: Bearer`
+
+- **Decision**: `createBackendTimerConfigurationAdapter(token: string)` attaches `Authorization: Bearer ${token}` to all four requests.
+- **Rationale**: found during PR review — the adapter is documented as the logged-in path but had no way to authenticate requests, since `TimerConfigurationRepositoryPort` (from #18) carries no token and the factory took no parameters either. `BACKEND_URL` is a separate origin, so without a token the backend has no way to identify whose configurations are being read/written. This is an adapter-construction detail (not a port contract change), so it doesn't touch #18.
+- **Rejected**: leaving it unauthenticated until #ui-management — that issue only builds the composition root, and this adapter's inability to authenticate at all is a gap in the adapter itself, not something wiring alone could fix.
+
 ## Composition-root wiring (design note only — NOT wired here)
 
 No consuming route exists yet; wiring lands with #ui-management. When it does:
 
 - **Logged-in path**: an `app/` Server Component (composition root) reads the session cookie; when a
-  session exists it constructs `createBackendTimerConfigurationAdapter()` server-side and passes the
-  data (or the use cases wired to it) down. The backend adapter is server-composable because it only
-  touches `fetch` + `process.env`.
+  session exists it constructs `createBackendTimerConfigurationAdapter(session.token)` server-side and
+  passes the data (or the use cases wired to it) down. The backend adapter is server-composable because
+  it only touches `fetch` + `process.env`.
 - **Guest path**: no session → the local adapter is browser-only (`localStorage` touches `window`),
   so it is structurally unreachable from a Server Component and cannot cross the RSC boundary as a
   serializable prop. It is constructed client-side inside a UI hook via the **A1 exception**
