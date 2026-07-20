@@ -89,6 +89,13 @@ describe("createLocalTimerConfigurationAdapter", () => {
       await expect(adapter.list()).resolves.toEqual([]);
     });
 
+    it("should reject create() instead of resolving with an unpersisted record when window is unavailable", async () => {
+      const adapter = createLocalTimerConfigurationAdapter();
+      const { id: _id, ...configWithoutId } = buildTimerConfiguration();
+
+      await expect(adapter.create(configWithoutId)).rejects.toThrow();
+    });
+
     it("should reject update() with timerConfigurationNotFound when window is unavailable", async () => {
       const adapter = createLocalTimerConfigurationAdapter();
       const config = buildTimerConfiguration();

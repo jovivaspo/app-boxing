@@ -19,6 +19,12 @@ export function createLocalTimerConfigurationAdapter(): TimerConfigurationReposi
     async create(
       config: Omit<TimerConfiguration, "id">
     ): Promise<TimerConfiguration> {
+      if (typeof window === "undefined") {
+        throw new Error(
+          "Cannot create a timer configuration: localStorage is unavailable (SSR)"
+        );
+      }
+
       const all = readAll();
       const created: TimerConfiguration = {
         ...config,
