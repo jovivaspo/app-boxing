@@ -31,11 +31,11 @@ the local adapter.
 ```
 src/infraestructure/
 ├── storage/
-│   ├── local-storage.util.ts                 # NEW plain functions, SSR-guarded JSON access
+│   ├── localStorage.ts                       # NEW plain functions, SSR-guarded JSON access
 │   └── __tests__/
-│       └── local-storage.util.test.ts        # NEW jsdom
+│       └── localStorage.test.ts              # NEW jsdom
 └── timer-configuration/
-    ├── local-timer-configuration.adapter.ts  # NEW port impl over local-storage.util
+    ├── local-timer-configuration.adapter.ts  # NEW port impl over storage/localStorage
     ├── backend-timer-configuration.adapter.ts# NEW port impl over fetch
     ├── dto/
     │   └── timer-configuration.dto.ts         # NEW Zod schema + inferred DTO type
@@ -59,7 +59,7 @@ Both return/accept the identical domain types the port declares; DTO shape never
 
 ## Interface contracts
 
-### `local-storage.util.ts`
+### `localStorage.ts`
 
 ```ts
 export function getItem<T>(key: string): T | undefined; // SSR/malformed/absent → undefined
@@ -143,7 +143,7 @@ past the mapper and the boundary stays explicit.
 
 ### D2 — `localStorage` as plain util, not a port
 
-- **Decision**: `storage/local-storage.util.ts`, three plain generic functions.
+- **Decision**: `storage/localStorage.ts` (renamed post-review from `local-storage.util.ts` to match AGENTS.md's camelCase-no-suffix rule for utils), three plain generic functions.
 - **Rationale**: single consumer; no shared `fetch` wrapper exists either. YAGNI — promote to a port only when a second real consumer appears. User-approved.
 - **Rejected**: `StoragePort` + adapter — one-implementation interface, speculative.
 
