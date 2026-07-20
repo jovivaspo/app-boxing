@@ -194,7 +194,7 @@ No consuming route exists yet; wiring lands with #ui-management. When it does:
 
 | File                                                                        | Env                            | Covers                                                                                                                                                                                                                                                                                     |
 | --------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `storage/__tests__/local-storage.util.test.ts`                              | `// @vitest-environment jsdom` | round-trip set/get, absent→undefined, malformed JSON→undefined, remove, SSR no-op guard                                                                                                                                                                                                    |
+| `storage/__tests__/localStorage.test.ts`                                    | `// @vitest-environment jsdom` | round-trip set/get, absent→undefined, malformed JSON→undefined, remove, SSR no-op guard                                                                                                                                                                                                    |
 | `timer-configuration/__tests__/local-timer-configuration.adapter.test.ts`   | `// @vitest-environment jsdom` | create assigns id + persists, list returns all, update replaces, update-missing→`timerConfigurationNotFound`, delete removes, delete-missing→`timerConfigurationNotFound`                                                                                                                  |
 | `timer-configuration/__tests__/backend-timer-configuration.adapter.test.ts` | node (default)                 | factory throws when `BACKEND_URL` unset; each op hits the right URL/method/body; 200 maps via DTO; 404 on update/delete→`timerConfigurationNotFound`; network reject / 500 / malformed DTO→throws. Stubs `fetch` via `vi.stubGlobal`/`vi.stubEnv` (mirrors `backend-auth.adapter.test.ts`) |
 | `timer-configuration/mappers/__tests__/timer-configuration.mapper.test.ts`  | node (default)                 | DTO→domain field mapping                                                                                                                                                                                                                                                                   |
@@ -208,7 +208,3 @@ store between cases.
 - Backend not-found HTTP status is an unverified assumption (404) — no non-auth precedent confirms it. Single point of change (D5).
 - `crypto.randomUUID()` presence under the jsdom test env — expected present via Node global `crypto`; confirm during implementation (D4).
 - Non-404 failure ergonomics: generic `Error` is intentionally coarse until #ui-management needs typed branching (D6).
-
-```
-
-```

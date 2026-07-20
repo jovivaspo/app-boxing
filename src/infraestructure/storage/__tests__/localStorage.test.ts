@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getItem, removeItem, setItem } from "../local-storage.util";
+import { getItem, removeItem, setItem } from "../localStorage";
 
-describe("local-storage.util", () => {
+describe("localStorage util", () => {
   beforeEach(() => {
     window.localStorage.clear();
   });

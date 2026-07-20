@@ -1,7 +1,7 @@
 import { timerConfigurationNotFound } from "@/domain/errors/timer-configuration-errors";
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import type { TimerConfigurationRepositoryPort } from "@/application/ports/timer-configuration-repository.port";
-import { getItem, setItem } from "@/infraestructure/storage/local-storage.util";
+import { getItem, setItem } from "@/infraestructure/storage/localStorage";
 
 const STORAGE_KEY = "timer-configurations";
 
