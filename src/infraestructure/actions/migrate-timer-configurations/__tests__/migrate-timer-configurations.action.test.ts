@@ -182,6 +182,20 @@ describe("migrateTimerConfigurations", () => {
     expect(executeMock).not.toHaveBeenCalled();
   });
 
+  it("should resolve to an empty array without throwing when configs is not an array", async () => {
+    const { migrateTimerConfigurations } =
+      await import("../migrate-timer-configurations.action");
+    const notAnArray = { length: 1, 0: buildTimerConfiguration() } as unknown;
+
+    const result = await migrateTimerConfigurations(
+      notAnArray as TimerConfiguration[]
+    );
+
+    expect(result).toEqual([]);
+    expect(createCookieSessionAdapterMock).not.toHaveBeenCalled();
+    expect(createBackendTimerConfigurationAdapterMock).not.toHaveBeenCalled();
+  });
+
   it("should resolve a shape-invalid item as failed while still migrating its valid siblings", async () => {
     const { migrateTimerConfigurations } =
       await import("../migrate-timer-configurations.action");

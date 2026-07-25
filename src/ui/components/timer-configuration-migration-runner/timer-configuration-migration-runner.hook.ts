@@ -47,10 +47,12 @@ export function useTimerConfigurationMigration(
           }
 
           const results = await migrateTimerConfigurations(configs);
+          const migratedIds = results
+            .filter((result) => result.status === "migrated")
+            .map((result) => result.id)
+            .filter((id): id is string => id !== undefined);
           await Promise.all(
-            results
-              .filter((result) => result.status === "migrated")
-              .map((result) => localAdapter.delete(result.id).catch(() => {}))
+            migratedIds.map((id) => localAdapter.delete(id).catch(() => {}))
           );
         });
       } catch {

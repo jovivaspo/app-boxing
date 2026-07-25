@@ -9,8 +9,12 @@ import { createBackendTimerConfigurationAdapter } from "@/infraestructure/timer-
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 
 export interface MigratedItemResult {
-  /** The LOCAL id (from the guest localStorage record), never the backend-generated one. */
-  id: string;
+  /**
+   * The LOCAL id (from the guest localStorage record), never the
+   * backend-generated one. `undefined` when the entry itself was too
+   * malformed to have an id (e.g. `null`/non-object localStorage content).
+   */
+  id: string | undefined;
   status: "migrated" | "failed";
 }
 
@@ -71,7 +75,7 @@ async function migrateOne(
 export async function migrateTimerConfigurations(
   configs: TimerConfiguration[]
 ): Promise<MigratedItemResult[]> {
-  if (configs.length === 0) {
+  if (!Array.isArray(configs) || configs.length === 0) {
     return [];
   }
 
