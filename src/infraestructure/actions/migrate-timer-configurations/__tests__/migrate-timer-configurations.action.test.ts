@@ -163,4 +163,45 @@ describe("migrateTimerConfigurations", () => {
     expect(createBackendTimerConfigurationAdapterMock).not.toHaveBeenCalled();
     expect(executeMock).not.toHaveBeenCalled();
   });
+
+  it("should resolve every item as failed without any session or backend call when the batch exceeds the cap", async () => {
+    const { migrateTimerConfigurations } =
+      await import("../migrate-timer-configurations.action");
+    const configs = Array.from({ length: 51 }, (_, index) =>
+      buildTimerConfiguration({ id: `local-${index}` })
+    );
+
+    const result = await migrateTimerConfigurations(configs);
+
+    expect(result).toEqual(
+      configs.map((config) => ({ id: config.id, status: "failed" }))
+    );
+    expect(getMock).not.toHaveBeenCalled();
+    expect(createCookieSessionAdapterMock).not.toHaveBeenCalled();
+    expect(createBackendTimerConfigurationAdapterMock).not.toHaveBeenCalled();
+    expect(executeMock).not.toHaveBeenCalled();
+  });
+
+  it("should resolve a shape-invalid item as failed while still migrating its valid siblings", async () => {
+    const { migrateTimerConfigurations } =
+      await import("../migrate-timer-configurations.action");
+    getMock.mockResolvedValue({ token: "backend-jwt", user: {} });
+    createBackendTimerConfigurationAdapterMock.mockReturnValue({});
+    executeMock.mockResolvedValue(
+      buildTimerConfiguration({ id: "backend-generated-id" })
+    );
+    const malformed = {
+      ...buildTimerConfiguration({ id: "local-malformed" }),
+      rounds: undefined,
+    } as unknown as TimerConfiguration;
+    const valid = buildTimerConfiguration({ id: "local-valid" });
+
+    const result = await migrateTimerConfigurations([malformed, valid]);
+
+    expect(result).toEqual([
+      { id: "local-malformed", status: "failed" },
+      { id: "local-valid", status: "migrated" },
+    ]);
+    expect(executeMock).toHaveBeenCalledTimes(1);
+  });
 });

@@ -1,5 +1,7 @@
 "use server";
 
+import { z } from "zod";
+
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import type { TimerConfigurationRepositoryPort } from "@/application/ports/timer-configuration-repository.port";
 import { createTimerConfiguration } from "@/application/use-cases/create-timer-configuration/create-timer-configuration";
@@ -11,6 +13,23 @@ export interface MigratedItemResult {
   id: string;
   status: "migrated" | "failed";
 }
+
+// ponytail: single hardcoded constant, not a configurable option — realistic
+// guest presets are single digits to low tens, 50 is generous headroom.
+const MAX_MIGRATION_BATCH = 50;
+
+// Boundary shape validation only (type/presence) — the `>0` business rule
+// stays in the domain's `validateTimerConfiguration`, applied per item
+// inside `createTimerConfiguration`.
+const timerConfigurationShapeSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  rounds: z.number(),
+  roundDuration: z.number(),
+  restDuration: z.number(),
+  warnBeforeEnd: z.boolean(),
+  bellSound: z.boolean(),
+});
 
 function allFailed(configs: TimerConfiguration[]): MigratedItemResult[] {
   return configs.map((config) => ({
@@ -25,8 +44,13 @@ async function migrateOne(
     candidate: Omit<TimerConfiguration, "id">
   ) => Promise<TimerConfiguration>
 ): Promise<MigratedItemResult> {
+  const parsed = timerConfigurationShapeSchema.safeParse(config);
+  if (!parsed.success) {
+    return { id: config?.id, status: "failed" };
+  }
+
   try {
-    const { id, ...candidate } = config;
+    const { id, ...candidate } = parsed.data;
     await create(candidate);
     return { id, status: "migrated" };
   } catch {
@@ -49,6 +73,10 @@ export async function migrateTimerConfigurations(
 ): Promise<MigratedItemResult[]> {
   if (configs.length === 0) {
     return [];
+  }
+
+  if (configs.length > MAX_MIGRATION_BATCH) {
+    return allFailed(configs);
   }
 
   const session = await createCookieSessionAdapter().get();
