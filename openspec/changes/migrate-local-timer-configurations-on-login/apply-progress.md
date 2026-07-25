@@ -111,3 +111,49 @@ Files changed (Round 2):
 Left untouched per explicit user decision: `id: undefined` vs `id: string` type mismatch, no timeout on the migration Server Action call, and everything already left untouched from Round 1.
 
 Verified green: `npm run lint` (0 errors, same 8 pre-existing warnings), `npx tsc --noEmit` (clean), `npm run test` (148/148, 27 files).
+
+## PR #29 Fix Round — R1 + R2 (design revision 2, id 97; tasks revision 3, id 98)
+
+Two confirmed `claude-pr-review` findings fixed before merge, landing on the already-open PR #29 branch (no new PR). Phase 5 (R1, UI) and Phase 6 (R2, Server Action) touch disjoint files.
+
+### Phase 5 — R1: drop blocking gate, fix SSR/no-JS blank page
+
+Finding: `TimerConfigurationMigrationGate` initialized `isMigrating=true` and only flipped it in a `useEffect` (never on SSR), returning `null` while pending — every authenticated load of `/` rendered blank HTML on SSR and permanently for no-JS clients (greeting, profile link, logout omitted). Product decision: home page content never depends on migration completion; migrate as a pure fire-and-forget background effect.
+
+- [x] 5.1 RED — rewrote `timer-configuration-migration-runner.hook.test.ts`: dropped all `isMigrating` assertions in favor of mock-call-state assertions (`waitFor` on `list`/`migrateTimerConfigurations`/`delete` mocks); deleted the "reports isMigrating true synchronously" test; the "genuine waiting" concurrency test now asserts `listMock`/`migrateTimerConfigurationsMock` call counts instead of `result.current.isMigrating`.
+- [x] 5.2 GREEN — `git mv timer-configuration-migration-gate/ -> timer-configuration-migration-runner/` (every file renamed `-gate-` -> `-runner-`); hook dropped `useState`/`isMigrating`/the `cancelled` guard entirely, now returns `void`; migration body (Web Locks request, `list()`, action call, delete-on-success) unchanged verbatim.
+- [x] 5.3 — deleted `timer-configuration-migration-runner.types.ts` (both `UseTimerConfigurationMigrationResult` and `TimerConfigurationMigrationGateProps` became unused).
+- [x] 5.4 — rewrote `.tsx`: no `children` prop, renders `null` unconditionally, only calls the hook for its effect (untested, presentational, per project rule).
+- [x] 5.5 — `index.ts` barrel now exports `TimerConfigurationMigrationRunner`.
+- [x] 5.6 RED — rewrote `page.test.tsx`: deleted the "withholds content while migrating" test; the render test now mocks the hook to return `undefined` and asserts the greeting renders regardless; `vi.mock` path updated to `.../timer-configuration-migration-runner/timer-configuration-migration-runner.hook`.
+- [x] 5.7 GREEN — `page.tsx`: `<main>` now renders directly and unconditionally; `<TimerConfigurationMigrationRunner />` mounted as a sibling inside a fragment, not wrapping content.
+- [x] 5.8 — verified redirect/session-render tests still pass; runner-hook mock invocation still asserted (mounted, not gating).
+
+### Phase 6 — R2: Server Action batch cap + Zod boundary validation
+
+Finding: `migrateTimerConfigurations` is a network-callable POST for any valid session cookie, with no cap on `configs.length` and no shape validation before fanning out one backend `create()` call per item via `Promise.all`.
+
+- [x] 6.1 RED — added test: 51-item `configs` array -> every item resolves `failed`, zero session/cookie/backend adapter calls (verified via `getMock`/`createCookieSessionAdapterMock`/`createBackendTimerConfigurationAdapterMock`/`executeMock` all uncalled).
+- [x] 6.2 GREEN — added `const MAX_MIGRATION_BATCH = 50` (ponytail-marked single hardcoded constant, not configurable) and a `configs.length > MAX_MIGRATION_BATCH -> allFailed(configs)` guard placed BEFORE `createCookieSessionAdapter().get()` — an oversized call triggers no cookie IO and no backend calls.
+- [x] 6.3 RED — added test: `[malformed (rounds: undefined), valid]` -> `[failed, migrated]`, `executeMock` called exactly once (only for the valid item).
+- [x] 6.4 GREEN — added `timerConfigurationShapeSchema` (Zod v4 `z.object`, type/presence only — id/name as string, rounds/roundDuration/restDuration as number, warnBeforeEnd/bellSound as boolean; the `>0` business rule intentionally stays in the domain's `validateTimerConfiguration`, applied inside `createTimerConfiguration`). `migrateOne` now runs `timerConfigurationShapeSchema.safeParse(config)` first; on failure returns `{ id: config?.id, status: "failed" }` without calling `create`, preserving the existing `config?.id` fallback pattern for genuinely malformed (e.g. `null`) entries.
+- [x] 6.5 — confirmed the two existing null-config tests (with and without session) still pass unmodified — a `null` config now fails Zod's `safeParse` before the destructure ever runs, same observable outcome as before.
+- [x] 6.6 — confirmed the strip-then-echo test and the existing mixed-outcome per-item test still pass unmodified.
+
+### Phase 7 — Verification (fix round)
+
+- [x] 7.1 — `npm run lint` (0 errors, same 8 pre-existing unrelated warnings), `npx tsc --noEmit` (clean), `npm run test` (148/148, 27 files — net zero: -1 hook test, -1 page test, +2 action tests).
+- [x] 7.2 — both PR-review findings each covered by a RED test: R1 by 5.6/5.7 (page renders unconditionally test), R2 cap by 6.1/6.2, R2 shape by 6.3/6.4.
+- [x] 7.3 — diff scope confirmed limited to `src/ui/components/timer-configuration-migration-runner/**` (renamed from `-gate/`), `src/app/page.tsx`, `src/app/__tests__/page.test.tsx`, `src/infraestructure/actions/migrate-timer-configurations/**`, plus the `openspec/` mirror files — no port/adapter/domain files touched.
+
+Files changed (fix round):
+
+- `src/ui/components/timer-configuration-migration-gate/**` renamed to `src/ui/components/timer-configuration-migration-runner/**` (index.ts, `.hook.ts`, `.tsx`, `__tests__/.hook.test.ts`); `.types.ts` deleted.
+- `src/app/page.tsx` — renders `<main>` unconditionally + `<TimerConfigurationMigrationRunner />` sibling.
+- `src/app/__tests__/page.test.tsx` — updated mock path and assertions for unconditional rendering.
+- `src/infraestructure/actions/migrate-timer-configurations/migrate-timer-configurations.action.ts` — added `MAX_MIGRATION_BATCH` cap guard and Zod shape validation in `migrateOne`.
+- `src/infraestructure/actions/migrate-timer-configurations/__tests__/migrate-timer-configurations.action.test.ts` — added cap-exceeded and shape-invalid-sibling tests.
+
+Left untouched, as scoped: Web Locks mutual exclusion, delete-on-success idempotency, fail-closed session/BACKEND_URL handling, and the deferred `MigratedItemResult.id: string` type nit.
+
+Verified green: `npm run lint` (0 errors, 8 pre-existing warnings), `npx tsc --noEmit` (clean), `npm run test` (148/148, 27 files).
