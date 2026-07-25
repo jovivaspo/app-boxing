@@ -14,6 +14,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 // Per-entry-point dependency wiring revision: `page.tsx` now constructs
 // `getCurrentSession` inline with `createCookieSessionAdapter()` instead of
 // going through a shared factory module — mock both directly.
+//
+// Migration gate wiring (Issue #20): the authenticated `<main>` content is
+// now wrapped in `<TimerConfigurationMigrationGate>`. Its hook is mocked
+// directly here so the session-render assertion stays deterministic and
+// independent of the hook's own (separately tested) migration logic.
 
 const getCurrentSessionExecuteMock = vi.fn();
 const getCurrentSessionMock = vi.fn<
@@ -21,6 +26,7 @@ const getCurrentSessionMock = vi.fn<
 >(() => getCurrentSessionExecuteMock);
 const createCookieSessionAdapterMock = vi.fn(() => ({}));
 const redirectMock = vi.fn();
+const useTimerConfigurationMigrationMock = vi.fn();
 
 vi.mock(
   "@/application/use-cases/get-current-session/get-current-session",
@@ -32,6 +38,13 @@ vi.mock(
 vi.mock("@/infraestructure/session/cookie-session.adapter", () => ({
   createCookieSessionAdapter: () => createCookieSessionAdapterMock(),
 }));
+
+vi.mock(
+  "@/ui/components/timer-configuration-migration-gate/timer-configuration-migration-gate.hook",
+  () => ({
+    useTimerConfigurationMigration: () => useTimerConfigurationMigrationMock(),
+  })
+);
 
 vi.mock("next/navigation", () => ({
   redirect: (url: string) => {
@@ -46,6 +59,7 @@ describe("Home page (rewired)", () => {
     getCurrentSessionMock.mockClear();
     createCookieSessionAdapterMock.mockClear();
     redirectMock.mockClear();
+    useTimerConfigurationMigrationMock.mockReset();
   });
 
   it("redirects to /login when getCurrentSession() returns null", async () => {
@@ -69,11 +83,36 @@ describe("Home page (rewired)", () => {
         createdAt: "2026-01-01T00:00:00.000Z",
       },
     });
+    useTimerConfigurationMigrationMock.mockReturnValue({
+      isMigrating: false,
+    });
     const { default: Home } = await import("../page");
 
     render(await Home());
 
     expect(redirectMock).not.toHaveBeenCalled();
     expect(screen.getByText("¡Hola, Ada Lovelace!")).toBeInTheDocument();
+  });
+
+  it("withholds the authenticated content while the migration gate is still migrating", async () => {
+    getCurrentSessionExecuteMock.mockResolvedValue({
+      token: "backend-jwt",
+      user: {
+        id: "1",
+        name: "Ada Lovelace",
+        email: "ada@example.com",
+        role: "boxer",
+        pictureUrl: null,
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+    });
+    useTimerConfigurationMigrationMock.mockReturnValue({
+      isMigrating: true,
+    });
+    const { default: Home } = await import("../page");
+
+    render(await Home());
+
+    expect(screen.queryByText("¡Hola, Ada Lovelace!")).not.toBeInTheDocument();
   });
 });
