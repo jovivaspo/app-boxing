@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 import { getCurrentSession } from "@/application/use-cases/get-current-session/get-current-session";
-import { TimerConfigurationMigrationGate } from "@/ui/components/timer-configuration-migration-gate";
+import { TimerConfigurationMigrationRunner } from "@/ui/components/timer-configuration-migration-runner";
 
 // Force per-request rendering: `getCurrentSession()` reaches `cookies()`
 // only through the session adapter. If `SESSION_SECRET`/`BACKEND_URL` are
@@ -23,7 +23,7 @@ export default async function Home() {
   }
 
   return (
-    <TimerConfigurationMigrationGate>
+    <>
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-4">
         <h1 className="text-3xl font-semibold tracking-tight">
           ¡Hola, {session.user.name}!
@@ -48,6 +48,7 @@ export default async function Home() {
           </form>
         </div>
       </main>
-    </TimerConfigurationMigrationGate>
+      <TimerConfigurationMigrationRunner />
+    </>
   );
 }

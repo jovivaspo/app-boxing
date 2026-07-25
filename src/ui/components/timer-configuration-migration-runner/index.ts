@@ -1,1 +1,1 @@
-export { TimerConfigurationMigrationGate } from "./timer-configuration-migration-gate";
+export { TimerConfigurationMigrationRunner } from "./timer-configuration-migration-runner";

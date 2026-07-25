@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import type { TimerConfigurationRepositoryPort } from "@/application/ports/timer-configuration-repository.port";
 import { migrateTimerConfigurations } from "@/infraestructure/actions/migrate-timer-configurations/migrate-timer-configurations.action";
 import { createLocalTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/local-timer-configuration.adapter";
-
-import type { UseTimerConfigurationMigrationResult } from "./timer-configuration-migration-gate.types";
 
 // A1: browser-only, non-serializable adapter constructed at module scope so
 // it can only run client-side. Exposed as an overridable parameter below so
@@ -21,10 +19,9 @@ const LOCK_NAME = "timer-configurations-migrating";
 /**
  * Migrates every guest localStorage `TimerConfiguration` to the backend on
  * mount (A2: the Server Action call lives here, never in the presentational
- * `.tsx`). Deletes locally only the ids the backend accepted; failed items
- * are left untouched for a future login attempt. `isMigrating` stays `true`
- * until every item has resolved, so the gate can withhold rendering until
- * then (blocking render, silent operation — no user-visible feedback).
+ * `.tsx`) as a fire-and-forget background effect — nothing renders depends
+ * on it (R1). Deletes locally only the ids the backend accepted; failed
+ * items are left untouched for a future login attempt.
  *
  * Guarded by the native Web Locks API (`navigator.locks.request`) so a
  * same-tab double invocation (React Strict Mode) or a concurrent tab never
@@ -34,17 +31,13 @@ const LOCK_NAME = "timer-configurations-migrating";
  * to finish (no TOCTOU, no manual release, no TTL) before running its own
  * callback — at which point it lists again, finds nothing left (already
  * deleted by the winner), and settles quickly. Any rejection (lock API,
- * network drop, RPC failure, or the action itself) still resolves
- * `isMigrating` to `false` so the page is never blocked from rendering.
+ * network drop, RPC failure, or the action itself) is swallowed — the page
+ * never depends on this effect's outcome.
  */
 export function useTimerConfigurationMigration(
   localAdapter: TimerConfigurationRepositoryPort = defaultLocalAdapter
-): UseTimerConfigurationMigrationResult {
-  const [isMigrating, setIsMigrating] = useState(true);
-
+): void {
   useEffect(() => {
-    let cancelled = false;
-
     async function migrate() {
       try {
         await navigator.locks.request(LOCK_NAME, async () => {
@@ -62,19 +55,11 @@ export function useTimerConfigurationMigration(
         });
       } catch {
         // Never let a rejection here (lock API, RPC failure, network drop,
-        // version skew) leave isMigrating stuck at true — the page must
-        // still render.
-      } finally {
-        if (!cancelled) setIsMigrating(false);
+        // version skew) escape the effect — the page never depends on this
+        // outcome.
       }
     }
 
     migrate();
-
-    return () => {
-      cancelled = true;
-    };
   }, [localAdapter]);
-
-  return { isMigrating };
 }

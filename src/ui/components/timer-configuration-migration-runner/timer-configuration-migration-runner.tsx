@@ -1,21 +1,14 @@
 "use client";
 
-import { useTimerConfigurationMigration } from "./timer-configuration-migration-gate.hook";
-import type { TimerConfigurationMigrationGateProps } from "./timer-configuration-migration-gate.types";
+import { useTimerConfigurationMigration } from "./timer-configuration-migration-runner.hook";
 
 /**
- * Blocks rendering of `children` until every guest localStorage timer
- * configuration has resolved (migrated or failed) against the backend.
- * Renders nothing while migrating — silent by design, no spinner.
+ * Mounts the background timer-configuration migration effect (R1) and
+ * renders nothing. Never gates or wraps content — the authenticated page
+ * renders unconditionally regardless of migration progress.
  */
-export function TimerConfigurationMigrationGate({
-  children,
-}: TimerConfigurationMigrationGateProps) {
-  const { isMigrating } = useTimerConfigurationMigration();
+export function TimerConfigurationMigrationRunner() {
+  useTimerConfigurationMigration();
 
-  if (isMigrating) {
-    return null;
-  }
-
-  return children;
+  return null;
 }

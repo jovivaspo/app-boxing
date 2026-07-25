@@ -16,7 +16,7 @@ vi.mock(
   })
 );
 
-import { useTimerConfigurationMigration } from "../timer-configuration-migration-gate.hook";
+import { useTimerConfigurationMigration } from "../timer-configuration-migration-runner.hook";
 
 // Minimal stub of the native Web Locks API: queues `request()` calls by lock
 // name so a second call's callback only runs after the first's settles
@@ -38,6 +38,16 @@ function createNavigatorLocksStub() {
   return { request };
 }
 
+// The hook no longer exposes any render-gating state (R1) — it returns
+// `void` and only runs the migration as a side effect. Assertions below
+// observe the mocked collaborators (list/migrate/delete calls) instead of
+// a status flag.
+async function flushMicrotasks() {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 describe("useTimerConfigurationMigration", () => {
   beforeEach(() => {
     Object.defineProperty(navigator, "locks", {
@@ -51,15 +61,15 @@ describe("useTimerConfigurationMigration", () => {
   });
 
   it("should settle immediately without calling migrateTimerConfigurations when there are no local configurations", async () => {
+    const listMock = vi.fn().mockResolvedValue([]);
     const localAdapter = makeTimerConfigurationRepositoryPort({
-      list: vi.fn().mockResolvedValue([]),
+      list: listMock,
     });
 
-    const { result } = renderHook(() =>
-      useTimerConfigurationMigration(localAdapter)
-    );
+    renderHook(() => useTimerConfigurationMigration(localAdapter));
 
-    await waitFor(() => expect(result.current.isMigrating).toBe(false));
+    await waitFor(() => expect(listMock).toHaveBeenCalledTimes(1));
+    await flushMicrotasks();
 
     expect(migrateTimerConfigurationsMock).not.toHaveBeenCalled();
   });
@@ -79,14 +89,11 @@ describe("useTimerConfigurationMigration", () => {
       { id: "failed-1", status: "failed" },
     ]);
 
-    const { result } = renderHook(() =>
-      useTimerConfigurationMigration(localAdapter)
-    );
+    renderHook(() => useTimerConfigurationMigration(localAdapter));
 
-    await waitFor(() => expect(result.current.isMigrating).toBe(false));
+    await waitFor(() => expect(deleteMock).toHaveBeenCalledTimes(1));
 
     expect(migrateTimerConfigurationsMock).toHaveBeenCalledWith(configs);
-    expect(deleteMock).toHaveBeenCalledTimes(1);
     expect(deleteMock).toHaveBeenCalledWith("migrated-1");
   });
 
@@ -101,13 +108,9 @@ describe("useTimerConfigurationMigration", () => {
       { id: "migrated-1", status: "migrated" },
     ]);
 
-    const { result } = renderHook(() =>
-      useTimerConfigurationMigration(localAdapter)
-    );
+    renderHook(() => useTimerConfigurationMigration(localAdapter));
 
-    await waitFor(() => expect(result.current.isMigrating).toBe(false));
-
-    expect(deleteMock).toHaveBeenCalledWith("migrated-1");
+    await waitFor(() => expect(deleteMock).toHaveBeenCalledWith("migrated-1"));
   });
 
   it("should make a losing invocation genuinely wait for the winner before finding nothing left to migrate", async () => {
@@ -129,57 +132,35 @@ describe("useTimerConfigurationMigration", () => {
       { id: "tc-1", status: "migrated" },
     ]);
 
-    const first = renderHook(() =>
-      useTimerConfigurationMigration(localAdapter)
-    );
-    const second = renderHook(() =>
-      useTimerConfigurationMigration(localAdapter)
-    );
+    renderHook(() => useTimerConfigurationMigration(localAdapter));
+    renderHook(() => useTimerConfigurationMigration(localAdapter));
 
     // Give the losing invocation a chance to run prematurely, if it doesn't
     // really wait on the lock.
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
+    await flushMicrotasks();
 
     expect(listMock).toHaveBeenCalledTimes(1);
-    expect(second.result.current.isMigrating).toBe(true);
 
     resolveList(configs);
 
-    await waitFor(() => expect(first.result.current.isMigrating).toBe(false));
-    await waitFor(() => expect(second.result.current.isMigrating).toBe(false));
-
-    expect(listMock).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(listMock).toHaveBeenCalledTimes(2));
     expect(migrateTimerConfigurationsMock).toHaveBeenCalledTimes(1);
   });
 
-  it("should settle isMigrating to false when migrateTimerConfigurations rejects outright", async () => {
+  it("should never throw when migrateTimerConfigurations rejects outright", async () => {
     const configs = [buildTimerConfiguration({ id: "tc-1" })];
     const localAdapter = makeTimerConfigurationRepositoryPort({
       list: vi.fn().mockResolvedValue(configs),
     });
     migrateTimerConfigurationsMock.mockRejectedValue(new Error("RPC failure"));
 
-    const { result } = renderHook(() =>
-      useTimerConfigurationMigration(localAdapter)
+    expect(() =>
+      renderHook(() => useTimerConfigurationMigration(localAdapter))
+    ).not.toThrow();
+
+    await waitFor(() =>
+      expect(migrateTimerConfigurationsMock).toHaveBeenCalledWith(configs)
     );
-
-    await waitFor(() => expect(result.current.isMigrating).toBe(false));
-  });
-
-  it("should report isMigrating as true synchronously before resolution", () => {
-    const localAdapter = makeTimerConfigurationRepositoryPort({
-      list: vi.fn().mockResolvedValue([buildTimerConfiguration()]),
-    });
-    migrateTimerConfigurationsMock.mockResolvedValue([
-      { id: "tc-1", status: "migrated" },
-    ]);
-
-    const { result } = renderHook(() =>
-      useTimerConfigurationMigration(localAdapter)
-    );
-
-    expect(result.current.isMigrating).toBe(true);
+    await flushMicrotasks();
   });
 });

@@ -15,10 +15,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 // `getCurrentSession` inline with `createCookieSessionAdapter()` instead of
 // going through a shared factory module — mock both directly.
 //
-// Migration gate wiring (Issue #20): the authenticated `<main>` content is
-// now wrapped in `<TimerConfigurationMigrationGate>`. Its hook is mocked
-// directly here so the session-render assertion stays deterministic and
-// independent of the hook's own (separately tested) migration logic.
+// Migration runner wiring (Issue #20, R1 fix round): the authenticated
+// `<main>` content is no longer wrapped by anything — it renders
+// unconditionally (SSR/no-JS safe). `TimerConfigurationMigrationRunner` is
+// mounted as a sibling that renders nothing and only runs the migration
+// side effect; its hook is mocked directly here so this assertion stays
+// deterministic and independent of the hook's own (separately tested)
+// migration logic.
 
 const getCurrentSessionExecuteMock = vi.fn();
 const getCurrentSessionMock = vi.fn<
@@ -40,7 +43,7 @@ vi.mock("@/infraestructure/session/cookie-session.adapter", () => ({
 }));
 
 vi.mock(
-  "@/ui/components/timer-configuration-migration-gate/timer-configuration-migration-gate.hook",
+  "@/ui/components/timer-configuration-migration-runner/timer-configuration-migration-runner.hook",
   () => ({
     useTimerConfigurationMigration: () => useTimerConfigurationMigrationMock(),
   })
@@ -71,7 +74,7 @@ describe("Home page (rewired)", () => {
     expect(redirectMock).toHaveBeenCalledWith("/login");
   });
 
-  it("renders the session user's name when a valid session exists", async () => {
+  it("renders the session user's name unconditionally, regardless of the migration runner's hook return", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue({
       token: "backend-jwt",
       user: {
@@ -83,36 +86,13 @@ describe("Home page (rewired)", () => {
         createdAt: "2026-01-01T00:00:00.000Z",
       },
     });
-    useTimerConfigurationMigrationMock.mockReturnValue({
-      isMigrating: false,
-    });
+    useTimerConfigurationMigrationMock.mockReturnValue(undefined);
     const { default: Home } = await import("../page");
 
     render(await Home());
 
     expect(redirectMock).not.toHaveBeenCalled();
     expect(screen.getByText("¡Hola, Ada Lovelace!")).toBeInTheDocument();
-  });
-
-  it("withholds the authenticated content while the migration gate is still migrating", async () => {
-    getCurrentSessionExecuteMock.mockResolvedValue({
-      token: "backend-jwt",
-      user: {
-        id: "1",
-        name: "Ada Lovelace",
-        email: "ada@example.com",
-        role: "boxer",
-        pictureUrl: null,
-        createdAt: "2026-01-01T00:00:00.000Z",
-      },
-    });
-    useTimerConfigurationMigrationMock.mockReturnValue({
-      isMigrating: true,
-    });
-    const { default: Home } = await import("../page");
-
-    render(await Home());
-
-    expect(screen.queryByText("¡Hola, Ada Lovelace!")).not.toBeInTheDocument();
+    expect(useTimerConfigurationMigrationMock).toHaveBeenCalled();
   });
 });
