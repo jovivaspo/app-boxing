@@ -10,7 +10,8 @@
 - **Slice 1 (Foundations)**: [x] COMPLETE — tasks 1.1-1.7 all done. `npm run test` 165/165, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Committed.
 - **Slice 2a (Result module + list + delete actions)**: [x] COMPLETE — tasks 2.1, 2.2, 2.3 all done. `npm run test` 177/177, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Committed.
 - **Slice 2b (create + update actions)**: [x] COMPLETE — tasks 2.4, 2.5 all done. `npm run test` 186/186, `npx tsc --noEmit` clean, `npm run lint` 0 errors (3 new pre-existing-pattern warnings, no regression). Committed. Slice 2 (Server Actions) fully COMPLETE.
-- **Slice 3 (List screen)**: [x] COMPLETE — tasks 3.1-3.5 all done. `npm run test` 203/203, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Ready to commit. Slice 4 NOT started.
+- **Slice 3 (List screen)**: [x] COMPLETE — tasks 3.1-3.5 all done. `npm run test` 203/203, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Committed.
+- **Slice 4 (Form screen)**: [x] COMPLETE — tasks 4.1-4.4 all done. `npm run test` 218/218, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Ready to commit (accepted `size:exception`, actual ~1020 lines vs ~450 forecast — mostly test verbosity). **Issue #21 task list 100% complete.**
 
 # Tasks: Timer Configuration Screens (Issue #21)
 
@@ -116,7 +117,7 @@ Legend: **[spec]** = requirement satisfied. **[P]** = can run in parallel with s
 3.5 [P, independent of 3.1-3.4] Modify `src/app/page.tsx` + `__tests__/page.test.tsx`:
 3.5.1 Failing test: "should render a link to /timers" → add the link. **[spec: Navigation]**
 
-## Slice 4 — Form screen (NOT split — single PR, accepted size:exception)
+## Slice 4 — Form screen (NOT split — single PR, accepted size:exception) [x] COMPLETE
 
 **Depends on**: 1.5 (`get-timer-configuration`), 1.6 (`splitDuration`/`toTotalSeconds`), 1.7 (shadcn input/switch), 2.4/2.5 (create/update actions, from 2b), 3.1 (`useTimerConfigurations`), 1.4 (backend `getById`, for the edit page's server-side lookup).
 
