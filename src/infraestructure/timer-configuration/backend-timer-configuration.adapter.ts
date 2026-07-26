@@ -102,6 +102,16 @@ export function createBackendTimerConfigurationAdapter(
       return dtos.map(toTimerConfiguration);
     },
 
+    async getById(id: string): Promise<TimerConfiguration> {
+      const response = await requestJson(`${baseUrl}/${id}`, {
+        method: "GET",
+        headers: { ...authHeader },
+      });
+      ensureOk(response, id);
+      const dto = await parseBody(response, timerConfigurationDtoSchema);
+      return toTimerConfiguration(dto);
+    },
+
     async update(config: TimerConfiguration): Promise<TimerConfiguration> {
       const response = await requestJson(`${baseUrl}/${config.id}`, {
         method: "PUT",

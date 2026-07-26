@@ -73,6 +73,30 @@ describe("createBackendTimerConfigurationAdapter", () => {
     expect(result).toEqual([validDto]);
   });
 
+  it("should GET /{id} with the Bearer header and resolve with the mapped configuration", async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(validDto) as Response);
+    const adapter = createBackendTimerConfigurationAdapter(TOKEN);
+
+    const result = await adapter.getById(validDto.id);
+
+    expect(fetch).toHaveBeenCalledWith(`${BASE_PATH}/${validDto.id}`, {
+      method: "GET",
+      headers: { ...AUTH_HEADER },
+    });
+    expect(result).toEqual(validDto);
+  });
+
+  it("should reject with timerConfigurationNotFound when getById receives a 404", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse({}, false, 404) as Response
+    );
+    const adapter = createBackendTimerConfigurationAdapter(TOKEN);
+
+    await expect(adapter.getById(validDto.id)).rejects.toMatchObject({
+      _tag: "TimerConfigurationNotFound",
+    });
+  });
+
   it("should PUT the config to /{id} and resolve with the mapped configuration", async () => {
     vi.mocked(fetch).mockResolvedValue(jsonResponse(validDto) as Response);
     const adapter = createBackendTimerConfigurationAdapter(TOKEN);
@@ -131,6 +155,8 @@ describe("createBackendTimerConfigurationAdapter", () => {
       create: () =>
         createBackendTimerConfigurationAdapter(TOKEN).create(configWithoutId),
       list: () => createBackendTimerConfigurationAdapter(TOKEN).list(),
+      getById: () =>
+        createBackendTimerConfigurationAdapter(TOKEN).getById(validDto.id),
       update: () =>
         createBackendTimerConfigurationAdapter(TOKEN).update(validDto),
       delete: () =>
@@ -152,7 +178,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
       expect((caught as { _tag?: unknown })._tag).toBeUndefined();
     }
 
-    it.each(rows("create", "list", "update", "delete"))(
+    it.each(rows("create", "list", "getById", "update", "delete"))(
       "should reject %s with a generic Error when fetch rejects (network failure)",
       async (_name, run) => {
         vi.mocked(fetch).mockRejectedValue(new Error("network down"));
@@ -161,7 +187,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
       }
     );
 
-    it.each(rows("create", "list", "update", "delete"))(
+    it.each(rows("create", "list", "getById", "update", "delete"))(
       "should reject %s with a generic Error on a non-404 non-2xx status",
       async (_name, run) => {
         vi.mocked(fetch).mockResolvedValue(
@@ -173,7 +199,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
     );
 
     // delete has no response body, so it can't hit a JSON-parse failure.
-    it.each(rows("create", "list", "update"))(
+    it.each(rows("create", "list", "getById", "update"))(
       "should reject %s with a generic Error when the response body is not valid JSON",
       async (_name, run) => {
         vi.mocked(fetch).mockResolvedValue({
@@ -191,7 +217,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
     // delete has no response body to validate; list validates an array shape
     // (different mock body), so it gets its own case right below instead of
     // sharing this table's single-object mock.
-    it.each(rows("create", "update"))(
+    it.each(rows("create", "getById", "update"))(
       "should reject %s with a generic Error when the response fails DTO validation",
       async (_name, run) => {
         vi.mocked(fetch).mockResolvedValue(
