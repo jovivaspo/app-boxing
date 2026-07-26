@@ -38,6 +38,12 @@ export default async function Home() {
           >
             Ver perfil
           </a>
+          <a
+            href="/timers"
+            className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+          >
+            Mis Timers
+          </a>
           <form action="/api/logout" method="post">
             <button
               type="submit"
