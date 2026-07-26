@@ -5,13 +5,18 @@
 - **Slice 4 (Form screen)**: NOT split — ships as ONE PR (~450 lines) with an accepted `size:exception`, because any split leaves an uneven, dependency-tangled division (`timer-configuration-form` is shared by both `/timers/new` and `/timers/[id]/edit`).
 - **chain_strategy**: `stacked-to-main` — each PR in the change targets the immediately previous PR's branch in sequence, merging to main individually as each is approved. PR sequence: Slice 1 → Slice 2a → Slice 2b → Slice 3 → Slice 4.
 
+## Apply status
+
+- **Slice 1 (Foundations)**: [x] COMPLETE — tasks 1.1-1.7 all done. `npm run test` 165/165, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Committed.
+- **Slice 2a (Result module + list + delete actions)**: [x] COMPLETE — tasks 2.1, 2.2, 2.3 all done. `npm run test` 177/177, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Committed. Slices 2b/3/4 NOT started.
+
 # Tasks: Timer Configuration Screens (Issue #21)
 
 Strict TDD throughout: failing test first, then minimal implementation, one behavior per test, `should` titles, AAA with blank lines. Mocks only at port boundaries. Presentational `.tsx` files are never tested — only their hooks.
 
 Legend: **[spec]** = requirement satisfied. **[P]** = can run in parallel with sibling tasks at the same indent once its own listed dependency is met. **[S]** = must run sequentially (later depends on earlier in same slice).
 
-## Slice 1 — Foundations
+## Slice 1 — Foundations [x] COMPLETE
 
 **Depends on**: nothing (first slice). **Enables**: 2 (indirectly, via Result module being independent), 3 (duration.ts), 4 (duration.ts, get-timer-configuration, shadcn input/switch).
 
@@ -48,7 +53,7 @@ Legend: **[spec]** = requirement satisfied. **[P]** = can run in parallel with s
 
 **Depends on**: nothing from Slice 1 except general repo state (self-contained per design: "2 needs only the Result module"). **Enables**: 3 (list/delete actions), 4 (create/update actions).
 
-### 2a — Result module + list + delete actions (PR targets main)
+### 2a — Result module + list + delete actions (PR targets main) [x] COMPLETE
 
 2.1 [S] `src/application/timer-configuration/timer-configuration-result.ts` + `__tests__/timer-configuration-result.test.ts`:
 2.1.1 Failing test: "should map an error tagged InvalidTimerConfiguration to the invalid-configuration code" → implement `toTimerConfigurationErrorCode` first branch.
