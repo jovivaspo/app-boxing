@@ -8,7 +8,8 @@
 ## Apply status
 
 - **Slice 1 (Foundations)**: [x] COMPLETE — tasks 1.1-1.7 all done. `npm run test` 165/165, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Committed.
-- **Slice 2a (Result module + list + delete actions)**: [x] COMPLETE — tasks 2.1, 2.2, 2.3 all done. `npm run test` 177/177, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Committed. Slices 2b/3/4 NOT started.
+- **Slice 2a (Result module + list + delete actions)**: [x] COMPLETE — tasks 2.1, 2.2, 2.3 all done. `npm run test` 177/177, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Committed.
+- **Slice 2b (create + update actions)**: [x] COMPLETE — tasks 2.4, 2.5 all done. `npm run test` 186/186, `npx tsc --noEmit` clean, `npm run lint` 0 errors (3 new pre-existing-pattern warnings, no regression). Ready to commit. Slice 2 (Server Actions) fully COMPLETE. Slices 3/4 NOT started.
 
 # Tasks: Timer Configuration Screens (Issue #21)
 
@@ -73,7 +74,7 @@ Legend: **[spec]** = requirement satisfied. **[P]** = can run in parallel with s
 2.3.3 Failing test: "should return not-found when the target record is missing" → catch `timerConfigurationNotFound`. **[spec: Target record missing]**
 2.3.4 Failing test: "should return ok:true with null on success" → wire `deleteTimerConfiguration`.
 
-### 2b — Create + update actions (PR targets 2a's branch)
+### 2b — Create + update actions (PR targets 2a's branch) [x] COMPLETE
 
 2.4 [P, depends on 2.1] `src/infraestructure/actions/create-timer-configuration/create-timer-configuration.action.ts` + `__tests__/`:
 2.4.1 Failing test: "should reject malformed input without touching the repository" → zod shape-check.
