@@ -1,0 +1,100 @@
+## MODIFIED: Local Adapter Port Compliance
+
+The `localStorage` adapter MUST implement all five `TimerConfigurationRepositoryPort` methods (including `getById`) using the existing storage utility as its only mechanism.
+
+(Previously: implemented four methods — no single-record lookup.)
+
+#### Scenario: Create persists and assigns an id
+
+- WHEN `create(config)` is called with a config lacking `id`
+- THEN the adapter assigns a generated id, persists the full record, and resolves with the persisted `TimerConfiguration`
+
+#### Scenario: List returns all stored configurations
+
+- GIVEN zero or more configurations persisted
+- WHEN `list()` is called
+- THEN it resolves with an array of exactly those configurations (`[]` if none)
+
+#### Scenario: getById returns a matching record
+
+- GIVEN a configuration previously created with a given id
+- WHEN `getById(id)` is called with that id
+- THEN it resolves with that `TimerConfiguration`
+
+#### Scenario: getById rejects when no record matches
+
+- GIVEN no stored configuration matches the given id
+- WHEN `getById(id)` is called
+- THEN it rejects with `timerConfigurationNotFound(id)`
+
+#### Scenario: Update an existing configuration
+
+- GIVEN a configuration previously created with a given id
+- WHEN `update(config)` is called with that id
+- THEN the adapter persists the new values and resolves with the updated `TimerConfiguration`
+
+#### Scenario: Update or delete a missing configuration
+
+- GIVEN no stored configuration matches the given id
+- WHEN `update(config)` or `delete(id)` is called
+- THEN the adapter rejects with `timerConfigurationNotFound(id)` and leaves stored data unchanged
+
+#### Scenario: Delete an existing configuration
+
+- GIVEN a configuration previously created with a given id
+- WHEN `delete(id)` is called
+- THEN it resolves and the record no longer appears in a subsequent `list()`
+
+#### Scenario: No `window` available (SSR)
+
+- GIVEN `typeof window === "undefined"`, so the underlying utility treats the store as empty
+- WHEN `list()` is called, THEN it resolves with `[]`
+- WHEN `getById()`, `update()`, or `delete()` is called, THEN each rejects with `timerConfigurationNotFound`
+- AND no method throws a raw/unhandled error
+
+## MODIFIED: Backend Adapter Port Compliance
+
+The backend adapter MUST implement all five port methods via `fetch` against `${BACKEND_URL}/api/v1/timer-configurations`, validating every response body with a Zod schema before mapping to the domain entity.
+
+(Previously: implemented four methods — no `getById`/single-record `GET`.)
+
+#### Scenario: BACKEND_URL not configured
+
+- GIVEN `process.env.BACKEND_URL` is unset
+- WHEN the adapter factory is invoked
+- THEN it throws immediately (fail-closed), before any request is attempted
+
+#### Scenario: Create and list
+
+- WHEN `create(config)` is called, THEN the adapter issues `POST /api/v1/timer-configurations` with the config as JSON body
+- WHEN `list()` is called, THEN the adapter issues `GET /api/v1/timer-configurations`
+- AND each resolves, on success, with the mapped `TimerConfiguration`(s) after DTO validation
+
+#### Scenario: getById fetches a single record
+
+- WHEN `getById(id)` is called
+- THEN the adapter issues `GET /api/v1/timer-configurations/{id}` and resolves with the mapped `TimerConfiguration` after DTO validation, reusing `ensureOk(response, id)`
+
+#### Scenario: getById maps 404 to not-found
+
+- GIVEN the backend responds 404 for `GET /api/v1/timer-configurations/{id}`
+- WHEN `getById(id)` is called
+- THEN the adapter rejects with `timerConfigurationNotFound(id)`
+
+#### Scenario: Update and delete
+
+- WHEN `update(config)` is called, THEN the adapter issues `PUT /api/v1/timer-configurations/{config.id}`
+- WHEN `delete(id)` is called, THEN the adapter issues `DELETE /api/v1/timer-configurations/{id}`
+- AND `update` resolves with the mapped `TimerConfiguration`; `delete` resolves with no value
+
+#### Scenario: Update or delete a missing configuration
+
+- GIVEN the backend responds with a not-found (404) status
+- WHEN `update(config)` or `delete(id)` is called
+- THEN the adapter rejects with `timerConfigurationNotFound(id)`
+
+#### Scenario: Response fails DTO validation
+
+- GIVEN a successful HTTP response whose body does not match the expected DTO shape
+- WHEN any method parses that response
+- THEN the adapter rejects rather than resolving with a malformed `TimerConfiguration`
