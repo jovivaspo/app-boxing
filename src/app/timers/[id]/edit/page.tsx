@@ -13,9 +13,12 @@ import { TimerConfigurationForm } from "@/ui/components/timer-configuration-form
 // dynamic-rendering rule applies.
 export const dynamic = "force-dynamic";
 
-export default async function EditTimerPage(
-  props: PageProps<"/timers/[id]/edit">
-) {
+type EditTimerPageProps = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function EditTimerPage(props: EditTimerPageProps) {
   // Next.js 16: `params` is a Promise.
   const { id } = await props.params;
   const session = await getCurrentSession({

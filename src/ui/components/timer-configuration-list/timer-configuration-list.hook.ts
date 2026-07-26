@@ -13,6 +13,7 @@ interface UseTimerConfigurationListResult {
   remove: (id: string) => void;
 }
 
+const LOAD_ERROR = "No se pudieron cargar los timers. Intentá de nuevo.";
 const DELETE_ERROR = "No se pudo eliminar el timer. Intentá de nuevo.";
 
 /** Owns all list-screen logic (A2): load on mount, empty state, optimistic delete. */
@@ -34,7 +35,7 @@ export function useTimerConfigurationList(
       if (result.ok) {
         setConfigurations(result.data);
       } else {
-        setError(DELETE_ERROR);
+        setError(LOAD_ERROR);
       }
       setIsLoading(false);
     });
@@ -47,20 +48,25 @@ export function useTimerConfigurationList(
   const remove = useCallback(
     (id: string) => {
       setError(null);
-      setConfigurations((current) => {
-        const removed = current.find((config) => config.id === id);
-        if (!removed) return current;
+      const index = configurations.findIndex((config) => config.id === id);
+      if (index === -1) return;
+      const removed = configurations[index];
 
-        ops.remove(id).then((result) => {
-          if (result.ok) return;
-          setConfigurations((restored) => [...restored, removed]);
-          setError(DELETE_ERROR);
+      setConfigurations((current) =>
+        current.filter((config) => config.id !== id)
+      );
+
+      ops.remove(id).then((result) => {
+        if (result.ok) return;
+        setConfigurations((current) => {
+          const restored = [...current];
+          restored.splice(index, 0, removed);
+          return restored;
         });
-
-        return current.filter((config) => config.id !== id);
+        setError(DELETE_ERROR);
       });
     },
-    [ops]
+    [ops, configurations]
   );
 
   return {
