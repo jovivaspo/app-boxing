@@ -105,6 +105,15 @@ describe("useTimerConfigurationList", () => {
     );
   });
 
+  it("should not report isEmpty when the initial list call fails", async () => {
+    listMock.mockResolvedValue({ ok: false, code: "unknown" });
+
+    const { result } = renderHook(() => useTimerConfigurationList(true));
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+    expect(result.current.isEmpty).toBe(false);
+  });
+
   it("should call remove exactly once even when React double-invokes state updaters (StrictMode)", async () => {
     const config = buildTimerConfiguration({ id: "tc-1" });
     listMock.mockResolvedValue({ ok: true, data: [config] });

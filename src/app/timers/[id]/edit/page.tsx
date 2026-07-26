@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 import { getCurrentSession } from "@/application/use-cases/get-current-session/get-current-session";
 import { getTimerConfiguration } from "@/application/use-cases/get-timer-configuration/get-timer-configuration";
+import { toTimerConfigurationErrorCode } from "@/application/timer-configuration/timer-configuration-result";
 import { createBackendTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/backend-timer-configuration.adapter";
 import { TimerConfigurationForm } from "@/ui/components/timer-configuration-form";
 
@@ -47,7 +48,7 @@ export default async function EditTimerPage(props: EditTimerPageProps) {
       repository: createBackendTimerConfigurationAdapter(session.token),
     })(id);
   } catch (error) {
-    if ((error as { _tag?: string })._tag === "TimerConfigurationNotFound") {
+    if (toTimerConfigurationErrorCode(error) === "not-found") {
       notFound();
     }
     throw error;

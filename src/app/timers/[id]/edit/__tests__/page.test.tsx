@@ -130,6 +130,22 @@ describe("Edit timer page", () => {
     expect(notFoundMock).toHaveBeenCalledTimes(1);
   });
 
+  it("should rethrow when authenticated and getTimerConfiguration rejects with an error other than not-found", async () => {
+    getCurrentSessionExecuteMock.mockResolvedValue(AUTHENTICATED_SESSION);
+    const backendError = new Error("backend unavailable");
+    getTimerConfigurationExecuteMock.mockRejectedValue(backendError);
+    const { default: EditTimerPage } = await import("../page");
+
+    await expect(
+      EditTimerPage({
+        params: Promise.resolve({ id: "tc-1" }),
+        searchParams: Promise.resolve({}),
+      })
+    ).rejects.toBe(backendError);
+
+    expect(notFoundMock).not.toHaveBeenCalled();
+  });
+
   it("should pass null initialConfiguration for a guest identity (no server-side lookup)", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: EditTimerPage } = await import("../page");

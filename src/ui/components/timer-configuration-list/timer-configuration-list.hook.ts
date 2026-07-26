@@ -72,7 +72,7 @@ export function useTimerConfigurationList(
   return {
     configurations,
     isLoading,
-    isEmpty: !isLoading && configurations.length === 0,
+    isEmpty: !isLoading && !error && configurations.length === 0,
     error,
     remove,
   };
