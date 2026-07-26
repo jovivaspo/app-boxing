@@ -9,7 +9,8 @@
 
 - **Slice 1 (Foundations)**: [x] COMPLETE — tasks 1.1-1.7 all done. `npm run test` 165/165, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Committed.
 - **Slice 2a (Result module + list + delete actions)**: [x] COMPLETE — tasks 2.1, 2.2, 2.3 all done. `npm run test` 177/177, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Committed.
-- **Slice 2b (create + update actions)**: [x] COMPLETE — tasks 2.4, 2.5 all done. `npm run test` 186/186, `npx tsc --noEmit` clean, `npm run lint` 0 errors (3 new pre-existing-pattern warnings, no regression). Ready to commit. Slice 2 (Server Actions) fully COMPLETE. Slices 3/4 NOT started.
+- **Slice 2b (create + update actions)**: [x] COMPLETE — tasks 2.4, 2.5 all done. `npm run test` 186/186, `npx tsc --noEmit` clean, `npm run lint` 0 errors (3 new pre-existing-pattern warnings, no regression). Committed. Slice 2 (Server Actions) fully COMPLETE.
+- **Slice 3 (List screen)**: [x] COMPLETE — tasks 3.1-3.5 all done. `npm run test` 203/203, `npx tsc --noEmit` clean, `npm run lint` 0 errors. Ready to commit. Slice 4 NOT started.
 
 # Tasks: Timer Configuration Screens (Issue #21)
 
@@ -89,7 +90,7 @@ Legend: **[spec]** = requirement satisfied. **[P]** = can run in parallel with s
 2.5.4 Failing test: "should return not-found when the target record is missing" → catch `timerConfigurationNotFound`.
 2.5.5 Failing test: "should return ok:true with the updated configuration on success" → wire `updateTimerConfiguration`.
 
-## Slice 3 — List screen
+## Slice 3 — List screen [x] COMPLETE
 
 **Depends on**: 1.6 (`formatDuration`), 2.2 (`list` action), 2.3 (`delete` action). **Enables**: 4 (`useTimerConfigurations` reused by the form hook).
 
