@@ -95,4 +95,27 @@ describe("Home page (rewired)", () => {
     expect(screen.getByText("¡Hola, Ada Lovelace!")).toBeInTheDocument();
     expect(useTimerConfigurationMigrationMock).toHaveBeenCalled();
   });
+
+  it("should render a link to /timers", async () => {
+    getCurrentSessionExecuteMock.mockResolvedValue({
+      token: "backend-jwt",
+      user: {
+        id: "1",
+        name: "Ada Lovelace",
+        email: "ada@example.com",
+        role: "boxer",
+        pictureUrl: null,
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+    });
+    useTimerConfigurationMigrationMock.mockReturnValue(undefined);
+    const { default: Home } = await import("../page");
+
+    render(await Home());
+
+    expect(screen.getByRole("link", { name: /timers/i })).toHaveAttribute(
+      "href",
+      "/timers"
+    );
+  });
 });

@@ -9,6 +9,7 @@ export function makeTimerConfigurationRepositoryPort(
   return {
     create: vi.fn().mockResolvedValue(buildTimerConfiguration()),
     list: vi.fn().mockResolvedValue([]),
+    getById: vi.fn().mockResolvedValue(buildTimerConfiguration()),
     update: vi.fn().mockResolvedValue(buildTimerConfiguration()),
     delete: vi.fn().mockResolvedValue(undefined),
     ...overrides,

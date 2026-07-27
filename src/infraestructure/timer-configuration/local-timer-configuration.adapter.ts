@@ -38,6 +38,13 @@ export function createLocalTimerConfigurationAdapter(): TimerConfigurationReposi
       return readAll();
     },
 
+    async getById(id: string): Promise<TimerConfiguration> {
+      const found = readAll().find((c) => c.id === id);
+      if (!found) throw timerConfigurationNotFound(id);
+
+      return found;
+    },
+
     async update(config: TimerConfiguration): Promise<TimerConfiguration> {
       const all = readAll();
       const index = all.findIndex((c) => c.id === config.id);

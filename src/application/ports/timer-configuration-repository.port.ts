@@ -6,6 +6,11 @@ export interface TimerConfigurationRepositoryPort {
   /** Returns all stored configurations. */
   list(): Promise<TimerConfiguration[]>;
   /**
+   * Returns the single configuration identified by `id`.
+   * @throws {import("@/domain/errors/timer-configuration-errors").TimerConfigurationNotFound} no stored record matches `id`.
+   */
+  getById(id: string): Promise<TimerConfiguration>;
+  /**
    * Persists changes to the configuration identified by `config.id`.
    * @throws {import("@/domain/errors/timer-configuration-errors").TimerConfigurationNotFound} no stored record matches `config.id`.
    */

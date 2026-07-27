@@ -36,6 +36,24 @@ describe("createLocalTimerConfigurationAdapter", () => {
     expect(all).toEqual([]);
   });
 
+  it("should resolve with the matching record when getById is called with a stored id", async () => {
+    const adapter = createLocalTimerConfigurationAdapter();
+    const { id: _id, ...configWithoutId } = buildTimerConfiguration();
+    const created = await adapter.create(configWithoutId);
+
+    const found = await adapter.getById(created.id);
+
+    expect(found).toEqual(created);
+  });
+
+  it("should reject with timerConfigurationNotFound when getById finds no matching record", async () => {
+    const adapter = createLocalTimerConfigurationAdapter();
+
+    await expect(adapter.getById("does-not-exist")).rejects.toMatchObject({
+      _tag: "TimerConfigurationNotFound",
+    });
+  });
+
   it("should persist and resolve with the new values when updating an existing configuration", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
     const { id: _id, ...configWithoutId } = buildTimerConfiguration();
@@ -94,6 +112,14 @@ describe("createLocalTimerConfigurationAdapter", () => {
       const { id: _id, ...configWithoutId } = buildTimerConfiguration();
 
       await expect(adapter.create(configWithoutId)).rejects.toThrow();
+    });
+
+    it("should reject getById() with timerConfigurationNotFound when window is unavailable", async () => {
+      const adapter = createLocalTimerConfigurationAdapter();
+
+      await expect(adapter.getById("any-id")).rejects.toMatchObject({
+        _tag: "TimerConfigurationNotFound",
+      });
     });
 
     it("should reject update() with timerConfigurationNotFound when window is unavailable", async () => {

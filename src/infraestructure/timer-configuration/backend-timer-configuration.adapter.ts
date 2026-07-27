@@ -4,7 +4,10 @@ import { timerConfigurationNotFound } from "@/domain/errors/timer-configuration-
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import type { TimerConfigurationRepositoryPort } from "@/application/ports/timer-configuration-repository.port";
 import { timerConfigurationDtoSchema } from "@/infraestructure/timer-configuration/dto/timer-configuration.dto";
-import { toTimerConfiguration } from "@/infraestructure/timer-configuration/mappers/timer-configuration.mapper";
+import {
+  toTimerConfiguration,
+  toTimerConfigurationRequestBody,
+} from "@/infraestructure/timer-configuration/mappers/timer-configuration.mapper";
 
 /** Issues the request, mapping a network failure to a generic `Error` (D6). */
 async function requestJson(url: string, init?: RequestInit): Promise<Response> {
@@ -82,7 +85,7 @@ export function createBackendTimerConfigurationAdapter(
       const response = await requestJson(baseUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeader },
-        body: JSON.stringify(config),
+        body: JSON.stringify(toTimerConfigurationRequestBody(config)),
       });
       ensureOk(response);
       const dto = await parseBody(response, timerConfigurationDtoSchema);
@@ -102,11 +105,21 @@ export function createBackendTimerConfigurationAdapter(
       return dtos.map(toTimerConfiguration);
     },
 
+    async getById(id: string): Promise<TimerConfiguration> {
+      const response = await requestJson(`${baseUrl}/${id}`, {
+        method: "GET",
+        headers: { ...authHeader },
+      });
+      ensureOk(response, id);
+      const dto = await parseBody(response, timerConfigurationDtoSchema);
+      return toTimerConfiguration(dto);
+    },
+
     async update(config: TimerConfiguration): Promise<TimerConfiguration> {
       const response = await requestJson(`${baseUrl}/${config.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...authHeader },
-        body: JSON.stringify(config),
+        body: JSON.stringify(toTimerConfigurationRequestBody(config)),
       });
       ensureOk(response, config.id);
       const dto = await parseBody(response, timerConfigurationDtoSchema);
