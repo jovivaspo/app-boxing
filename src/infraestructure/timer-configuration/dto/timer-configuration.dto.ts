@@ -10,7 +10,7 @@ export const timerConfigurationDtoSchema = z.object({
   name: z.string(),
   rounds: z.number(),
   roundDuration: z.number(),
-  restDuration: z.number(),
+  rest: z.number(),
   warnBeforeEnd: z.boolean(),
   bellSound: z.boolean(),
 });

@@ -7,7 +7,19 @@ const BASE_PATH = `${BACKEND_URL}/api/v1/timer-configurations`;
 const TOKEN = "test-session-token";
 const AUTH_HEADER = { Authorization: `Bearer ${TOKEN}` };
 
+// The backend's wire shape (`rest`) differs from the domain's `restDuration` —
+// confirmed against the real API (see requests/boxing.http).
 const validDto = {
+  id: "config-1",
+  name: "Amateur bout",
+  rounds: 4,
+  roundDuration: 120,
+  rest: 60,
+  warnBeforeEnd: true,
+  bellSound: false,
+};
+
+const validDomainConfig = {
   id: "config-1",
   name: "Amateur bout",
   rounds: 4,
@@ -43,21 +55,22 @@ describe("createBackendTimerConfigurationAdapter", () => {
     expect(() => createBackendTimerConfigurationAdapter(TOKEN)).toThrow();
   });
 
-  it("should POST the config to the base path and resolve with the mapped configuration", async () => {
+  it("should POST the config to the base path, mapping restDuration to rest, and resolve with the mapped configuration", async () => {
     vi.mocked(fetch).mockResolvedValue(
       jsonResponse(validDto, true, 201) as Response
     );
     const adapter = createBackendTimerConfigurationAdapter(TOKEN);
-    const { id: _id, ...configWithoutId } = validDto;
+    const { id: _id, ...configWithoutId } = validDomainConfig;
+    const { id: _dtoId, ...dtoWithoutId } = validDto;
 
     const result = await adapter.create(configWithoutId);
 
     expect(fetch).toHaveBeenCalledWith(BASE_PATH, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...AUTH_HEADER },
-      body: JSON.stringify(configWithoutId),
+      body: JSON.stringify(dtoWithoutId),
     });
-    expect(result).toEqual(validDto);
+    expect(result).toEqual(validDomainConfig);
   });
 
   it("should GET the base path and resolve with the mapped configuration list", async () => {
@@ -70,7 +83,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
       method: "GET",
       headers: { ...AUTH_HEADER },
     });
-    expect(result).toEqual([validDto]);
+    expect(result).toEqual([validDomainConfig]);
   });
 
   it("should GET /{id} with the Bearer header and resolve with the mapped configuration", async () => {
@@ -83,7 +96,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
       method: "GET",
       headers: { ...AUTH_HEADER },
     });
-    expect(result).toEqual(validDto);
+    expect(result).toEqual(validDomainConfig);
   });
 
   it("should reject with timerConfigurationNotFound when getById receives a 404", async () => {
@@ -97,18 +110,19 @@ describe("createBackendTimerConfigurationAdapter", () => {
     });
   });
 
-  it("should PUT the config to /{id} and resolve with the mapped configuration", async () => {
+  it("should PUT the config to /{id}, mapping restDuration to rest, and resolve with the mapped configuration", async () => {
     vi.mocked(fetch).mockResolvedValue(jsonResponse(validDto) as Response);
     const adapter = createBackendTimerConfigurationAdapter(TOKEN);
+    const { id: _dtoId, ...dtoWithoutId } = validDto;
 
-    const result = await adapter.update(validDto);
+    const result = await adapter.update(validDomainConfig);
 
     expect(fetch).toHaveBeenCalledWith(`${BASE_PATH}/${validDto.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", ...AUTH_HEADER },
-      body: JSON.stringify(validDto),
+      body: JSON.stringify(dtoWithoutId),
     });
-    expect(result).toEqual(validDto);
+    expect(result).toEqual(validDomainConfig);
   });
 
   it("should reject with timerConfigurationNotFound when update receives a 404", async () => {
@@ -117,7 +131,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
     );
     const adapter = createBackendTimerConfigurationAdapter(TOKEN);
 
-    await expect(adapter.update(validDto)).rejects.toMatchObject({
+    await expect(adapter.update(validDomainConfig)).rejects.toMatchObject({
       _tag: "TimerConfigurationNotFound",
     });
   });
@@ -149,7 +163,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
   });
 
   describe("generic failure handling (D6 — no domain error, plain Error)", () => {
-    const { id: _id, ...configWithoutId } = validDto;
+    const { id: _id, ...configWithoutId } = validDomainConfig;
 
     const operations = {
       create: () =>
@@ -158,7 +172,7 @@ describe("createBackendTimerConfigurationAdapter", () => {
       getById: () =>
         createBackendTimerConfigurationAdapter(TOKEN).getById(validDto.id),
       update: () =>
-        createBackendTimerConfigurationAdapter(TOKEN).update(validDto),
+        createBackendTimerConfigurationAdapter(TOKEN).update(validDomainConfig),
       delete: () =>
         createBackendTimerConfigurationAdapter(TOKEN).delete(validDto.id),
     } as const;
