@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Pencil, Trash2 } from "lucide-react";
 
 import {
   calculateTimerLevel,
@@ -25,31 +26,67 @@ export function TimerConfigurationCard({
   const level = calculateTimerLevel(config);
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-4">
-      <div>
-        <div className="flex items-center gap-2">
-          <h3 className="font-medium">{config.name}</h3>
-          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600">
+    <div className="group border-border bg-card relative flex flex-col justify-between border-2 transition-all duration-200 active:scale-[0.98]">
+      <div className="p-6">
+        <div className="mb-4 flex items-start justify-between">
+          <span className="bg-primary text-primary-foreground border border-black/20 px-2 py-1 font-mono text-[10px] tracking-widest uppercase">
             {LEVEL_LABEL[level]}
           </span>
+          <div className="flex gap-4">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              aria-label={`Editar ${config.name}`}
+              className="text-muted-foreground hover:text-primary"
+            >
+              <Link href={`/timers/${config.id}/edit`}>
+                <Pencil className="size-4" />
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={`Eliminar ${config.name}`}
+              className="text-muted-foreground hover:text-primary"
+              onClick={() => onDelete(config.id)}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
         </div>
-        <p className="text-muted-foreground text-sm">
-          {config.rounds} rounds · {formatDuration(config.roundDuration)}{" "}
-          trabajo · {formatDuration(config.restDuration)} descanso
-        </p>
+
+        <h3 className="font-heading mb-8 text-2xl uppercase">{config.name}</h3>
+
+        <div className="border-border grid grid-cols-3 gap-2 border-t pt-6">
+          <div className="flex flex-col">
+            <span className="text-muted-foreground font-mono text-[10px] uppercase">
+              Rounds
+            </span>
+            <span className="font-heading text-foreground text-4xl">
+              {config.rounds}
+            </span>
+          </div>
+          <div className="border-border flex flex-col border-l pl-4">
+            <span className="text-muted-foreground font-mono text-[10px] uppercase">
+              Trabajo
+            </span>
+            <span className="font-heading text-foreground text-4xl">
+              {formatDuration(config.roundDuration)}
+            </span>
+          </div>
+          <div className="border-border flex flex-col border-l pl-4">
+            <span className="text-muted-foreground font-mono text-[10px] uppercase">
+              Descanso
+            </span>
+            <span className="font-heading text-foreground text-4xl">
+              {formatDuration(config.restDuration)}
+            </span>
+          </div>
+        </div>
       </div>
-      <div className="flex gap-2">
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/timers/${config.id}/edit`}>Editar</Link>
-        </Button>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => onDelete(config.id)}
-        >
-          Eliminar
-        </Button>
-      </div>
+
+      <div className="bg-primary h-1 w-full" />
     </div>
   );
 }
