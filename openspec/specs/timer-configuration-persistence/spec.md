@@ -37,7 +37,9 @@ The `localStorage` utility MUST expose plain functions (`getItem`, `setItem`, `r
 
 ### Requirement: Local Adapter Port Compliance
 
-The `localStorage` adapter MUST implement all four `TimerConfigurationRepositoryPort` methods using the utility above as its only storage mechanism.
+The `localStorage` adapter MUST implement all five `TimerConfigurationRepositoryPort` methods (including `getById`) using the utility above as its only storage mechanism.
+
+(Previously: implemented four methods — no single-record lookup.)
 
 #### Scenario: Create persists and assigns an id
 
@@ -49,6 +51,18 @@ The `localStorage` adapter MUST implement all four `TimerConfigurationRepository
 - GIVEN zero or more configurations persisted
 - WHEN `list()` is called
 - THEN it resolves with an array of exactly those configurations (`[]` if none)
+
+#### Scenario: getById returns a matching record
+
+- GIVEN a configuration previously created with a given id
+- WHEN `getById(id)` is called with that id
+- THEN it resolves with that `TimerConfiguration`
+
+#### Scenario: getById rejects when no record matches
+
+- GIVEN no stored configuration matches the given id
+- WHEN `getById(id)` is called
+- THEN it rejects with `timerConfigurationNotFound(id)`
 
 #### Scenario: Update an existing configuration
 
@@ -72,12 +86,14 @@ The `localStorage` adapter MUST implement all four `TimerConfigurationRepository
 
 - GIVEN `typeof window === "undefined"`, so the underlying utility treats the store as empty
 - WHEN `list()` is called, THEN it resolves with `[]`
-- WHEN `update()` or `delete()` is called, THEN each rejects with `timerConfigurationNotFound`
+- WHEN `getById()`, `update()`, or `delete()` is called, THEN each rejects with `timerConfigurationNotFound`
 - AND no method throws a raw/unhandled error
 
 ### Requirement: Backend Adapter Port Compliance
 
-The backend adapter MUST implement all four port methods via `fetch` against `${BACKEND_URL}/api/v1/timer-configurations`, validating every response body with a Zod schema before mapping to the domain entity.
+The backend adapter MUST implement all five port methods via `fetch` against `${BACKEND_URL}/api/v1/timer-configurations`, validating every response body with a Zod schema before mapping to the domain entity.
+
+(Previously: implemented four methods — no `getById`/single-record `GET`.)
 
 #### Scenario: BACKEND_URL not configured
 
@@ -90,6 +106,17 @@ The backend adapter MUST implement all four port methods via `fetch` against `${
 - WHEN `create(config)` is called, THEN the adapter issues `POST /api/v1/timer-configurations` with the config as JSON body
 - WHEN `list()` is called, THEN the adapter issues `GET /api/v1/timer-configurations`
 - AND each resolves, on success, with the mapped `TimerConfiguration`(s) after DTO validation
+
+#### Scenario: getById fetches a single record
+
+- WHEN `getById(id)` is called
+- THEN the adapter issues `GET /api/v1/timer-configurations/{id}` and resolves with the mapped `TimerConfiguration` after DTO validation, reusing `ensureOk(response, id)`
+
+#### Scenario: getById maps 404 to not-found
+
+- GIVEN the backend responds 404 for `GET /api/v1/timer-configurations/{id}`
+- WHEN `getById(id)` is called
+- THEN the adapter rejects with `timerConfigurationNotFound(id)`
 
 #### Scenario: Update and delete
 
