@@ -33,7 +33,7 @@ export function RoundsStepper({ value, onChange }: RoundsStepperProps) {
         value={value}
         onChange={(event) => handleInputChange(event.target.value)}
         aria-label="Rounds"
-        className="font-heading text-foreground w-20 [appearance:textfield] border-none bg-transparent text-center text-4xl focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className="font-heading text-foreground focus-visible:ring-ring/50 w-20 [appearance:textfield] border-none bg-transparent text-center text-4xl focus:outline-none focus-visible:ring-3 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
       <Button
         type="button"

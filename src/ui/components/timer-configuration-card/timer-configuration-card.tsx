@@ -48,7 +48,7 @@ export function TimerConfigurationCard({
               variant="ghost"
               size="icon"
               aria-label={`Eliminar ${config.name}`}
-              className="text-muted-foreground hover:text-primary"
+              className="text-destructive/70 hover:text-destructive"
               onClick={() => onDelete(config.id)}
             >
               <Trash2 className="size-4" />
