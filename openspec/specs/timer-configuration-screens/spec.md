@@ -36,7 +36,7 @@ The system MUST expose four Server Actions under `src/infraestructure/actions/` 
 
 ### Requirement: Timer list screen (`/timers`)
 
-`/timers` MUST render every saved `TimerConfiguration` for the current identity (authenticated backend records, or guest local records) with its level badge, rounds, and work/rest durations in `m:ss`, and MUST be reachable without authentication.
+`/timers` MUST render every saved `TimerConfiguration` for the current identity (authenticated backend records, or guest local records) with its level badge, rounds, work/rest durations in `m:ss`, and a start/play action, and MUST be reachable without authentication.
 
 #### Scenario: Configurations exist
 
@@ -61,6 +61,12 @@ The system MUST expose four Server Actions under `src/infraestructure/actions/` 
 - GIVEN the list screen
 - WHEN the user activates a card's edit action, or the "Nuevo Timer" action
 - THEN the system MUST navigate to `/timers/[id]/edit` or `/timers/new` respectively
+
+#### Scenario: Start a session
+
+- GIVEN a rendered configuration card
+- WHEN its dedicated start/play action is activated
+- THEN the system MUST navigate to `/timers/[id]/active` for that card's id
 
 ### Requirement: Timer configuration form screen (create + edit)
 

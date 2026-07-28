@@ -1,4 +1,4 @@
-# Tasks: Timer Activo engine (Issue #22)
+## Tasks: Timer Activo engine (Issue #22)
 
 Strict TDD: failing test first (RED), then minimal implementation (GREEN). `should` titles, AAA with blank lines, mocks only at port boundaries. Presentational `.tsx` never tested — only hooks. Follows design's file list/interfaces (D1-D15) verbatim.
 
@@ -45,7 +45,7 @@ Decision resolved (2026-07-27): user confirmed chained PRs with `stacked-to-main
 
 ## Slice 3 — Route + entry
 
-**Depends on**: Slice 1 + Slice 2. **Enables**: nothing further (final slice).
+**Depends on**: Slice 1 + Slice 2. **Enables**: nothing further (final slice — this closes out GitHub issue #22).
 
 - [x] 3.1 RED `src/app/timers/[id]/active/__tests__/page.test.tsx`: awaits `params` before use; authenticated + record exists → fetches server-side, passes `initialConfiguration` **[spec: Authenticated, record exists]**; authenticated + missing record → calls `notFound()` **[spec: Authenticated, record missing]**; rethrows non-not-found errors; guest identity → passes only `timerId`, no server-side fetch, no redirect **[spec: Guest identity]**.
 - [x] 3.2 GREEN `src/app/timers/[id]/active/page.tsx`: mirrors `[id]/edit/page.tsx` (`force-dynamic`, `getCurrentSession`, `getTimerConfiguration` + `notFound()` on `TimerConfigurationNotFound`), renders `TimerActive` with no `<h1>` (chrome-free).

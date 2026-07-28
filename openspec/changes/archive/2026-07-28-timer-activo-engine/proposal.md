@@ -1,4 +1,4 @@
-# Proposal: Timer Activo engine (issue #22)
+## Proposal: Timer Activo engine (issue #22)
 
 ## Intent
 
