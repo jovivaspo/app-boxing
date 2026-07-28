@@ -1,15 +1,15 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import type { TimerConfigurationRepositoryPort } from "@/application/ports/timer-configuration-repository.port";
 import type { TimerConfigurationErrorCode } from "@/application/timer-configuration/timer-configuration-result";
-import { getTimerConfiguration } from "@/application/use-cases/get-timer-configuration/get-timer-configuration";
 import { splitDuration, toTotalSeconds } from "@/lib/duration";
 import { useTimerConfigurations } from "@/ui/hooks/use-timer-configurations";
+import { useGuestTimerConfigurationLookup } from "@/ui/hooks/use-guest-timer-configuration-lookup";
 import { createLocalTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/local-timer-configuration.adapter";
 
 import type {
@@ -79,25 +79,14 @@ export function useTimerConfigurationForm(
   const [isSubmitting, setIsSubmitting] = useState(false);
   const editingId = initialConfiguration?.id ?? timerId;
 
-  // Guest edit lookup (D3): no server-side guest lookup is possible since
-  // localStorage is unreachable server-side, so the form hook resolves the
-  // record client-side over the injected local adapter.
-  useEffect(() => {
-    if (isAuthenticated || !timerId || initialConfiguration) return;
-
-    let cancelled = false;
-    getTimerConfiguration({ repository: localAdapter })(timerId)
-      .then((config) => {
-        if (!cancelled) setForm(toFormState(config));
-      })
-      .catch(() => {
-        if (!cancelled) router.replace("/timers");
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated, timerId, initialConfiguration, localAdapter, router]);
+  useGuestTimerConfigurationLookup(
+    isAuthenticated,
+    timerId,
+    initialConfiguration,
+    localAdapter,
+    router,
+    (resolved) => setForm(toFormState(resolved))
+  );
 
   const setName = useCallback(
     (value: string) => setForm((f) => ({ ...f, name: value })),
