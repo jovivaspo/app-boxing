@@ -4,19 +4,11 @@ import { timerConfigurationNotFound } from "@/domain/errors/timer-configuration-
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import type { TimerConfigurationRepositoryPort } from "@/application/ports/timer-configuration-repository.port";
 import { timerConfigurationDtoSchema } from "@/infraestructure/timer-configuration/dto/timer-configuration.dto";
+import { createHttpClient } from "@/infraestructure/http/httpClient";
 import {
   toTimerConfiguration,
   toTimerConfigurationRequestBody,
 } from "@/infraestructure/timer-configuration/mappers/timer-configuration.mapper";
-
-/** Issues the request, mapping a network failure to a generic `Error` (D6). */
-async function requestJson(url: string, init?: RequestInit): Promise<Response> {
-  try {
-    return await fetch(url, init);
-  } catch (cause) {
-    throw new Error("Timer configuration backend request failed", { cause });
-  }
-}
 
 /**
  * Fails fast on a non-2xx status. When `notFoundId` is passed, a 404 maps to
@@ -35,20 +27,19 @@ function ensureOk(response: Response, notFoundId?: string): void {
 }
 
 /** Parses and validates the JSON body against `schema`, or throws a generic `Error` (D6). */
-async function parseBody<T>(
+async function parseDto<T>(
   response: Response,
   schema: z.ZodType<T>
 ): Promise<T> {
-  let rawBody: unknown;
+  let body: unknown;
   try {
-    rawBody = await response.json();
+    body = await response.json();
   } catch (cause) {
     throw new Error("Timer configuration backend response is not valid JSON", {
       cause,
     });
   }
-
-  const parsed = schema.safeParse(rawBody);
+  const parsed = schema.safeParse(body);
   if (!parsed.success) {
     throw new Error("Timer configuration backend response failed validation");
   }
@@ -64,8 +55,12 @@ async function parseBody<T>(
  * can identify whose timer configurations are being read/written.
  *
  * Non-404 failures (network error, non-2xx status, non-JSON body, or Zod
- * validation failure) all throw a generic `Error` (D6) — no domain error
- * exists for backend unavailability in this slice.
+ * validation failure) all throw a plain `Error` with no `_tag` (D6) — no
+ * domain error exists for backend unavailability in this slice. Network
+ * failures propagate `httpClient`'s generic, adapter-agnostic message
+ * (`name: "HttpRequestFailed"`) uncaught; the other three are re-thrown here
+ * with a timer-configuration-specific message (intentional asymmetry, D2 —
+ * see design.md for the tradeoff).
  */
 export function createBackendTimerConfigurationAdapter(
   token: string
@@ -77,28 +72,27 @@ export function createBackendTimerConfigurationAdapter(
 
   const baseUrl = `${backendUrl}/api/v1/timer-configurations`;
   const authHeader = { Authorization: `Bearer ${token}` };
+  const http = createHttpClient();
 
   return {
     async create(
       config: Omit<TimerConfiguration, "id">
     ): Promise<TimerConfiguration> {
-      const response = await requestJson(baseUrl, {
-        method: "POST",
+      const response = await http.post(baseUrl, {
         headers: { "Content-Type": "application/json", ...authHeader },
         body: JSON.stringify(toTimerConfigurationRequestBody(config)),
       });
       ensureOk(response);
-      const dto = await parseBody(response, timerConfigurationDtoSchema);
+      const dto = await parseDto(response, timerConfigurationDtoSchema);
       return toTimerConfiguration(dto);
     },
 
     async list(): Promise<TimerConfiguration[]> {
-      const response = await requestJson(baseUrl, {
-        method: "GET",
+      const response = await http.get(baseUrl, {
         headers: { ...authHeader },
       });
       ensureOk(response);
-      const dtos = await parseBody(
+      const dtos = await parseDto(
         response,
         timerConfigurationDtoSchema.array()
       );
@@ -106,29 +100,26 @@ export function createBackendTimerConfigurationAdapter(
     },
 
     async getById(id: string): Promise<TimerConfiguration> {
-      const response = await requestJson(`${baseUrl}/${id}`, {
-        method: "GET",
+      const response = await http.get(`${baseUrl}/${id}`, {
         headers: { ...authHeader },
       });
       ensureOk(response, id);
-      const dto = await parseBody(response, timerConfigurationDtoSchema);
+      const dto = await parseDto(response, timerConfigurationDtoSchema);
       return toTimerConfiguration(dto);
     },
 
     async update(config: TimerConfiguration): Promise<TimerConfiguration> {
-      const response = await requestJson(`${baseUrl}/${config.id}`, {
-        method: "PUT",
+      const response = await http.put(`${baseUrl}/${config.id}`, {
         headers: { "Content-Type": "application/json", ...authHeader },
         body: JSON.stringify(toTimerConfigurationRequestBody(config)),
       });
       ensureOk(response, config.id);
-      const dto = await parseBody(response, timerConfigurationDtoSchema);
+      const dto = await parseDto(response, timerConfigurationDtoSchema);
       return toTimerConfiguration(dto);
     },
 
     async delete(id: string): Promise<void> {
-      const response = await requestJson(`${baseUrl}/${id}`, {
-        method: "DELETE",
+      const response = await http.delete(`${baseUrl}/${id}`, {
         headers: { ...authHeader },
       });
       ensureOk(response, id);

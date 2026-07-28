@@ -5,6 +5,7 @@ import {
 import type { Session } from "@/domain/session.model";
 import type { AuthPort } from "@/application/ports/auth.port";
 import { backendAuthResponseSchema } from "@/infraestructure/auth/dto/backend-auth.dto";
+import { createHttpClient } from "@/infraestructure/http/httpClient";
 import { toSession } from "@/infraestructure/auth/mappers/user.mapper";
 
 /**
@@ -20,12 +21,13 @@ export function createBackendAuthAdapter(): AuthPort {
     throw backendUnavailable(undefined, "BACKEND_URL is not configured");
   }
 
+  const http = createHttpClient();
+
   return {
     async exchange(idToken: string): Promise<Session> {
       let response: Response;
       try {
-        response = await fetch(`${backendUrl}/api/v1/auth/google`, {
-          method: "POST",
+        response = await http.post(`${backendUrl}/api/v1/auth/google`, {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idToken }),
         });
