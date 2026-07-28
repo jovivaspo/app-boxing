@@ -360,6 +360,40 @@ describe("useTimerActive", () => {
     expect(result.current.remainingLabel).not.toBe(frozenLabel);
   });
 
+  it("should expose primaryLabel/primaryIcon/onPrimaryAction matching the session status", () => {
+    const config = buildTimerConfiguration({ roundDuration: 20 });
+    const { result } = renderHook(() =>
+      useTimerActive(
+        { isAuthenticated: true, initialConfiguration: config },
+        {
+          bell: makeBellPort(),
+          localAdapter: makeTimerConfigurationRepositoryPort(),
+        }
+      )
+    );
+
+    expect(result.current.status).toBe("idle");
+    expect(result.current.primaryLabel).toBe("INICIAR");
+    expect(result.current.primaryIcon).toBe("play");
+    expect(result.current.onPrimaryAction).toBe(result.current.start);
+
+    act(() => {
+      result.current.start();
+    });
+
+    expect(result.current.primaryLabel).toBe("PAUSA");
+    expect(result.current.primaryIcon).toBe("pause");
+    expect(result.current.onPrimaryAction).toBe(result.current.pause);
+
+    act(() => {
+      result.current.pause();
+    });
+
+    expect(result.current.primaryLabel).toBe("REANUDAR");
+    expect(result.current.primaryIcon).toBe("play");
+    expect(result.current.onPrimaryAction).toBe(result.current.resume);
+  });
+
   it("should call router.push('/timers') when stop() is called", () => {
     const config = buildTimerConfiguration();
     const { result } = renderHook(() =>
