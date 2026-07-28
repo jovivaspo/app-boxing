@@ -76,17 +76,15 @@ export function useTimerActive(
   // render effect) so a StrictMode double-invoke of the effect setup can
   // never double-ring the bell — only one live interval survives cleanup.
   useEffect(() => {
+    // Idle/paused/finished remaining-time and progress values don't depend
+    // on `now` (see `effectiveNow` in the domain model), so skip the
+    // re-render entirely rather than calling `setNow` on every 200ms tick
+    // for a screen that isn't actively counting down.
     function advance(at: number) {
       const current = sessionRef.current;
-      if (!current) {
-        setNow(at);
-        return;
-      }
+      if (!current || current.status !== "running") return;
 
-      const next =
-        current.status === "running"
-          ? advanceTimerSession(current, at)
-          : current;
+      const next = advanceTimerSession(current, at);
 
       if (next !== current) {
         sessionRef.current = next;
