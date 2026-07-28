@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Play, Trash2 } from "lucide-react";
 
 import {
   calculateTimerLevel,
@@ -33,6 +33,17 @@ export function TimerConfigurationCard({
             {LEVEL_LABEL[level]}
           </span>
           <div className="flex gap-4">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              aria-label={`Iniciar ${config.name}`}
+              className="text-muted-foreground hover:text-primary"
+            >
+              <Link href={`/timers/${config.id}/active`}>
+                <Play className="size-4" />
+              </Link>
+            </Button>
             <Button
               asChild
               variant="ghost"
