@@ -208,6 +208,53 @@ describe("useTimerActive", () => {
     expect(bell.ring).toHaveBeenCalledTimes(2); // fires again in the new phase
   });
 
+  it("should ring only once in the tick where a transition enters a phase shorter than the warning window", () => {
+    const bell = makeBellPort();
+    const config = buildTimerConfiguration({
+      rounds: 2,
+      roundDuration: 20,
+      restDuration: 5, // shorter than WARNING_SECONDS: inside its own warning window from t=0
+      warnBeforeEnd: true,
+      bellSound: true,
+    });
+    const { result } = renderHook(() =>
+      useTimerActive(
+        { isAuthenticated: true, initialConfiguration: config },
+        { bell, localAdapter: makeTimerConfigurationRepositoryPort() }
+      )
+    );
+
+    act(() => {
+      result.current.start();
+    });
+    act(() => {
+      // Just before the work -> rest boundary; the work phase's own 10s
+      // warning has already fired once by now (roundDuration is 20s).
+      vi.advanceTimersByTime(19_800);
+    });
+    const ringsBeforeTransition = vi.mocked(bell.ring).mock.calls.length;
+
+    act(() => {
+      vi.advanceTimersByTime(200); // crosses into the 5s rest phase in one tick
+    });
+
+    expect(result.current.phase).toBe("rest");
+    // Exactly one ring for this tick (the transition), not two — the
+    // warning for the same tick is deferred to the next one.
+    expect(vi.mocked(bell.ring).mock.calls.length - ringsBeforeTransition).toBe(
+      1
+    );
+    const ringsAfterTransition = vi.mocked(bell.ring).mock.calls.length;
+
+    act(() => {
+      vi.advanceTimersByTime(200); // next tick: the deferred warning fires here
+    });
+
+    expect(vi.mocked(bell.ring).mock.calls.length - ringsAfterTransition).toBe(
+      1
+    );
+  });
+
   it("should ring the bell exactly once when a single recompute skips multiple phase transitions", () => {
     const bell = makeBellPort();
     const config = buildTimerConfiguration({

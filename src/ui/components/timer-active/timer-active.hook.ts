@@ -85,15 +85,29 @@ export function useTimerActive(
       if (!current || current.status !== "running") return;
 
       const next = advanceTimerSession(current, at);
+      let rangThisTick = false;
 
       if (next !== current) {
         sessionRef.current = next;
         warnedPhaseKeyRef.current = null;
         setSession(next);
-        if (configRef.current?.bellSound) bellRef.current.ring();
+        if (configRef.current?.bellSound) {
+          bellRef.current.ring();
+          rangThisTick = true;
+        }
       }
 
-      if (next.status === "running" && configRef.current?.warnBeforeEnd) {
+      // Skip the warning check on a tick that already rang for a transition:
+      // a phase shorter than WARNING_SECONDS is already inside its own
+      // warning window from the instant it starts, and firing both rings
+      // synchronously restarts the shared <audio> element mid-playback,
+      // cutting the first one off. Leaving `warnedPhaseKeyRef` unset lets
+      // the very next tick fire the warning ~TICK_MS later instead.
+      if (
+        !rangThisTick &&
+        next.status === "running" &&
+        configRef.current?.warnBeforeEnd
+      ) {
         const remaining = computeRemainingSeconds(next, at);
         const phaseKey = `${next.round}-${next.phase}`;
         if (
@@ -163,6 +177,12 @@ export function useTimerActive(
     router.push("/timers");
   }, [router]);
 
+  // Invariant relied on here: for an authenticated caller, the route
+  // composition root always supplies `initialConfiguration` or calls
+  // `notFound()` before this component ever mounts (mirroring the existing
+  // `[id]/edit` route) — an authenticated session with no config is not a
+  // reachable "loading forever" state, only an unauthenticated/guest one
+  // waiting on `useGuestTimerConfigurationLookup`.
   const status: TimerActiveStatus = configError
     ? "error"
     : !config
