@@ -47,9 +47,9 @@ Decision resolved (2026-07-27): user confirmed chained PRs with `stacked-to-main
 
 **Depends on**: Slice 1 + Slice 2. **Enables**: nothing further (final slice).
 
-- [ ] 3.1 RED `src/app/timers/[id]/active/__tests__/page.test.tsx`: awaits `params` before use; authenticated + record exists → fetches server-side, passes `initialConfiguration` **[spec: Authenticated, record exists]**; authenticated + missing record → calls `notFound()` **[spec: Authenticated, record missing]**; rethrows non-not-found errors; guest identity → passes only `timerId`, no server-side fetch, no redirect **[spec: Guest identity]**.
-- [ ] 3.2 GREEN `src/app/timers/[id]/active/page.tsx`: mirrors `[id]/edit/page.tsx` (`force-dynamic`, `getCurrentSession`, `getTimerConfiguration` + `notFound()` on `TimerConfigurationNotFound`), renders `TimerActive` with no `<h1>` (chrome-free).
-- [ ] 3.3 Modify `src/ui/components/timer-configuration-card/timer-configuration-card.tsx`: add `Play` icon `Button asChild variant="ghost" size="icon"` wrapping `<Link href={/timers/${id}/active}>`, left of the existing Pencil action **[spec: Start a session, design D14]**. Card stays hook-free — no new test.
+- [x] 3.1 RED `src/app/timers/[id]/active/__tests__/page.test.tsx`: awaits `params` before use; authenticated + record exists → fetches server-side, passes `initialConfiguration` **[spec: Authenticated, record exists]**; authenticated + missing record → calls `notFound()` **[spec: Authenticated, record missing]**; rethrows non-not-found errors; guest identity → passes only `timerId`, no server-side fetch, no redirect **[spec: Guest identity]**.
+- [x] 3.2 GREEN `src/app/timers/[id]/active/page.tsx`: mirrors `[id]/edit/page.tsx` (`force-dynamic`, `getCurrentSession`, `getTimerConfiguration` + `notFound()` on `TimerConfigurationNotFound`), renders `TimerActive` with no `<h1>` (chrome-free).
+- [x] 3.3 Modify `src/ui/components/timer-configuration-card/timer-configuration-card.tsx`: add `Play` icon `Button asChild variant="ghost" size="icon"` wrapping `<Link href={/timers/${id}/active}>`, left of the existing Pencil action **[spec: Start a session, design D14]**. Card stays hook-free — no new test.
 
 ## Non-Goals (carried from spec, do not implement)
 
