@@ -3,13 +3,12 @@
 import { useMemo } from "react";
 
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
-import type { TimerConfigurationRepositoryPort } from "@/application/ports/timer-configuration-repository.port";
+import type {
+  GuestTimerConfigurationInput,
+  GuestTimerConfigurationPort,
+} from "@/application/ports/guest-timer-configuration.port";
 import type { Result } from "@/application/timer-configuration/timer-configuration-result";
 import { toTimerConfigurationErrorCode } from "@/application/timer-configuration/timer-configuration-result";
-import { listTimerConfigurations } from "@/application/use-cases/list-timer-configuration/list-timer-configuration";
-import { createTimerConfiguration } from "@/application/use-cases/create-timer-configuration/create-timer-configuration";
-import { updateTimerConfiguration } from "@/application/use-cases/update-timer-configuration/update-timer-configuration";
-import { deleteTimerConfiguration } from "@/application/use-cases/delete-timer-configuration/delete-timer-configuration";
 import { listTimerConfigurationsAction } from "@/infraestructure/actions/list-timer-configuration/list-timer-configuration.action";
 import { createTimerConfigurationAction } from "@/infraestructure/actions/create-timer-configuration/create-timer-configuration.action";
 import { updateTimerConfigurationAction } from "@/infraestructure/actions/update-timer-configuration/update-timer-configuration.action";
@@ -30,11 +29,15 @@ export interface TimerConfigurationOperations {
 // parameter below so tests can inject a fake at the port boundary.
 const defaultLocalAdapter = createLocalTimerConfigurationAdapter();
 
-// D1: the guest branch always runs through the same application use case as
-// the authenticated Server Action, never `localAdapter.xxx()` directly, so
-// domain validation (`validateTimerConfiguration`) is never skipped for
-// guests only. Rejections are mapped to the same `Result<T>` shape as the
-// actions, so the calling component never knows which branch ran.
+// D3: guest single-record storage strips `id`/`name` before every write —
+// the adapter owns both (fixed name, id generated/reused internally).
+function toGuestTimerInput(
+  config: TimerConfiguration | Omit<TimerConfiguration, "id">
+): GuestTimerConfigurationInput {
+  const { id: _id, name: _name, ...input } = config as TimerConfiguration;
+  return input;
+}
+
 async function toGuestResult<T>(
   operation: () => Promise<T>
 ): Promise<Result<T>> {
@@ -48,7 +51,7 @@ async function toGuestResult<T>(
 
 export function useTimerConfigurations(
   isAuthenticated: boolean,
-  localAdapter: TimerConfigurationRepositoryPort = defaultLocalAdapter
+  localAdapter: GuestTimerConfigurationPort = defaultLocalAdapter
 ): TimerConfigurationOperations {
   return useMemo<TimerConfigurationOperations>(() => {
     if (isAuthenticated) {
@@ -62,23 +65,15 @@ export function useTimerConfigurations(
 
     return {
       list: () =>
-        toGuestResult(() =>
-          listTimerConfigurations({ repository: localAdapter })()
-        ),
+        toGuestResult(async () => {
+          const record = await localAdapter.read();
+          return record ? [record] : [];
+        }),
       create: (config) =>
-        toGuestResult(() =>
-          createTimerConfiguration({ repository: localAdapter })(config)
-        ),
+        toGuestResult(() => localAdapter.write(toGuestTimerInput(config))),
       update: (config) =>
-        toGuestResult(() =>
-          updateTimerConfiguration({ repository: localAdapter })(config)
-        ),
-      remove: (id) =>
-        toGuestResult(() =>
-          deleteTimerConfiguration({ repository: localAdapter })(id).then(
-            () => null
-          )
-        ),
+        toGuestResult(() => localAdapter.write(toGuestTimerInput(config))),
+      remove: () => toGuestResult(() => localAdapter.clear().then(() => null)),
     };
   }, [isAuthenticated, localAdapter]);
 }

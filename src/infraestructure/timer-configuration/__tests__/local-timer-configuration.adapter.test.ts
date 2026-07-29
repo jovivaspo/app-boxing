@@ -4,92 +4,99 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders__/timer-configuration.builder";
 import { createLocalTimerConfigurationAdapter } from "../local-timer-configuration.adapter";
 
+function buildInput(
+  overrides: Partial<ReturnType<typeof buildTimerConfiguration>> = {}
+) {
+  const { id: _id, name: _name, ...rest } = buildTimerConfiguration(overrides);
+  return rest;
+}
+
 describe("createLocalTimerConfigurationAdapter", () => {
   beforeEach(() => {
     window.localStorage.clear();
   });
 
-  it("should assign a generated id and resolve with the persisted record on create", async () => {
+  it("should persist the record under the guest-timer key so read() returns it", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
-    const { id: _id, ...configWithoutId } = buildTimerConfiguration();
 
-    const created = await adapter.create(configWithoutId);
+    const written = await adapter.write(buildInput());
+    const stored = window.localStorage.getItem("guest-timer");
 
-    expect(created).toEqual({ ...configWithoutId, id: expect.any(String) });
+    expect(stored).not.toBeNull();
+    await expect(adapter.read()).resolves.toEqual(written);
   });
 
-  it("should persist the created record so it appears in a subsequent list()", async () => {
+  it("should overwrite the stored record on a second write instead of appending", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
-    const { id: _id, ...configWithoutId } = buildTimerConfiguration();
+    const first = await adapter.write(buildInput({ rounds: 5 }));
 
-    const created = await adapter.create(configWithoutId);
-    const all = await adapter.list();
+    const second = await adapter.write(buildInput({ rounds: 9 }));
 
-    expect(all).toEqual([created]);
+    expect(second.id).toBe(first.id);
+    await expect(adapter.read()).resolves.toEqual(second);
   });
 
-  it("should resolve list() with an empty array when nothing is stored", async () => {
+  it("should resolve read() with null when nothing is stored", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
 
-    const all = await adapter.list();
-
-    expect(all).toEqual([]);
+    await expect(adapter.read()).resolves.toBeNull();
   });
 
-  it("should resolve with the matching record when getById is called with a stored id", async () => {
+  it("should throw InvalidTimerConfiguration when write() is called with non-positive rounds", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
-    const { id: _id, ...configWithoutId } = buildTimerConfiguration();
-    const created = await adapter.create(configWithoutId);
 
-    const found = await adapter.getById(created.id);
-
-    expect(found).toEqual(created);
+    await expect(
+      adapter.write(buildInput({ rounds: 0 }))
+    ).rejects.toMatchObject({ _tag: "InvalidTimerConfiguration" });
   });
 
-  it("should reject with timerConfigurationNotFound when getById finds no matching record", async () => {
+  it("should throw InvalidTimerConfiguration when write() is called with non-positive roundDuration", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
 
-    await expect(adapter.getById("does-not-exist")).rejects.toMatchObject({
-      _tag: "TimerConfigurationNotFound",
-    });
+    await expect(
+      adapter.write(buildInput({ roundDuration: 0 }))
+    ).rejects.toMatchObject({ _tag: "InvalidTimerConfiguration" });
   });
 
-  it("should persist and resolve with the new values when updating an existing configuration", async () => {
+  it("should throw InvalidTimerConfiguration when write() is called with non-positive restDuration", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
-    const { id: _id, ...configWithoutId } = buildTimerConfiguration();
-    const created = await adapter.create(configWithoutId);
 
-    const updated = await adapter.update({ ...created, name: "Renamed" });
-
-    expect(updated).toEqual({ ...created, name: "Renamed" });
-    await expect(adapter.list()).resolves.toEqual([updated]);
+    await expect(
+      adapter.write(buildInput({ restDuration: 0 }))
+    ).rejects.toMatchObject({ _tag: "InvalidTimerConfiguration" });
   });
 
-  it("should reject with timerConfigurationNotFound when updating a missing configuration", async () => {
+  it("should always set name to Mi Timer regardless of any caller-supplied name", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
-    const missing = buildTimerConfiguration({ id: "does-not-exist" });
 
-    await expect(adapter.update(missing)).rejects.toMatchObject({
-      _tag: "TimerConfigurationNotFound",
-    });
+    const written = await adapter.write(buildInput());
+
+    expect(written.name).toBe("Mi Timer");
   });
 
-  it("should remove the record so it no longer appears in a subsequent list() on delete", async () => {
+  it("should remove the stored record on clear() so a subsequent read() resolves null", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
-    const { id: _id, ...configWithoutId } = buildTimerConfiguration();
-    const created = await adapter.create(configWithoutId);
+    await adapter.write(buildInput());
 
-    await adapter.delete(created.id);
+    await adapter.clear();
 
-    await expect(adapter.list()).resolves.toEqual([]);
+    await expect(adapter.read()).resolves.toBeNull();
   });
 
-  it("should reject with timerConfigurationNotFound when deleting a missing configuration", async () => {
+  it("should never read, write, or delete the legacy timer-configurations array key", async () => {
+    window.localStorage.setItem(
+      "timer-configurations",
+      JSON.stringify([buildTimerConfiguration()])
+    );
     const adapter = createLocalTimerConfigurationAdapter();
 
-    await expect(adapter.delete("does-not-exist")).rejects.toMatchObject({
-      _tag: "TimerConfigurationNotFound",
-    });
+    await adapter.write(buildInput());
+    await adapter.read();
+    await adapter.clear();
+
+    expect(window.localStorage.getItem("timer-configurations")).toEqual(
+      JSON.stringify([buildTimerConfiguration()])
+    );
   });
 
   describe("when no `window` is available (SSR)", () => {
@@ -101,42 +108,16 @@ describe("createLocalTimerConfigurationAdapter", () => {
       vi.unstubAllGlobals();
     });
 
-    it("should resolve list() with an empty array", async () => {
+    it("should resolve read() with null", async () => {
       const adapter = createLocalTimerConfigurationAdapter();
 
-      await expect(adapter.list()).resolves.toEqual([]);
+      await expect(adapter.read()).resolves.toBeNull();
     });
 
-    it("should reject create() instead of resolving with an unpersisted record when window is unavailable", async () => {
-      const adapter = createLocalTimerConfigurationAdapter();
-      const { id: _id, ...configWithoutId } = buildTimerConfiguration();
-
-      await expect(adapter.create(configWithoutId)).rejects.toThrow();
-    });
-
-    it("should reject getById() with timerConfigurationNotFound when window is unavailable", async () => {
+    it("should reject write() instead of resolving with an unpersisted record", async () => {
       const adapter = createLocalTimerConfigurationAdapter();
 
-      await expect(adapter.getById("any-id")).rejects.toMatchObject({
-        _tag: "TimerConfigurationNotFound",
-      });
-    });
-
-    it("should reject update() with timerConfigurationNotFound when window is unavailable", async () => {
-      const adapter = createLocalTimerConfigurationAdapter();
-      const config = buildTimerConfiguration();
-
-      await expect(adapter.update(config)).rejects.toMatchObject({
-        _tag: "TimerConfigurationNotFound",
-      });
-    });
-
-    it("should reject delete() with timerConfigurationNotFound when window is unavailable", async () => {
-      const adapter = createLocalTimerConfigurationAdapter();
-
-      await expect(adapter.delete("any-id")).rejects.toMatchObject({
-        _tag: "TimerConfigurationNotFound",
-      });
+      await expect(adapter.write(buildInput())).rejects.toThrow();
     });
   });
 });
