@@ -14,14 +14,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 // Per-entry-point dependency wiring revision: `page.tsx` now constructs
 // `getCurrentSession` inline with `createCookieSessionAdapter()` instead of
 // going through a shared factory module — mock both directly.
-//
-// Migration runner wiring (Issue #20, R1 fix round): the authenticated
-// `<main>` content is no longer wrapped by anything — it renders
-// unconditionally (SSR/no-JS safe). `TimerConfigurationMigrationRunner` is
-// mounted as a sibling that renders nothing and only runs the migration
-// side effect; its hook is mocked directly here so this assertion stays
-// deterministic and independent of the hook's own (separately tested)
-// migration logic.
 
 const getCurrentSessionExecuteMock = vi.fn();
 const getCurrentSessionMock = vi.fn<
@@ -29,7 +21,6 @@ const getCurrentSessionMock = vi.fn<
 >(() => getCurrentSessionExecuteMock);
 const createCookieSessionAdapterMock = vi.fn(() => ({}));
 const redirectMock = vi.fn();
-const useTimerConfigurationMigrationMock = vi.fn();
 
 vi.mock(
   "@/application/use-cases/get-current-session/get-current-session",
@@ -41,13 +32,6 @@ vi.mock(
 vi.mock("@/infraestructure/session/cookie-session.adapter", () => ({
   createCookieSessionAdapter: () => createCookieSessionAdapterMock(),
 }));
-
-vi.mock(
-  "@/ui/components/timer-configuration-migration-runner/timer-configuration-migration-runner.hook",
-  () => ({
-    useTimerConfigurationMigration: () => useTimerConfigurationMigrationMock(),
-  })
-);
 
 vi.mock("next/navigation", () => ({
   redirect: (url: string) => {
@@ -62,7 +46,6 @@ describe("Home page (rewired)", () => {
     getCurrentSessionMock.mockClear();
     createCookieSessionAdapterMock.mockClear();
     redirectMock.mockClear();
-    useTimerConfigurationMigrationMock.mockReset();
   });
 
   it("redirects to /login when getCurrentSession() returns null", async () => {
@@ -74,7 +57,7 @@ describe("Home page (rewired)", () => {
     expect(redirectMock).toHaveBeenCalledWith("/login");
   });
 
-  it("renders the session user's name unconditionally, regardless of the migration runner's hook return", async () => {
+  it("renders the session user's name", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue({
       token: "backend-jwt",
       user: {
@@ -86,14 +69,12 @@ describe("Home page (rewired)", () => {
         createdAt: "2026-01-01T00:00:00.000Z",
       },
     });
-    useTimerConfigurationMigrationMock.mockReturnValue(undefined);
     const { default: Home } = await import("../page");
 
     render(await Home());
 
     expect(redirectMock).not.toHaveBeenCalled();
     expect(screen.getByText("¡Hola, Ada Lovelace!")).toBeInTheDocument();
-    expect(useTimerConfigurationMigrationMock).toHaveBeenCalled();
   });
 
   it("should render a link to /timers", async () => {
@@ -108,7 +89,6 @@ describe("Home page (rewired)", () => {
         createdAt: "2026-01-01T00:00:00.000Z",
       },
     });
-    useTimerConfigurationMigrationMock.mockReturnValue(undefined);
     const { default: Home } = await import("../page");
 
     render(await Home());
