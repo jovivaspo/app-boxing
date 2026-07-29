@@ -95,30 +95,30 @@ Everything else is sequential in the order listed.
 
 ## Group F — Removals (each `[P]` — independent folders, depend on Groups D + E being green so no dangling imports remain)
 
-13. `[P]` Delete `src/infraestructure/actions/migrate-timer-configurations/`
-    (action + `__tests__/`). Grep-confirm no remaining importer.
-14. `[P]` Delete `src/ui/components/timer-configuration-migration-runner/`
-    (component + hook + `index.ts` + `__tests__/`).
-15. `[P]` Delete `src/ui/hooks/use-guest-timer-configuration-lookup.ts` +
-    its `__tests__/` (safe now that Group D steps 8 and 10 no longer import it).
-    Satisfies: spec "Guest Cross-Tab Migration on Login" (removal), "Guest
-    Timer Lookup by Id" (removal).
+13. [x] `[P]` Delete `src/infraestructure/actions/migrate-timer-configurations/`
+        (action + `__tests__/`). Grep-confirm no remaining importer.
+14. [x] `[P]` Delete `src/ui/components/timer-configuration-migration-runner/`
+        (component + hook + `index.ts` + `__tests__/`).
+15. [x] `[P]` Delete `src/ui/hooks/use-guest-timer-configuration-lookup.ts` +
+        its `__tests__/` (safe now that Group D steps 8 and 10 no longer import it).
+        Satisfies: spec "Guest Cross-Tab Migration on Login" (removal), "Guest
+        Timer Lookup by Id" (removal).
 
 ## Group G — Composition root cleanup (sequential, depends on Group F step 14)
 
-16. **Test first**: update `src/app/__tests__/page.test.tsx` — remove the
-    `useTimerConfigurationMigration` mock and the runner-related assertion;
-    keep redirect/session-render tests. Confirm failing (missing import once
-    step 17 lands, or currently passing-but-asserting-dead-behavior — run to
-    baseline first).
-17. **Implement**: update `src/app/page.tsx` to drop the
-    `TimerConfigurationMigrationRunner` import and JSX usage. Confirm green.
+16. [x] **Test first**: update `src/app/__tests__/page.test.tsx` — remove the
+        `useTimerConfigurationMigration` mock and the runner-related assertion;
+        keep redirect/session-render tests. Confirm failing (missing import once
+        step 17 lands, or currently passing-but-asserting-dead-behavior — run to
+        baseline first).
+17. [x] **Implement**: update `src/app/page.tsx` to drop the
+        `TimerConfigurationMigrationRunner` import and JSX usage. Confirm green.
 
 ## Verification (sequential, depends on all groups)
 
-18. Run full suite: `npm run lint && npx tsc --noEmit && npm run test`.
-    Confirm all authenticated-path tests (use-cases, Server Actions, backend
-    adapter, mapper, domain) are unaffected per design's "Unaffected" list.
+18. [x] Run full suite: `npm run lint && npx tsc --noEmit && npm run test`.
+        Confirm all authenticated-path tests (use-cases, Server Actions, backend
+        adapter, mapper, domain) are unaffected per design's "Unaffected" list.
 
 ---
 
