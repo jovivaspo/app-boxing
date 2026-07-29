@@ -1,20 +1,15 @@
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import type { TimerPhase } from "@/domain/timer-session/timer-session.model";
 import type { BellPort } from "@/application/ports/bell.port";
-import type { GuestTimerConfigurationPort } from "@/application/ports/guest-timer-configuration.port";
 
 export interface TimerActiveProps {
-  isAuthenticated: boolean;
-  initialConfiguration: TimerConfiguration | null;
-  timerId?: string; // guest branch only
+  initialConfiguration: TimerConfiguration;
 }
 
-export type TimerActiveStatus =
-  "loading" | "idle" | "running" | "paused" | "finished" | "error";
+export type TimerActiveStatus = "idle" | "running" | "paused" | "finished";
 
 export interface TimerActiveDeps {
   bell?: BellPort;
-  localAdapter?: GuestTimerConfigurationPort;
 }
 
 export interface UseTimerActiveResult {
@@ -28,7 +23,6 @@ export interface UseTimerActiveResult {
   isWarning: boolean; // warnBeforeEnd && running && remaining <= 10
   showBellChip: boolean;
   showWarnChip: boolean;
-  error: string | null;
   primaryLabel: string; // "INICIAR" | "REANUDAR" | "PAUSA"
   primaryIcon: "play" | "pause";
   onPrimaryAction(): void; // start | resume | pause, depending on status

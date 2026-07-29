@@ -8,10 +8,11 @@ const getCurrentSessionMock = vi.fn<
   (deps: unknown) => typeof getCurrentSessionExecuteMock
 >(() => getCurrentSessionExecuteMock);
 const createCookieSessionAdapterMock = vi.fn(() => ({}));
+const redirectMock = vi.fn();
 const timerConfigurationFormMock = vi.fn(
-  (props: { isAuthenticated: boolean; initialConfiguration: unknown }) => (
+  (props: { initialConfiguration: unknown }) => (
     <div data-testid="timer-configuration-form">
-      {String(props.isAuthenticated)}:{String(props.initialConfiguration)}
+      {String(props.initialConfiguration)}
     </div>
   )
 );
@@ -27,11 +28,16 @@ vi.mock("@/infraestructure/session/cookie-session.adapter", () => ({
   createCookieSessionAdapter: () => createCookieSessionAdapterMock(),
 }));
 
+vi.mock("next/navigation", () => ({
+  redirect: (path: string) => {
+    redirectMock(path);
+    throw new Error("NEXT_REDIRECT");
+  },
+}));
+
 vi.mock("@/ui/components/timer-configuration-form", () => ({
-  TimerConfigurationForm: (props: {
-    isAuthenticated: boolean;
-    initialConfiguration: unknown;
-  }) => timerConfigurationFormMock(props),
+  TimerConfigurationForm: (props: { initialConfiguration: unknown }) =>
+    timerConfigurationFormMock(props),
 }));
 
 describe("New timer page", () => {
@@ -39,10 +45,11 @@ describe("New timer page", () => {
     getCurrentSessionExecuteMock.mockReset();
     getCurrentSessionMock.mockClear();
     createCookieSessionAdapterMock.mockClear();
+    redirectMock.mockClear();
     timerConfigurationFormMock.mockClear();
   });
 
-  it("should render the form with no initialConfiguration and the resolved isAuthenticated flag", async () => {
+  it("should render the form with no initialConfiguration when authenticated", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue({
       token: "backend-jwt",
       user: {
@@ -59,7 +66,16 @@ describe("New timer page", () => {
     render(await NewTimerPage());
 
     expect(screen.getByTestId("timer-configuration-form")).toHaveTextContent(
-      "true:null"
+      "null"
     );
+  });
+
+  it("should redirect to /login when there is no session", async () => {
+    getCurrentSessionExecuteMock.mockResolvedValue(null);
+    const { default: NewTimerPage } = await import("../page");
+
+    await expect(NewTimerPage()).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(redirectMock).toHaveBeenCalledWith("/login");
   });
 });

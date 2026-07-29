@@ -1,15 +1,13 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
-import type { GuestTimerConfigurationPort } from "@/application/ports/guest-timer-configuration.port";
 import type { TimerConfigurationErrorCode } from "@/application/timer-configuration/timer-configuration-result";
 import { splitDuration, toTotalSeconds } from "@/lib/duration";
 import { useTimerConfigurations } from "@/ui/hooks/use-timer-configurations";
-import { createLocalTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/local-timer-configuration.adapter";
 
 import type {
   TimerConfigurationFieldErrors,
@@ -17,12 +15,6 @@ import type {
   TimerConfigurationFormState,
   UseTimerConfigurationFormResult,
 } from "./timer-configuration-form.types";
-
-// A1: browser-only, non-serializable adapter constructed at module scope so
-// it can only run client-side. Exposed as an overridable parameter below so
-// tests can inject a fake at the port boundary; also forwarded into
-// `useTimerConfigurations` so a single instance is injectable in one place.
-const defaultLocalAdapter = createLocalTimerConfigurationAdapter();
 
 const EMPTY_FORM: TimerConfigurationFormState = {
   name: "",
@@ -57,17 +49,12 @@ function toFormState(config: TimerConfiguration): TimerConfigurationFormState {
   };
 }
 
-/** Owns all create/edit form logic (A2), shared by /timers/new and /timers/[id]/edit. */
-export function useTimerConfigurationForm(
-  {
-    isAuthenticated,
-    initialConfiguration,
-    timerId,
-  }: TimerConfigurationFormProps,
-  localAdapter: GuestTimerConfigurationPort = defaultLocalAdapter
-): UseTimerConfigurationFormResult {
+/** Owns all create/edit form logic (A2), authenticated-only, shared by /timers/new and /timers/[id]/edit. */
+export function useTimerConfigurationForm({
+  initialConfiguration,
+}: TimerConfigurationFormProps): UseTimerConfigurationFormResult {
   const router = useRouter();
-  const ops = useTimerConfigurations(isAuthenticated, localAdapter);
+  const ops = useTimerConfigurations(true);
   const [form, setForm] = useState<TimerConfigurationFormState>(
     initialConfiguration ? toFormState(initialConfiguration) : EMPTY_FORM
   );
@@ -76,27 +63,7 @@ export function useTimerConfigurationForm(
   );
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const editingId = initialConfiguration?.id ?? timerId;
-
-  // D3: single-record storage — read() resolves the guest's one stored
-  // config (or null), ignoring `timerId`; never rejects, so no catch needed.
-  useEffect(() => {
-    if (isAuthenticated || !timerId || initialConfiguration) return;
-
-    let cancelled = false;
-    localAdapter.read().then((resolved) => {
-      if (cancelled) return;
-      if (resolved) {
-        setForm(toFormState(resolved));
-      } else {
-        router.replace("/timers");
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated, timerId, initialConfiguration, localAdapter, router]);
+  const editingId = initialConfiguration?.id;
 
   const setName = useCallback(
     (value: string) => setForm((f) => ({ ...f, name: value })),

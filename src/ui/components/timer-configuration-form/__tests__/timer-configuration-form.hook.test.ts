@@ -1,13 +1,11 @@
 // @vitest-environment jsdom
 import type { FormEvent } from "react";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders__/timer-configuration.builder";
-import { makeGuestTimerConfigurationPort } from "@/application/ports/__mocks__/guest-timer-configuration-port.mock";
 
 const pushMock = vi.fn();
-const replaceMock = vi.fn();
 const opsCreateMock = vi.fn();
 const opsUpdateMock = vi.fn();
 const ops = {
@@ -19,7 +17,7 @@ const ops = {
 const useTimerConfigurationsMock = vi.fn(() => ops);
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: pushMock, replace: replaceMock }),
+  useRouter: () => ({ push: pushMock }),
 }));
 
 vi.mock("@/ui/hooks/use-timer-configurations", () => ({
@@ -42,13 +40,9 @@ describe("useTimerConfigurationForm", () => {
       roundDuration: 90,
       restDuration: 45,
     });
-    const localAdapter = makeGuestTimerConfigurationPort();
 
     const { result } = renderHook(() =>
-      useTimerConfigurationForm(
-        { isAuthenticated: true, initialConfiguration: config },
-        localAdapter
-      )
+      useTimerConfigurationForm({ initialConfiguration: config })
     );
 
     expect(result.current.form.roundMinutes).toBe("1");
@@ -58,17 +52,13 @@ describe("useTimerConfigurationForm", () => {
   });
 
   it("should combine minutes and seconds into total seconds on submit", async () => {
-    const localAdapter = makeGuestTimerConfigurationPort();
     opsCreateMock.mockResolvedValue({
       ok: true,
       data: buildTimerConfiguration(),
     });
 
     const { result } = renderHook(() =>
-      useTimerConfigurationForm(
-        { isAuthenticated: true, initialConfiguration: null },
-        localAdapter
-      )
+      useTimerConfigurationForm({ initialConfiguration: null })
     );
 
     act(() => {
@@ -87,13 +77,8 @@ describe("useTimerConfigurationForm", () => {
   });
 
   it("should block submit and set fieldErrors when a combined duration is <= 0", async () => {
-    const localAdapter = makeGuestTimerConfigurationPort();
-
     const { result } = renderHook(() =>
-      useTimerConfigurationForm(
-        { isAuthenticated: true, initialConfiguration: null },
-        localAdapter
-      )
+      useTimerConfigurationForm({ initialConfiguration: null })
     );
 
     await act(async () => {
@@ -106,17 +91,13 @@ describe("useTimerConfigurationForm", () => {
   });
 
   it("should call router.push('/timers') on successful create or update", async () => {
-    const localAdapter = makeGuestTimerConfigurationPort();
     opsCreateMock.mockResolvedValue({
       ok: true,
       data: buildTimerConfiguration(),
     });
 
     const { result } = renderHook(() =>
-      useTimerConfigurationForm(
-        { isAuthenticated: true, initialConfiguration: null },
-        localAdapter
-      )
+      useTimerConfigurationForm({ initialConfiguration: null })
     );
 
     act(() => {
@@ -131,14 +112,10 @@ describe("useTimerConfigurationForm", () => {
   });
 
   it("should map each failure code to its ERROR_CODE_COPY message in formError", async () => {
-    const localAdapter = makeGuestTimerConfigurationPort();
     opsCreateMock.mockResolvedValue({ ok: false, code: "unknown" });
 
     const { result } = renderHook(() =>
-      useTimerConfigurationForm(
-        { isAuthenticated: true, initialConfiguration: null },
-        localAdapter
-      )
+      useTimerConfigurationForm({ initialConfiguration: null })
     );
 
     act(() => {
@@ -151,49 +128,5 @@ describe("useTimerConfigurationForm", () => {
 
     expect(result.current.formError).not.toBeNull();
     expect(pushMock).not.toHaveBeenCalled();
-  });
-
-  it("should pre-fill the form from the injected local adapter's read() for a guest", async () => {
-    const config = buildTimerConfiguration({ id: "tc-1", name: "Mi Timer" });
-    const localAdapter = makeGuestTimerConfigurationPort({
-      read: vi.fn().mockResolvedValue(config),
-    });
-
-    const { result } = renderHook(() =>
-      useTimerConfigurationForm(
-        {
-          isAuthenticated: false,
-          initialConfiguration: null,
-          timerId: "tc-1",
-        },
-        localAdapter
-      )
-    );
-
-    await waitFor(() => expect(localAdapter.read).toHaveBeenCalledWith());
-    await waitFor(() =>
-      expect(result.current.form.roundMinutes).toBe(
-        String(Math.floor(config.roundDuration / 60))
-      )
-    );
-  });
-
-  it("should redirect a guest to /timers when read() resolves null", async () => {
-    const localAdapter = makeGuestTimerConfigurationPort({
-      read: vi.fn().mockResolvedValue(null),
-    });
-
-    renderHook(() =>
-      useTimerConfigurationForm(
-        {
-          isAuthenticated: false,
-          initialConfiguration: null,
-          timerId: "tc-1",
-        },
-        localAdapter
-      )
-    );
-
-    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/timers"));
   });
 });

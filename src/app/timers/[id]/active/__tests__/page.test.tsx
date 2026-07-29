@@ -19,18 +19,12 @@ const createBackendTimerConfigurationAdapterMock = vi.fn(
   (_token: string) => ({})
 );
 const notFoundMock = vi.fn();
-const timerActiveMock = vi.fn(
-  (props: {
-    isAuthenticated: boolean;
-    initialConfiguration: unknown;
-    timerId?: string;
-  }) => (
-    <div data-testid="timer-active">
-      {String(props.isAuthenticated)}:
-      {JSON.stringify(props.initialConfiguration)}:{props.timerId}
-    </div>
-  )
-);
+const redirectMock = vi.fn();
+const timerActiveMock = vi.fn((props: { initialConfiguration: unknown }) => (
+  <div data-testid="timer-active">
+    {JSON.stringify(props.initialConfiguration)}
+  </div>
+));
 
 vi.mock(
   "@/application/use-cases/get-current-session/get-current-session",
@@ -63,14 +57,15 @@ vi.mock("next/navigation", () => ({
     notFoundMock();
     throw new Error("NEXT_NOT_FOUND");
   },
+  redirect: (path: string) => {
+    redirectMock(path);
+    throw new Error("NEXT_REDIRECT");
+  },
 }));
 
 vi.mock("@/ui/components/timer-active", () => ({
-  TimerActive: (props: {
-    isAuthenticated: boolean;
-    initialConfiguration: unknown;
-    timerId?: string;
-  }) => timerActiveMock(props),
+  TimerActive: (props: { initialConfiguration: unknown }) =>
+    timerActiveMock(props),
 }));
 
 const AUTHENTICATED_SESSION = {
@@ -94,11 +89,14 @@ describe("Active timer page", () => {
     getTimerConfigurationMock.mockClear();
     createBackendTimerConfigurationAdapterMock.mockClear();
     notFoundMock.mockClear();
+    redirectMock.mockClear();
     timerActiveMock.mockClear();
   });
 
   it("should await props.params and read id before use", async () => {
-    getCurrentSessionExecuteMock.mockResolvedValue(null);
+    const config = buildTimerConfiguration({ id: "tc-1" });
+    getCurrentSessionExecuteMock.mockResolvedValue(AUTHENTICATED_SESSION);
+    getTimerConfigurationExecuteMock.mockResolvedValue(config);
     const { default: ActiveTimerPage } = await import("../page");
 
     render(
@@ -107,7 +105,7 @@ describe("Active timer page", () => {
       })
     );
 
-    expect(screen.getByTestId("timer-active")).toHaveTextContent("tc-1");
+    expect(getTimerConfigurationExecuteMock).toHaveBeenCalledWith("tc-1");
   });
 
   it("should fetch server-side and pass initialConfiguration when authenticated and the record exists", async () => {
@@ -127,6 +125,18 @@ describe("Active timer page", () => {
     );
   });
 
+  it("should redirect to /login when there is no session", async () => {
+    getCurrentSessionExecuteMock.mockResolvedValue(null);
+    const { default: ActiveTimerPage } = await import("../page");
+
+    await expect(
+      ActiveTimerPage({ params: Promise.resolve({ id: "tc-1" }) })
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(redirectMock).toHaveBeenCalledWith("/login");
+    expect(getTimerConfigurationMock).not.toHaveBeenCalled();
+  });
+
   it("should call notFound() when authenticated and getTimerConfiguration rejects with TimerConfigurationNotFound", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(AUTHENTICATED_SESSION);
     getTimerConfigurationExecuteMock.mockRejectedValue(
@@ -135,9 +145,7 @@ describe("Active timer page", () => {
     const { default: ActiveTimerPage } = await import("../page");
 
     await expect(
-      ActiveTimerPage({
-        params: Promise.resolve({ id: "tc-1" }),
-      })
+      ActiveTimerPage({ params: Promise.resolve({ id: "tc-1" }) })
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
     expect(notFoundMock).toHaveBeenCalledTimes(1);
@@ -150,27 +158,9 @@ describe("Active timer page", () => {
     const { default: ActiveTimerPage } = await import("../page");
 
     await expect(
-      ActiveTimerPage({
-        params: Promise.resolve({ id: "tc-1" }),
-      })
+      ActiveTimerPage({ params: Promise.resolve({ id: "tc-1" }) })
     ).rejects.toBe(backendError);
 
     expect(notFoundMock).not.toHaveBeenCalled();
-  });
-
-  it("should pass only timerId with no server-side fetch for a guest identity", async () => {
-    getCurrentSessionExecuteMock.mockResolvedValue(null);
-    const { default: ActiveTimerPage } = await import("../page");
-
-    render(
-      await ActiveTimerPage({
-        params: Promise.resolve({ id: "tc-1" }),
-      })
-    );
-
-    expect(getTimerConfigurationMock).not.toHaveBeenCalled();
-    expect(screen.getByTestId("timer-active")).toHaveTextContent(
-      "false:null:tc-1"
-    );
   });
 });

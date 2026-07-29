@@ -3,9 +3,7 @@ import type { FormEvent } from "react";
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 
 export interface TimerConfigurationFormProps {
-  isAuthenticated: boolean;
   initialConfiguration: TimerConfiguration | null;
-  timerId?: string;
 }
 
 export interface TimerConfigurationFormState {

@@ -37,25 +37,23 @@ export function TimerConfigurationForm(props: TimerConfigurationFormProps) {
     >
       {formError && <p className="text-destructive text-sm">{formError}</p>}
 
-      {props.isAuthenticated && (
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="name"
-            className="text-muted-foreground font-mono text-xs tracking-widest uppercase"
-          >
-            Nombre del Timer
-          </label>
-          <input
-            type="text"
-            id="name"
-            value={form.name}
-            onChange={(event) => setName(event.target.value)}
-            required
-            placeholder="EJ. SACO PESADO"
-            className="border-border text-primary font-heading placeholder:text-muted-foreground/50 focus:border-primary border-b-2 bg-transparent p-2 text-xl focus:outline-none"
-          />
-        </div>
-      )}
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor="name"
+          className="text-muted-foreground font-mono text-xs tracking-widest uppercase"
+        >
+          Nombre del Timer
+        </label>
+        <input
+          type="text"
+          id="name"
+          value={form.name}
+          onChange={(event) => setName(event.target.value)}
+          required
+          placeholder="EJ. SACO PESADO"
+          className="border-border text-primary font-heading placeholder:text-muted-foreground/50 focus:border-primary border-b-2 bg-transparent p-2 text-xl focus:outline-none"
+        />
+      </div>
 
       <div className="border-border bg-card flex flex-col gap-2 border-2 p-6">
         <span className="text-tertiary font-mono text-xs tracking-widest uppercase">

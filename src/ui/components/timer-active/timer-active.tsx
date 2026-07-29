@@ -38,24 +38,11 @@ export function TimerActive(props: TimerActiveProps) {
     isWarning,
     showBellChip,
     showWarnChip,
-    error,
     primaryLabel,
     primaryIcon,
     onPrimaryAction,
     stop,
   } = useTimerActive(props);
-
-  if (status === "loading") {
-    return (
-      <div
-        aria-busy="true"
-        aria-label="Cargando timer"
-        className="bg-background flex min-h-screen flex-col items-center justify-center p-4"
-      >
-        <div className="border-border size-72 animate-pulse rounded-full border-8" />
-      </div>
-    );
-  }
 
   if (status === "finished") {
     return (
@@ -77,22 +64,6 @@ export function TimerActive(props: TimerActiveProps) {
         <Button
           asChild
           className="font-heading h-16 w-full max-w-md rounded-none text-lg uppercase italic"
-        >
-          <Link href="/timers">VOLVER A MIS TIMERS</Link>
-        </Button>
-      </div>
-    );
-  }
-
-  if (status === "error") {
-    return (
-      <div className="bg-background flex min-h-screen flex-col items-center justify-center gap-4 p-4">
-        <p className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
-          {error}
-        </p>
-        <Button
-          asChild
-          className="font-heading rounded-none text-sm uppercase italic"
         >
           <Link href="/timers">VOLVER A MIS TIMERS</Link>
         </Button>

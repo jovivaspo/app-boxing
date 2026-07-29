@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 import { getCurrentSession } from "@/application/use-cases/get-current-session/get-current-session";
@@ -9,9 +9,6 @@ import { TimerActive } from "@/ui/components/timer-active";
 
 // See src/app/page.tsx for why session-gated routes must force dynamic
 // rendering rather than rely on Next.js's build-time dynamic-API detection.
-// This route is NOT session-gated (guest access is intentional), but it
-// still resolves the session to decide auth vs. guest, so the same
-// dynamic-rendering rule applies.
 export const dynamic = "force-dynamic";
 
 type ActiveTimerPageProps = {
@@ -26,15 +23,7 @@ export default async function ActiveTimerPage(props: ActiveTimerPageProps) {
   })();
 
   if (!session) {
-    // D14/route section: guest identities resolve the configuration
-    // client-side over the injected local adapter — no server-side lookup.
-    return (
-      <TimerActive
-        isAuthenticated={false}
-        initialConfiguration={null}
-        timerId={id}
-      />
-    );
+    redirect("/login");
   }
 
   let initialConfiguration;
@@ -49,7 +38,5 @@ export default async function ActiveTimerPage(props: ActiveTimerPageProps) {
     throw error;
   }
 
-  return (
-    <TimerActive isAuthenticated initialConfiguration={initialConfiguration} />
-  );
+  return <TimerActive initialConfiguration={initialConfiguration} />;
 }
