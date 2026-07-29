@@ -58,40 +58,40 @@ Everything else is sequential in the order listed.
 
 ## Group D — Consumer hooks (each `[P]` — independent files, both depend on Group A only)
 
-7. `[P]` **Test first**: update
-   `src/ui/components/timer-active/__tests__/timer-active.hook.test.ts` —
-   swap all 19 `makeTimerConfigurationRepositoryPort()` occurrences to
-   `makeGuestTimerConfigurationPort()`; rewrite the two guest-specific tests
-   ("resolve the guest configuration using timerId" and "redirect a guest to
-   /timers when not found") to mock `read()` instead of `getById()`, assert
-   `read()` is called with no id argument, and mock `read()` resolving `null`
-   for the not-found case instead of a rejected `timerConfigurationNotFound`.
-   Confirm failing.
-8. `[P]` **Implement**: update `src/ui/components/timer-active/timer-active.hook.ts`
-   per D4 — inline `localAdapter.read()` resolution in the effect, drop
-   `useGuestTimerConfigurationLookup` import and the try/catch (read() never
-   rejects), retype `defaultLocalAdapter`/`TimerActiveDeps.localAdapter` to
-   `GuestTimerConfigurationPort`. Confirm green.
-   Satisfies: spec "Guest Timer Lookup by Id" (removal), "Edit target missing"
-   scenario (guest redirect branch).
-9. `[P]` **Test first**: update
-   `src/ui/components/timer-configuration-form/__tests__/timer-configuration-form.hook.test.ts` —
-   swap all 7 mock occurrences the same way as step 7. Confirm failing.
-10. `[P]` **Implement**: update
-    `src/ui/components/timer-configuration-form/timer-configuration-form.hook.ts`
-    per D5 (same inline pattern as D4). Confirm green.
+7. [x] `[P]` **Test first**: update
+       `src/ui/components/timer-active/__tests__/timer-active.hook.test.ts` —
+       swap all 19 `makeTimerConfigurationRepositoryPort()` occurrences to
+       `makeGuestTimerConfigurationPort()`; rewrite the two guest-specific tests
+       ("resolve the guest configuration using timerId" and "redirect a guest to
+       /timers when not found") to mock `read()` instead of `getById()`, assert
+       `read()` is called with no id argument, and mock `read()` resolving `null`
+       for the not-found case instead of a rejected `timerConfigurationNotFound`.
+       Confirm failing.
+8. [x] `[P]` **Implement**: update `src/ui/components/timer-active/timer-active.hook.ts`
+       per D4 — inline `localAdapter.read()` resolution in the effect, drop
+       `useGuestTimerConfigurationLookup` import and the try/catch (read() never
+       rejects), retype `defaultLocalAdapter`/`TimerActiveDeps.localAdapter` to
+       `GuestTimerConfigurationPort`. Confirm green.
+       Satisfies: spec "Guest Timer Lookup by Id" (removal), "Edit target missing"
+       scenario (guest redirect branch).
+9. [x] `[P]` **Test first**: update
+       `src/ui/components/timer-configuration-form/__tests__/timer-configuration-form.hook.test.ts` —
+       swap all 7 mock occurrences the same way as step 7. Confirm failing.
+10. [x] `[P]` **Implement**: update
+        `src/ui/components/timer-configuration-form/timer-configuration-form.hook.ts`
+        per D5 (same inline pattern as D4). Confirm green.
 
 ## Group E — Guest form hides name field (sequential, depends on Group D step 10)
 
-11. **Test first**: since `timer-configuration-form.tsx` is presentational
-    and untested per AGENTS.md convention, this step has no new unit test —
-    it's covered by the existing `timer-configuration-form.hook.test.ts`
-    (form state) plus manual/E2E verification of the conditional render.
-    Skip to implementation.
-12. **Implement**: update `src/ui/components/timer-configuration-form/timer-configuration-form.tsx`
-    to wrap the name `<input>` block in `{props.isAuthenticated && (...)}` per D6.
-    Satisfies: spec "Timer configuration form screen" scenario "Guest form
-    hides the name field".
+11. [x] **Test first**: since `timer-configuration-form.tsx` is presentational
+        and untested per AGENTS.md convention, this step has no new unit test —
+        it's covered by the existing `timer-configuration-form.hook.test.ts`
+        (form state) plus manual/E2E verification of the conditional render.
+        Skip to implementation.
+12. [x] **Implement**: update `src/ui/components/timer-configuration-form/timer-configuration-form.tsx`
+        to wrap the name `<input>` block in `{props.isAuthenticated && (...)}` per D6.
+        Satisfies: spec "Timer configuration form screen" scenario "Guest form
+        hides the name field".
 
 ## Group F — Removals (each `[P]` — independent folders, depend on Groups D + E being green so no dangling imports remain)
 

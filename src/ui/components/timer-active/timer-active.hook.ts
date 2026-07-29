@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { createHtmlAudioBellAdapter } from "@/infraestructure/audio/bell.adapter";
 import { createLocalTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/local-timer-configuration.adapter";
 import { formatDuration } from "@/lib/duration";
-import { useGuestTimerConfigurationLookup } from "@/ui/hooks/use-guest-timer-configuration-lookup";
+import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import {
   advanceTimerSession,
   elapsedFraction as computeElapsedFraction,
@@ -44,14 +44,32 @@ export function useTimerActive(
   const localAdapter = deps.localAdapter ?? defaultLocalAdapter;
   const router = useRouter();
 
-  const { config: guestConfig, notFound: configError } =
-    useGuestTimerConfigurationLookup(
-      isAuthenticated,
-      timerId,
-      initialConfiguration,
-      localAdapter,
-      router
-    );
+  const [guestConfig, setGuestConfig] = useState<TimerConfiguration | null>(
+    null
+  );
+  const [configError, setConfigError] = useState(false);
+
+  // D3: single-record storage — read() resolves the guest's one stored
+  // config (or null), ignoring `timerId`; never rejects, so no catch needed.
+  useEffect(() => {
+    if (isAuthenticated || !timerId || initialConfiguration) return;
+
+    let cancelled = false;
+    localAdapter.read().then((resolved) => {
+      if (cancelled) return;
+      if (resolved) {
+        setGuestConfig(resolved);
+      } else {
+        setConfigError(true);
+        router.replace("/timers");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, timerId, initialConfiguration, localAdapter, router]);
+
   const config = initialConfiguration ?? guestConfig;
   const [session, setSession] = useState<TimerSessionState | null>(null);
   const [now, setNow] = useState<number>(() => Date.now());

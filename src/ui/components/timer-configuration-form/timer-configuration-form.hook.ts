@@ -1,15 +1,14 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
-import type { TimerConfigurationRepositoryPort } from "@/application/ports/timer-configuration-repository.port";
+import type { GuestTimerConfigurationPort } from "@/application/ports/guest-timer-configuration.port";
 import type { TimerConfigurationErrorCode } from "@/application/timer-configuration/timer-configuration-result";
 import { splitDuration, toTotalSeconds } from "@/lib/duration";
 import { useTimerConfigurations } from "@/ui/hooks/use-timer-configurations";
-import { useGuestTimerConfigurationLookup } from "@/ui/hooks/use-guest-timer-configuration-lookup";
 import { createLocalTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/local-timer-configuration.adapter";
 
 import type {
@@ -65,7 +64,7 @@ export function useTimerConfigurationForm(
     initialConfiguration,
     timerId,
   }: TimerConfigurationFormProps,
-  localAdapter: TimerConfigurationRepositoryPort = defaultLocalAdapter
+  localAdapter: GuestTimerConfigurationPort = defaultLocalAdapter
 ): UseTimerConfigurationFormResult {
   const router = useRouter();
   const ops = useTimerConfigurations(isAuthenticated, localAdapter);
@@ -79,14 +78,25 @@ export function useTimerConfigurationForm(
   const [isSubmitting, setIsSubmitting] = useState(false);
   const editingId = initialConfiguration?.id ?? timerId;
 
-  useGuestTimerConfigurationLookup(
-    isAuthenticated,
-    timerId,
-    initialConfiguration,
-    localAdapter,
-    router,
-    (resolved) => setForm(toFormState(resolved))
-  );
+  // D3: single-record storage — read() resolves the guest's one stored
+  // config (or null), ignoring `timerId`; never rejects, so no catch needed.
+  useEffect(() => {
+    if (isAuthenticated || !timerId || initialConfiguration) return;
+
+    let cancelled = false;
+    localAdapter.read().then((resolved) => {
+      if (cancelled) return;
+      if (resolved) {
+        setForm(toFormState(resolved));
+      } else {
+        router.replace("/timers");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, timerId, initialConfiguration, localAdapter, router]);
 
   const setName = useCallback(
     (value: string) => setForm((f) => ({ ...f, name: value })),

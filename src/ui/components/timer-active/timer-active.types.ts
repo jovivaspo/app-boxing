@@ -1,7 +1,7 @@
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import type { TimerPhase } from "@/domain/timer-session/timer-session.model";
 import type { BellPort } from "@/application/ports/bell.port";
-import type { TimerConfigurationRepositoryPort } from "@/application/ports/timer-configuration-repository.port";
+import type { GuestTimerConfigurationPort } from "@/application/ports/guest-timer-configuration.port";
 
 export interface TimerActiveProps {
   isAuthenticated: boolean;
@@ -14,7 +14,7 @@ export type TimerActiveStatus =
 
 export interface TimerActiveDeps {
   bell?: BellPort;
-  localAdapter?: TimerConfigurationRepositoryPort;
+  localAdapter?: GuestTimerConfigurationPort;
 }
 
 export interface UseTimerActiveResult {

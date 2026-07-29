@@ -4,8 +4,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders__/timer-configuration.builder";
-import { makeTimerConfigurationRepositoryPort } from "@/application/ports/__mocks__/timer-configuration-repository-port.mock";
-import { timerConfigurationNotFound } from "@/domain/errors/timer-configuration-errors";
+import { makeGuestTimerConfigurationPort } from "@/application/ports/__mocks__/guest-timer-configuration-port.mock";
 
 const pushMock = vi.fn();
 const replaceMock = vi.fn();
@@ -43,7 +42,7 @@ describe("useTimerConfigurationForm", () => {
       roundDuration: 90,
       restDuration: 45,
     });
-    const localAdapter = makeTimerConfigurationRepositoryPort();
+    const localAdapter = makeGuestTimerConfigurationPort();
 
     const { result } = renderHook(() =>
       useTimerConfigurationForm(
@@ -59,7 +58,7 @@ describe("useTimerConfigurationForm", () => {
   });
 
   it("should combine minutes and seconds into total seconds on submit", async () => {
-    const localAdapter = makeTimerConfigurationRepositoryPort();
+    const localAdapter = makeGuestTimerConfigurationPort();
     opsCreateMock.mockResolvedValue({
       ok: true,
       data: buildTimerConfiguration(),
@@ -88,7 +87,7 @@ describe("useTimerConfigurationForm", () => {
   });
 
   it("should block submit and set fieldErrors when a combined duration is <= 0", async () => {
-    const localAdapter = makeTimerConfigurationRepositoryPort();
+    const localAdapter = makeGuestTimerConfigurationPort();
 
     const { result } = renderHook(() =>
       useTimerConfigurationForm(
@@ -107,7 +106,7 @@ describe("useTimerConfigurationForm", () => {
   });
 
   it("should call router.push('/timers') on successful create or update", async () => {
-    const localAdapter = makeTimerConfigurationRepositoryPort();
+    const localAdapter = makeGuestTimerConfigurationPort();
     opsCreateMock.mockResolvedValue({
       ok: true,
       data: buildTimerConfiguration(),
@@ -132,7 +131,7 @@ describe("useTimerConfigurationForm", () => {
   });
 
   it("should map each failure code to its ERROR_CODE_COPY message in formError", async () => {
-    const localAdapter = makeTimerConfigurationRepositoryPort();
+    const localAdapter = makeGuestTimerConfigurationPort();
     opsCreateMock.mockResolvedValue({ ok: false, code: "unknown" });
 
     const { result } = renderHook(() =>
@@ -154,9 +153,34 @@ describe("useTimerConfigurationForm", () => {
     expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it("should redirect a guest editing a missing id via router.replace('/timers')", async () => {
-    const localAdapter = makeTimerConfigurationRepositoryPort({
-      getById: vi.fn().mockRejectedValue(timerConfigurationNotFound("tc-1")),
+  it("should pre-fill the form from the injected local adapter's read() for a guest", async () => {
+    const config = buildTimerConfiguration({ id: "tc-1", name: "Mi Timer" });
+    const localAdapter = makeGuestTimerConfigurationPort({
+      read: vi.fn().mockResolvedValue(config),
+    });
+
+    const { result } = renderHook(() =>
+      useTimerConfigurationForm(
+        {
+          isAuthenticated: false,
+          initialConfiguration: null,
+          timerId: "tc-1",
+        },
+        localAdapter
+      )
+    );
+
+    await waitFor(() => expect(localAdapter.read).toHaveBeenCalledWith());
+    await waitFor(() =>
+      expect(result.current.form.roundMinutes).toBe(
+        String(Math.floor(config.roundDuration / 60))
+      )
+    );
+  });
+
+  it("should redirect a guest to /timers when read() resolves null", async () => {
+    const localAdapter = makeGuestTimerConfigurationPort({
+      read: vi.fn().mockResolvedValue(null),
     });
 
     renderHook(() =>

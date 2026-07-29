@@ -4,9 +4,8 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders__/timer-configuration.builder";
-import { makeTimerConfigurationRepositoryPort } from "@/application/ports/__mocks__/timer-configuration-repository-port.mock";
+import { makeGuestTimerConfigurationPort } from "@/application/ports/__mocks__/guest-timer-configuration-port.mock";
 import { makeBellPort } from "@/application/ports/__mocks__/bell-port.mock";
-import { timerConfigurationNotFound } from "@/domain/errors/timer-configuration-errors";
 
 const pushMock = vi.fn();
 const replaceMock = vi.fn();
@@ -34,7 +33,7 @@ describe("useTimerActive", () => {
         { isAuthenticated: true, initialConfiguration: config },
         {
           bell: makeBellPort(),
-          localAdapter: makeTimerConfigurationRepositoryPort(),
+          localAdapter: makeGuestTimerConfigurationPort(),
         }
       )
     );
@@ -53,7 +52,7 @@ describe("useTimerActive", () => {
     const { result } = renderHook(() =>
       useTimerActive(
         { isAuthenticated: true, initialConfiguration: config },
-        { bell, localAdapter: makeTimerConfigurationRepositoryPort() }
+        { bell, localAdapter: makeGuestTimerConfigurationPort() }
       )
     );
 
@@ -71,7 +70,7 @@ describe("useTimerActive", () => {
     const { result } = renderHook(() =>
       useTimerActive(
         { isAuthenticated: true, initialConfiguration: config },
-        { bell, localAdapter: makeTimerConfigurationRepositoryPort() }
+        { bell, localAdapter: makeGuestTimerConfigurationPort() }
       )
     );
 
@@ -95,7 +94,7 @@ describe("useTimerActive", () => {
       () =>
         useTimerActive(
           { isAuthenticated: true, initialConfiguration: config },
-          { bell, localAdapter: makeTimerConfigurationRepositoryPort() }
+          { bell, localAdapter: makeGuestTimerConfigurationPort() }
         ),
       { wrapper: StrictMode }
     );
@@ -122,7 +121,7 @@ describe("useTimerActive", () => {
     const { result } = renderHook(() =>
       useTimerActive(
         { isAuthenticated: true, initialConfiguration: config },
-        { bell, localAdapter: makeTimerConfigurationRepositoryPort() }
+        { bell, localAdapter: makeGuestTimerConfigurationPort() }
       )
     );
 
@@ -149,7 +148,7 @@ describe("useTimerActive", () => {
     const { result } = renderHook(() =>
       useTimerActive(
         { isAuthenticated: true, initialConfiguration: config },
-        { bell, localAdapter: makeTimerConfigurationRepositoryPort() }
+        { bell, localAdapter: makeGuestTimerConfigurationPort() }
       )
     );
 
@@ -182,7 +181,7 @@ describe("useTimerActive", () => {
     const { result } = renderHook(() =>
       useTimerActive(
         { isAuthenticated: true, initialConfiguration: config },
-        { bell, localAdapter: makeTimerConfigurationRepositoryPort() }
+        { bell, localAdapter: makeGuestTimerConfigurationPort() }
       )
     );
 
@@ -220,7 +219,7 @@ describe("useTimerActive", () => {
     const { result } = renderHook(() =>
       useTimerActive(
         { isAuthenticated: true, initialConfiguration: config },
-        { bell, localAdapter: makeTimerConfigurationRepositoryPort() }
+        { bell, localAdapter: makeGuestTimerConfigurationPort() }
       )
     );
 
@@ -267,7 +266,7 @@ describe("useTimerActive", () => {
     const { result } = renderHook(() =>
       useTimerActive(
         { isAuthenticated: true, initialConfiguration: config },
-        { bell, localAdapter: makeTimerConfigurationRepositoryPort() }
+        { bell, localAdapter: makeGuestTimerConfigurationPort() }
       )
     );
 
@@ -304,7 +303,7 @@ describe("useTimerActive", () => {
     const { result } = renderHook(() =>
       useTimerActive(
         { isAuthenticated: true, initialConfiguration: config },
-        { bell, localAdapter: makeTimerConfigurationRepositoryPort() }
+        { bell, localAdapter: makeGuestTimerConfigurationPort() }
       )
     );
 
@@ -326,7 +325,7 @@ describe("useTimerActive", () => {
         { isAuthenticated: true, initialConfiguration: config },
         {
           bell: makeBellPort(),
-          localAdapter: makeTimerConfigurationRepositoryPort(),
+          localAdapter: makeGuestTimerConfigurationPort(),
         }
       )
     );
@@ -367,7 +366,7 @@ describe("useTimerActive", () => {
         { isAuthenticated: true, initialConfiguration: config },
         {
           bell: makeBellPort(),
-          localAdapter: makeTimerConfigurationRepositoryPort(),
+          localAdapter: makeGuestTimerConfigurationPort(),
         }
       )
     );
@@ -401,7 +400,7 @@ describe("useTimerActive", () => {
         { isAuthenticated: true, initialConfiguration: config },
         {
           bell: makeBellPort(),
-          localAdapter: makeTimerConfigurationRepositoryPort(),
+          localAdapter: makeGuestTimerConfigurationPort(),
         }
       )
     );
@@ -417,7 +416,7 @@ describe("useTimerActive", () => {
   });
 
   it("should not touch persistence when stop() is called", () => {
-    const localAdapter = makeTimerConfigurationRepositoryPort();
+    const localAdapter = makeGuestTimerConfigurationPort();
     const config = buildTimerConfiguration();
     const { result } = renderHook(() =>
       useTimerActive(
@@ -433,8 +432,7 @@ describe("useTimerActive", () => {
       result.current.stop();
     });
 
-    expect(localAdapter.create).not.toHaveBeenCalled();
-    expect(localAdapter.update).not.toHaveBeenCalled();
+    expect(localAdapter.write).not.toHaveBeenCalled();
   });
 
   it("should recompute the correct round and phase with zero drift after a visibilitychange following a long gap with no ticks", () => {
@@ -448,7 +446,7 @@ describe("useTimerActive", () => {
         { isAuthenticated: true, initialConfiguration: config },
         {
           bell: makeBellPort(),
-          localAdapter: makeTimerConfigurationRepositoryPort(),
+          localAdapter: makeGuestTimerConfigurationPort(),
         }
       )
     );
@@ -472,14 +470,14 @@ describe("useTimerActive", () => {
     expect(result.current.phase).toBe("rest");
   });
 
-  it("should resolve the guest configuration via the injected local adapter using timerId", async () => {
+  it("should resolve the guest configuration via the injected local adapter's read()", async () => {
     // Real timers: RTL's waitFor polls with real setTimeout, which never
     // fires once vi.useFakeTimers() (from beforeEach) is active — this test
     // only awaits promise resolution, no tick simulation needed.
     vi.useRealTimers();
     const config = buildTimerConfiguration({ id: "tc-1", name: "Guest Timer" });
-    const localAdapter = makeTimerConfigurationRepositoryPort({
-      getById: vi.fn().mockResolvedValue(config),
+    const localAdapter = makeGuestTimerConfigurationPort({
+      read: vi.fn().mockResolvedValue(config),
     });
     const { result } = renderHook(() =>
       useTimerActive(
@@ -494,14 +492,14 @@ describe("useTimerActive", () => {
 
     await waitFor(() => expect(result.current.status).toBe("idle"));
 
-    expect(localAdapter.getById).toHaveBeenCalledWith("tc-1");
+    expect(localAdapter.read).toHaveBeenCalledWith();
     expect(result.current.name).toBe("Guest Timer");
   });
 
-  it("should redirect a guest to /timers when the configuration is not found", async () => {
+  it("should redirect a guest to /timers when read() resolves null", async () => {
     vi.useRealTimers();
-    const localAdapter = makeTimerConfigurationRepositoryPort({
-      getById: vi.fn().mockRejectedValue(timerConfigurationNotFound("tc-1")),
+    const localAdapter = makeGuestTimerConfigurationPort({
+      read: vi.fn().mockResolvedValue(null),
     });
 
     const { result } = renderHook(() =>
@@ -530,7 +528,7 @@ describe("useTimerActive", () => {
         { isAuthenticated: true, initialConfiguration: config },
         {
           bell: makeBellPort(),
-          localAdapter: makeTimerConfigurationRepositoryPort(),
+          localAdapter: makeGuestTimerConfigurationPort(),
         }
       )
     );
