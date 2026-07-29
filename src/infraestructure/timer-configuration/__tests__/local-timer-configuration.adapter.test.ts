@@ -58,20 +58,20 @@ describe("createLocalTimerConfigurationAdapter", () => {
     ).rejects.toMatchObject({ _tag: "InvalidTimerConfiguration" });
   });
 
-  it("should throw InvalidTimerConfiguration when write() is called with non-positive restDuration", async () => {
+  it("should not throw when write() is called with non-positive restDuration", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
 
     await expect(
       adapter.write(buildInput({ restDuration: 0 }))
-    ).rejects.toMatchObject({ _tag: "InvalidTimerConfiguration" });
+    ).resolves.toMatchObject({ restDuration: 0 });
   });
 
-  it("should always set name to Mi Timer regardless of any caller-supplied name", async () => {
+  it("should always set name to Guest timer regardless of any caller-supplied name", async () => {
     const adapter = createLocalTimerConfigurationAdapter();
 
     const written = await adapter.write(buildInput());
 
-    expect(written.name).toBe("Mi Timer");
+    expect(written.name).toBe("Guest timer");
   });
 
   it("should remove the stored record on clear() so a subsequent read() resolves null", async () => {

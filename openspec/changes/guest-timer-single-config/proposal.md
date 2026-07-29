@@ -168,3 +168,69 @@ implementation starts (flagged here since this run is non-interactive):
 Assumptions used to write this proposal (correct if wrong): placeholder name
 `"Mi Timer"`, silent-drop of old array data, no telemetry dependency on
 guest timer ids, name field hidden (not read-only) in the guest form.
+
+## Addendum — Issue #37 comments (missed in original exploration/proposal)
+
+Two GitHub comments on Issue #37 (2026-07-28) resolved the open question and
+added scope that PR #38's first pass did not implement. Captured verbatim
+here as the source of truth, since they predate but were not read during the
+original SDD cycle.
+
+### Open Question — resolved (supersedes this proposal's assumption)
+
+> The guest timer will use a hardcoded placeholder name, `"Guest timer"`,
+> never shown in the UI (the guest flow only ever has one timer, so there's
+> no list to render a name in). No schema relaxation needed —
+> `name: z.string()` stays as-is.
+
+**Correction**: placeholder name is `"Guest timer"`, not `"Mi Timer"`. Fix
+`GUEST_NAME` in `local-timer-configuration.adapter.ts`.
+
+### Scope addition: guest routes and START flow
+
+> Building on the single-guest-timer decision above, the guest flow gets two
+> dedicated routes (no id, since there's only ever one guest timer):
+>
+> - `/guest-timer` — the configuration form (no `name` field, since the
+>   guest timer name is now a fixed placeholder). Its primary action is a
+>   **START** button instead of Save.
+> - `/guest-timer-active` — the active timer screen, mirroring
+>   `/timers/[id]/active` but reading the single guest record instead of
+>   resolving by id.
+>
+> **START button**
+>
+> - Disabled until at least one round and a work (round) duration have been
+>   entered.
+> - On click: persist the configuration as the single guest record in
+>   localStorage, then navigate to `/guest-timer-active`.
+>
+> **Guard on `/guest-timer-active`**
+> If there's no guest configuration in localStorage when this route is
+> accessed directly, redirect to `/guest-timer`.
+>
+> **Architecture note — rest duration is guest-only optional**
+> Decision: rest duration is **not** required to enable START for guests
+> (rounds can run back-to-back with no rest). This diverges from the
+> existing domain invariant in `validateTimerConfiguration` (`rounds > 0`,
+> `roundDuration > 0`, `restDuration > 0` — all three required today,
+> `timer-configuration-errors.ts:27-35`).
+>
+> Implication for design/tasks: the guest write path must not go through the
+> shared `validateTimerConfiguration`/`createTimerConfiguration` use case
+> as-is, since that would either reject `restDuration = 0` or require
+> weakening the invariant for authenticated users too (not acceptable). The
+> guest path needs its own validation (rounds > 0 and roundDuration > 0
+> only) rather than reusing the authenticated rule.
+
+**Impact on already-shipped PR #38 code**: `/timers/new`,
+`/timers/[id]/edit`, `/timers/[id]/active` revert to authenticated-only
+routes (no more `isAuthenticated` guest branching in their pages/hooks/form —
+that branching moves to the two new dedicated guest routes/components).
+`local-timer-configuration.adapter.ts`'s `write()` must stop calling the
+shared `validateTimerConfiguration` and use a new guest-only validator
+instead.
+
+This addendum is being implemented as follow-up commits on the same
+`refactor/37-guest-timer-port-adapter` branch / PR #38, per explicit user
+decision (PR not yet merged).

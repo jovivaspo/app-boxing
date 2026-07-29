@@ -1,4 +1,4 @@
-import { validateTimerConfiguration } from "@/domain/errors/timer-configuration-errors";
+import { validateGuestTimerConfiguration } from "@/domain/errors/timer-configuration-errors";
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import type {
   GuestTimerConfigurationInput,
@@ -11,7 +11,7 @@ import {
 } from "@/infraestructure/storage/localStorage";
 
 const STORAGE_KEY = "guest-timer";
-const GUEST_NAME = "Mi Timer";
+const GUEST_NAME = "Guest timer";
 
 /**
  * Creates the `GuestTimerConfigurationPort` implementation backed by
@@ -41,7 +41,7 @@ export function createLocalTimerConfigurationAdapter(): GuestTimerConfigurationP
         id: existing?.id ?? crypto.randomUUID(),
         name: GUEST_NAME,
       };
-      const record = validateTimerConfiguration(candidate);
+      const record = validateGuestTimerConfiguration(candidate);
       setItem(STORAGE_KEY, record);
       return record;
     },

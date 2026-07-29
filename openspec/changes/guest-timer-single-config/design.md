@@ -401,3 +401,60 @@ not moved):
   `timer-configuration-form.hook.test.ts` is repetitive but low-risk —
   flagging so tasks phase doesn't underestimate the line count of "just
   rename a mock."
+
+## Addendum — Issue #37 follow-up (2026-07-29)
+
+Two Issue #37 comments (2026-07-28) were missed in the original cycle above:
+placeholder name correction and a scope addition (dedicated guest routes +
+guest-only validation). This addendum supersedes D6's name-field-hiding
+approach and the "no route file changes" claim — both no longer hold.
+Aligns with specs already updated: `timer-configuration-persistence`,
+`timer-configuration-screens`, `guest-timer-start-flow`.
+
+### Decisions
+
+| Decision                                                    | Choice                                                                                                                                                                                                                                     | Alternatives considered                                                                                                    | Rationale                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Guest validation placement                                  | New `validateGuestTimerConfiguration()` sibling function in `timer-configuration-errors.ts` (domain, no framework imports), generic over `Pick<TimerConfiguration,"rounds"\|"roundDuration">`, throws the same `InvalidTimerConfiguration` | (a) weaken shared `validateTimerConfiguration`'s `restDuration` check; (b) new `InvalidGuestTimerConfiguration` error type | (a) forbidden — spec pins the authenticated invariant unchanged. (b) same failure semantics as the existing error; a second tag adds a switch/catch case everywhere for no behavioral gain                                                                                                                           |
+| Session-tick logic (guest vs. authenticated active screens) | Extract `useTimerSessionEngine(config, onStop, deps)` → `src/ui/hooks/use-timer-session-engine.ts`; both `useTimerActive` and new `useGuestTimerActive` delegate to it                                                                     | Duplicate the ~120-line tick/visibility/cue effect into `guest-timer-active.hook.ts`                                       | The tick/cue logic already only depends on `TimerConfiguration`/`TimerSessionState`, never on identity. Only the config-resolution effect and the stop-navigation target differ. Duplicating a StrictMode-sensitive interval risks the two copies drifting (a warning-suppression fix landing in one, not the other) |
+| Auth gating on reverted routes                              | `/timers/new`, `/timers/[id]/edit`, `/timers/[id]/active` call `redirect("/login")` when no session, mirroring `src/app/page.tsx`/`profile/page.tsx`                                                                                       | Redirect unauthenticated visitors to `/guest-timer`                                                                        | These routes exist for authenticated identities only after the revert; `/login` is the codebase's one existing "session required, none found" pattern — routing a guest into an authenticated form is out of place                                                                                                   |
+| `use-timer-configurations.ts` guest branch                  | Keep unchanged                                                                                                                                                                                                                             | Delete/relocate                                                                                                            | Still the sole guest data path for `/timers` (list) via `timer-configuration-list.hook.ts` — outside this addendum's explicit revert list (new/edit/active only). See Risks.                                                                                                                                         |
+
+### File Changes
+
+| File                                                                                               | Action | Description                                                                                                                                                                                                                            |
+| -------------------------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `domain/errors/timer-configuration-errors.ts`                                                      | Modify | add `validateGuestTimerConfiguration()`                                                                                                                                                                                                |
+| `infraestructure/timer-configuration/local-timer-configuration.adapter.ts`                         | Modify | `GUEST_NAME = "Guest timer"`; `write()` calls the new guest validator                                                                                                                                                                  |
+| `ui/hooks/use-timer-session-engine.ts`                                                             | Create | extracted tick/cue/session engine, `(config, onStop, deps) => UseTimerSessionEngineResult`, status union drops `"error"`                                                                                                               |
+| `ui/components/timer-active/timer-active.hook.ts`, `.types.ts`, `.tsx`                             | Modify | drop `isAuthenticated`/`timerId`/`localAdapter`/`configError`/`"error"` status branch; `TimerActiveProps` becomes `{ initialConfiguration: TimerConfiguration }`; delegates to the engine with `onStop = () => router.push("/timers")` |
+| `ui/components/timer-configuration-form/timer-configuration-form.hook.ts`, `.tsx`, `.types.ts`     | Modify | drop `isAuthenticated`/`timerId`/guest resolution effect; `TimerConfigurationFormProps` becomes `{ initialConfiguration: TimerConfiguration \| null }`; name field unconditional again                                                 |
+| `app/timers/new/page.tsx`, `[id]/edit/page.tsx`, `[id]/active/page.tsx`                            | Modify | `redirect("/login")` when no session; stop passing `isAuthenticated`/`timerId`                                                                                                                                                         |
+| `ui/components/guest-timer-form/{guest-timer-form.tsx,.hook.ts,.types.ts,index.ts,__tests__/}`     | Create | own-component, no `name` field, START disabled until `rounds>0 && roundDuration>0`, calls guest adapter `write()` then `router.push("/guest-timer-active")`                                                                            |
+| `ui/components/guest-timer-active/{guest-timer-active.tsx,.hook.ts,.types.ts,index.ts,__tests__/}` | Create | own-component; on mount `localAdapter.read()` → `null` redirects to `/guest-timer`, else delegates to `useTimerSessionEngine` with `onStop = () => router.push("/guest-timer")`                                                        |
+| `app/guest-timer/page.tsx`, `app/guest-timer-active/page.tsx`                                      | Create | composition roots, no session resolution (guest-only, unconditional render)                                                                                                                                                            |
+
+### Data Flow
+
+    /guest-timer (guest-timer-form.hook.ts)
+      rounds>0 && roundDuration>0 ──▶ enable START
+      START click ──▶ localAdapter.write() ──▶ router.push("/guest-timer-active")
+
+    /guest-timer-active (guest-timer-active.hook.ts)
+      mount ──▶ localAdapter.read()
+        null    ──▶ router.replace("/guest-timer")
+        record  ──▶ useTimerSessionEngine(record, () => router.push("/guest-timer"))
+
+### Testing Strategy
+
+- `use-timer-session-engine.test.ts` (new): owns all tick/cue/warning/start-pause-resume-stop coverage moved out of `timer-active.hook.test.ts` — the single place this logic is exercised in depth.
+- `timer-active.hook.test.ts`: shrinks to authenticated-only fixtures; drop guest cases, drop `configError`/`"error"` cases; assert it feeds `initialConfiguration` straight into the engine and `onStop` targets `/timers`.
+- `timer-configuration-form.hook.test.ts`: revert the 15-occurrence mock swap; drop guest lookup/name-hiding cases; name field always required.
+- New: `guest-timer-form.hook.test.ts` (START enabled/disabled matrix per spec scenarios, write+navigate), `guest-timer-active.hook.test.ts` (read→redirect, read→engine delegation, `onStop` targets `/guest-timer`).
+- `timer-configuration-errors.test.ts`: add cases for `validateGuestTimerConfiguration` (accepts `restDuration=0`, rejects `rounds<=0`/`roundDuration<=0`, authenticated validator unchanged).
+- `local-timer-configuration.adapter.test.ts`: assert `GUEST_NAME` is `"Guest timer"`; assert `write()` no longer calls `validateTimerConfiguration`.
+
+### Risks / Open Items
+
+- **Guest dead-link in `/timers` list**: `use-timer-configurations.ts`'s guest branch stays alive only for `timer-configuration-list.hook.ts` (`/timers`, out of this addendum's revert scope). A guest's single-config card there still deep-links to `/timers/[id]/edit`/`/timers/[id]/active`, which are now authenticated-only and will bounce the guest to `/login`. Not fixed here — flagged as a follow-up (hide the list/card for guests entirely now that `/guest-timer` exists, or drop the guest branch from the list too), since the given revert scope names only `new`/`[id]/edit`/`[id]/active`.
+- `TimerActiveStatus`/`UseTimerActiveResult` losing `"error"` is a type-narrowing change — verify no other consumer (e.g. tests importing the type directly) still references it.

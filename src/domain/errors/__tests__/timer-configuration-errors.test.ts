@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders__/timer-configuration.builder";
 import {
   timerConfigurationNotFound,
+  validateGuestTimerConfiguration,
   validateTimerConfiguration,
 } from "../timer-configuration-errors";
 
@@ -42,6 +43,42 @@ describe("validateTimerConfiguration", () => {
     const config = buildTimerConfiguration();
 
     const result = validateTimerConfiguration(config);
+
+    expect(result).toBe(config);
+  });
+});
+
+describe("validateGuestTimerConfiguration", () => {
+  it("should throw when rounds is zero", () => {
+    const config = buildTimerConfiguration({ rounds: 0 });
+
+    expect(() => validateGuestTimerConfiguration(config)).toThrow(
+      expect.objectContaining({ _tag: "InvalidTimerConfiguration" })
+    );
+  });
+
+  it("should throw when roundDuration is zero or negative", () => {
+    const config = buildTimerConfiguration({ roundDuration: 0 });
+
+    expect(() => validateGuestTimerConfiguration(config)).toThrow(
+      expect.objectContaining({ _tag: "InvalidTimerConfiguration" })
+    );
+  });
+
+  it("should not throw when restDuration is zero or negative", () => {
+    const config = buildTimerConfiguration({
+      rounds: 3,
+      roundDuration: 30,
+      restDuration: 0,
+    });
+
+    expect(() => validateGuestTimerConfiguration(config)).not.toThrow();
+  });
+
+  it("should return the input unchanged when rounds and roundDuration are valid", () => {
+    const config = buildTimerConfiguration();
+
+    const result = validateGuestTimerConfiguration(config);
 
     expect(result).toBe(config);
   });
