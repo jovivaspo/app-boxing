@@ -293,7 +293,7 @@ Same TDD/`[P]` conventions as above.
 
 ## Group N — New `/guest-timer` route + `guest-timer-form` component (sequential, depends on I)
 
-16. [ ] **Test first**:
+16. [x] **Test first**:
         `src/ui/components/guest-timer-form/__tests__/guest-timer-form.hook.test.ts` —
         form state (rounds, round/rest minutes+seconds, `warnBeforeEnd`,
         `bellSound`); START disabled matrix per spec scenarios (no input;
@@ -301,15 +301,15 @@ Same TDD/`[P]` conventions as above.
         enabled); START click calls the injected
         `GuestTimerConfigurationPort.write()` then
         `router.push("/guest-timer-active")`. Confirm failing.
-17. [ ] **Implement**: `guest-timer-form.hook.ts` + `.types.ts` — own form
+17. [x] **Implement**: `guest-timer-form.hook.ts` + `.types.ts` — own form
         state, `isStartEnabled = rounds > 0 && roundDuration > 0`
         (`restDuration` never a condition), `handleStart` writes via the
         injected port then navigates. Confirm green.
-18. [ ] **Implement** (no test — presentational): `guest-timer-form.tsx` +
+18. [x] **Implement** (no test — presentational): `guest-timer-form.tsx` +
         `index.ts` — same field layout as `timer-configuration-form.tsx`
         minus the `name` input, primary action labeled START and
         disabled/enabled per hook state.
-19. [ ] **Implement** (no test — composition root):
+19. [x] **Implement** (no test — composition root):
         `src/app/guest-timer/page.tsx` — unconditional render of
         `<GuestTimerForm />`, no session resolution (guest-only route).
         Satisfies: spec "Guest configuration route (`/guest-timer`)", "START
@@ -317,20 +317,20 @@ Same TDD/`[P]` conventions as above.
 
 ## Group O — New `/guest-timer-active` route + `guest-timer-active` component (sequential, depends on J + N)
 
-20. [ ] **Test first**:
+20. [x] **Test first**:
         `src/ui/components/guest-timer-active/__tests__/guest-timer-active.hook.test.ts` —
         on mount, `localAdapter.read()` resolving a record delegates to
         `useTimerSessionEngine(record, onStop)`; resolving `null` calls
         `router.replace("/guest-timer")` and never calls the engine. Confirm
         failing.
-21. [ ] **Implement**: `guest-timer-active.hook.ts` + `.types.ts` — mirrors
+21. [x] **Implement**: `guest-timer-active.hook.ts` + `.types.ts` — mirrors
         the shape of the old guest branch but delegates tick/cue logic to the
         shared engine; `onStop = () => router.push("/guest-timer")`. Confirm
         green.
-22. [ ] **Implement** (no test — presentational): `guest-timer-active.tsx` +
+22. [x] **Implement** (no test — presentational): `guest-timer-active.tsx` +
         `index.ts` — reuses `timer-active.tsx`'s markup for
         loading/running/paused/finished states only (no `"error"` state).
-23. [ ] **Implement** (no test — composition root):
+23. [x] **Implement** (no test — composition root):
         `src/app/guest-timer-active/page.tsx` — unconditional render of
         `<GuestTimerActive />`, no session resolution. Satisfies: spec "Guest
         active route (`/guest-timer-active`)", "Guard redirects when no
@@ -338,19 +338,19 @@ Same TDD/`[P]` conventions as above.
 
 ## Group P — Close the `/timers` list dead-link gap (sequential, depends on M — guest has nowhere to land from this list once new/edit/active revert)
 
-24. [ ] **Test first**: update
+24. [x] **Test first**: update
         `src/ui/components/timer-configuration-list/__tests__/timer-configuration-list.hook.test.ts` —
         drop the `isAuthenticated` param/guest-branch tests; hook always
         resolves through the authenticated path. Confirm failing.
-25. [ ] **Implement**: `timer-configuration-list.hook.ts` + `.types.ts` +
+25. [x] **Implement**: `timer-configuration-list.hook.ts` + `.types.ts` +
         `.tsx` — drop the `isAuthenticated` prop entirely, always call
         `useTimerConfigurations(true)`. Confirm green.
-26. [ ] **Implement**: `src/app/timers/page.tsx` — drop the guest-branch
+26. [x] **Implement**: `src/app/timers/page.tsx` — drop the guest-branch
         session read; `redirect("/login")` when no session (mirror Group M),
         else render `<TimerConfigurationList />` (no prop). Update
         `src/app/__tests__/page.test.tsx`'s sibling test only if it asserts
         `/timers` guest behavior.
-27. [ ] **Cleanup** (test-first, depends on step 25 removing the last
+27. [x] **Cleanup** (test-first, depends on step 25 removing the last
         `isAuthenticated=false` caller): update
         `src/ui/hooks/__tests__/use-timer-configurations.test.ts` to drop all
         guest-branch cases, confirm failing against the still-branching
@@ -367,7 +367,7 @@ Same TDD/`[P]` conventions as above.
 
 ## Group Q — `TimerActiveStatus` "error" removal verification (sequential, quick, after K)
 
-28. [ ] Grep the codebase for `"error"` usages tied to
+28. [x] Grep the codebase for `"error"` usages tied to
         `TimerActiveStatus`/`configError`/`UseTimerActiveResult.error` to
         confirm nothing outside `timer-active.hook.ts`/`.types.ts`/`.tsx`
         (already handled in Group K) still references the removed variant.
@@ -375,12 +375,12 @@ Same TDD/`[P]` conventions as above.
         its "no record" case is a `router.replace` guard, not a rendered
         error screen, so the type is fully unused after Group K, not merely
         narrowed.
-29. [ ] Confirm via `npx tsc --noEmit` (Group R) that no stale `"error"`
+29. [x] Confirm via `npx tsc --noEmit` (Group R) that no stale `"error"`
         reference remains; no code change expected if step 28 was thorough.
 
 ## Verification (sequential, depends on all groups)
 
-30. [ ] Run full suite: `npm run lint && npx tsc --noEmit && npm run test`.
+30. [x] Run full suite: `npm run lint && npx tsc --noEmit && npm run test`.
         Confirm authenticated-path tests are unaffected, new guest-route/hook
         tests are green, and no orphaned imports remain from the reverted
         guest branches.
