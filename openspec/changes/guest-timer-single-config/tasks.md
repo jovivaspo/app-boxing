@@ -10,22 +10,22 @@ Everything else is sequential in the order listed.
 
 ## Group A — Foundation: new port + mock (sequential, blocks everything else)
 
-1. Write `src/application/ports/__mocks__/guest-timer-configuration-port.mock.ts`
-   test usage is implicit (a mock has no test of its own) — but write the
-   type file it must satisfy first:
-   `src/application/ports/guest-timer-configuration.port.ts`
-   (`GuestTimerConfigurationPort`, `GuestTimerConfigurationInput` per D1).
-   Satisfies: spec "Guest Single-Record Timer Storage" (port shape).
-2. Add `makeGuestTimerConfigurationPort(overrides?)` to the mock file above
-   (`read`/`write`/`clear`, mirrors `timer-configuration-repository-port.mock.ts`
-   pattern). No test file — a pure test double.
+1. [x] Write `src/application/ports/__mocks__/guest-timer-configuration-port.mock.ts`
+       test usage is implicit (a mock has no test of its own) — but write the
+       type file it must satisfy first:
+       `src/application/ports/guest-timer-configuration.port.ts`
+       (`GuestTimerConfigurationPort`, `GuestTimerConfigurationInput` per D1).
+       Satisfies: spec "Guest Single-Record Timer Storage" (port shape).
+2. [x] Add `makeGuestTimerConfigurationPort(overrides?)` to the mock file above
+       (`read`/`write`/`clear`, mirrors `timer-configuration-repository-port.mock.ts`
+       pattern). No test file — a pure test double.
 
 ## Group B — Adapter rewrite (sequential, depends on Group A)
 
-3. **Test first**: rewrite
-   `src/infraestructure/timer-configuration/__tests__/local-timer-configuration.adapter.test.ts`
-   to assert (per design "Test impact" + spec "Guest Single-Record Timer
-   Storage" / "Guest Timer Name Is Fixed"):
+3. [x] **Test first**: rewrite
+       `src/infraestructure/timer-configuration/__tests__/local-timer-configuration.adapter.test.ts`
+       to assert (per design "Test impact" + spec "Guest Single-Record Timer
+       Storage" / "Guest Timer Name Is Fixed"):
    - `write()` persists under key `"guest-timer"`, `read()` returns it
    - second `write()` overwrites (same `id`, no array/second record)
    - `read()` resolves `null` when nothing stored, and never rejects (incl. SSR)
@@ -35,26 +35,26 @@ Everything else is sequential in the order listed.
    - stored `name` is always `"Mi Timer"` regardless of caller-supplied name
    - old `"timer-configurations"` array key is never read/written/touched
      Run it — confirm it fails against the current array-shaped adapter.
-4. **Implement**: rewrite
-   `src/infraestructure/timer-configuration/local-timer-configuration.adapter.ts`
-   to the single-record `read()/write()/clear()` shape (D2 verbatim: fixed
-   name, id generated once and reused, `validateTimerConfiguration` called
-   directly in `write()`). Run tests from step 3 — confirm green.
-   Satisfies: spec "Guest Single-Record Timer Storage", "Guest Timer Name Is Fixed".
+4. [x] **Implement**: rewrite
+       `src/infraestructure/timer-configuration/local-timer-configuration.adapter.ts`
+       to the single-record `read()/write()/clear()` shape (D2 verbatim: fixed
+       name, id generated once and reused, `validateTimerConfiguration` called
+       directly in `write()`). Run tests from step 3 — confirm green.
+       Satisfies: spec "Guest Single-Record Timer Storage", "Guest Timer Name Is Fixed".
 
 ## Group C — `useTimerConfigurations` guest branch (sequential, depends on Group B)
 
-5. **Test first**: update
-   `src/ui/hooks/__tests__/use-timer-configurations.test.ts` guest-branch
-   tests to use `makeGuestTimerConfigurationPort()` instead of
-   `makeTimerConfigurationRepositoryPort()`: `list()` asserts `read()` called
-   and result array-wrapped; `create`/`update` both assert `write()` called;
-   `remove` asserts `clear()` called (ignoring `id`). Confirm failing.
-6. **Implement**: update `src/ui/hooks/use-timer-configurations.ts` guest
-   branch to call `read`/`write`/`write`/`clear` per D3 (`toGuestTimerInput`
-   helper strips `id`/`name`). Confirm green. Authenticated branch untouched.
-   Satisfies: spec "Local Adapter Port Compliance" (guest side), keeps
-   `TimerConfigurationOperations` interface unchanged.
+5. [x] **Test first**: update
+       `src/ui/hooks/__tests__/use-timer-configurations.test.ts` guest-branch
+       tests to use `makeGuestTimerConfigurationPort()` instead of
+       `makeTimerConfigurationRepositoryPort()`: `list()` asserts `read()` called
+       and result array-wrapped; `create`/`update` both assert `write()` called;
+       `remove` asserts `clear()` called (ignoring `id`). Confirm failing.
+6. [x] **Implement**: update `src/ui/hooks/use-timer-configurations.ts` guest
+       branch to call `read`/`write`/`write`/`clear` per D3 (`toGuestTimerInput`
+       helper strips `id`/`name`). Confirm green. Authenticated branch untouched.
+       Satisfies: spec "Local Adapter Port Compliance" (guest side), keeps
+       `TimerConfigurationOperations` interface unchanged.
 
 ## Group D — Consumer hooks (each `[P]` — independent files, both depend on Group A only)
 
