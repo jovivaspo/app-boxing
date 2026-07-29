@@ -54,7 +54,7 @@ export function useTimerConfigurationForm({
   initialConfiguration,
 }: TimerConfigurationFormProps): UseTimerConfigurationFormResult {
   const router = useRouter();
-  const ops = useTimerConfigurations(true);
+  const ops = useTimerConfigurations();
   const [form, setForm] = useState<TimerConfigurationFormState>(
     initialConfiguration ? toFormState(initialConfiguration) : EMPTY_FORM
   );

@@ -9,11 +9,9 @@ const getCurrentSessionMock = vi.fn<
 >(() => getCurrentSessionExecuteMock);
 const createCookieSessionAdapterMock = vi.fn(() => ({}));
 const redirectMock = vi.fn();
-const timerConfigurationListMock = vi.fn(
-  ({ isAuthenticated }: { isAuthenticated: boolean }) => (
-    <div data-testid="timer-configuration-list">{String(isAuthenticated)}</div>
-  )
-);
+const timerConfigurationListMock = vi.fn(() => (
+  <div data-testid="timer-configuration-list" />
+));
 
 vi.mock(
   "@/application/use-cases/get-current-session/get-current-session",
@@ -27,8 +25,7 @@ vi.mock("@/infraestructure/session/cookie-session.adapter", () => ({
 }));
 
 vi.mock("@/ui/components/timer-configuration-list", () => ({
-  TimerConfigurationList: (props: { isAuthenticated: boolean }) =>
-    timerConfigurationListMock(props),
+  TimerConfigurationList: () => timerConfigurationListMock(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -47,7 +44,7 @@ describe("Timers list page", () => {
     timerConfigurationListMock.mockClear();
   });
 
-  it("should pass isAuthenticated=true to the list component when a session exists", async () => {
+  it("should render the list when a session exists", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue({
       token: "backend-jwt",
       user: {
@@ -64,20 +61,15 @@ describe("Timers list page", () => {
     render(await TimersPage());
 
     expect(redirectMock).not.toHaveBeenCalled();
-    expect(screen.getByTestId("timer-configuration-list")).toHaveTextContent(
-      "true"
-    );
+    expect(screen.getByTestId("timer-configuration-list")).toBeInTheDocument();
   });
 
-  it("should pass isAuthenticated=false without redirecting when no session exists", async () => {
+  it("should redirect to /login when there is no session", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: TimersPage } = await import("../page");
 
-    render(await TimersPage());
+    await expect(TimersPage()).rejects.toThrow("NEXT_REDIRECT");
 
-    expect(redirectMock).not.toHaveBeenCalled();
-    expect(screen.getByTestId("timer-configuration-list")).toHaveTextContent(
-      "false"
-    );
+    expect(redirectMock).toHaveBeenCalledWith("/login");
   });
 });

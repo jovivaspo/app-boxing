@@ -17,15 +17,13 @@ const LOAD_ERROR = "No se pudieron cargar los timers. Intentá de nuevo.";
 const DELETE_ERROR = "No se pudo eliminar el timer. Intentá de nuevo.";
 
 /** Owns all list-screen logic (A2): load on mount, empty state, optimistic delete. */
-export function useTimerConfigurationList(
-  isAuthenticated: boolean
-): UseTimerConfigurationListResult {
+export function useTimerConfigurationList(): UseTimerConfigurationListResult {
   const [configurations, setConfigurations] = useState<TimerConfiguration[]>(
     []
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const ops = useTimerConfigurations(isAuthenticated);
+  const ops = useTimerConfigurations();
 
   useEffect(() => {
     let cancelled = false;
