@@ -184,13 +184,13 @@ Same TDD/`[P]` conventions as above.
 
 ## Group H — Domain: `validateGuestTimerConfiguration` (sequential, no deps)
 
-1. [ ] **Test first**: add cases to
+1. [x] **Test first**: add cases to
        `src/domain/errors/__tests__/timer-configuration-errors.test.ts` —
        `validateGuestTimerConfiguration` passes when `rounds > 0 &&
-    roundDuration > 0` regardless of `restDuration` (incl. `0`); throws
+ roundDuration > 0` regardless of `restDuration` (incl. `0`); throws
        `InvalidTimerConfiguration` when `rounds <= 0` or `roundDuration <= 0`;
        never reads/validates `restDuration`. Confirm failing.
-2. [ ] **Implement**: add `validateGuestTimerConfiguration` to
+2. [x] **Implement**: add `validateGuestTimerConfiguration` to
        `src/domain/errors/timer-configuration-errors.ts` — generic over
        `Pick<TimerConfiguration, "rounds" | "roundDuration">`, checks only
        those two fields, throws the same `InvalidTimerConfiguration`. Confirm
@@ -199,13 +199,13 @@ Same TDD/`[P]` conventions as above.
 
 ## Group I — Adapter: `GUEST_NAME` fix + validator swap (sequential, depends on H)
 
-3. [ ] **Test first**: update
+3. [x] **Test first**: update
        `src/infraestructure/timer-configuration/__tests__/local-timer-configuration.adapter.test.ts` —
        stored `name` is now `"Guest timer"` (not `"Mi Timer"`); `write()`
        succeeds with `restDuration = 0` as long as `rounds > 0 &&
-    roundDuration > 0`; still throws for `rounds <= 0` or `roundDuration
-    <= 0`. Confirm failing.
-4. [ ] **Implement**: update
+ roundDuration > 0`; still throws for `rounds <= 0` or `roundDuration
+ <= 0`. Confirm failing.
+4. [x] **Implement**: update
        `src/infraestructure/timer-configuration/local-timer-configuration.adapter.ts` —
        `GUEST_NAME = "Guest timer"`; `write()` calls
        `validateGuestTimerConfiguration` instead of
@@ -214,7 +214,7 @@ Same TDD/`[P]` conventions as above.
 
 ## Group J — Extract `useTimerSessionEngine` (sequential, depends on nothing new; do before K/O)
 
-5. [ ] **Test first**: create
+5. [x] **Test first**: create
        `src/ui/hooks/__tests__/use-timer-session-engine.test.ts` — move all
        tick/cue/warning/start/pause/resume/stop coverage currently living in
        `timer-active.hook.test.ts` (200ms tick, visibility-change recompute,
@@ -223,7 +223,7 @@ Same TDD/`[P]` conventions as above.
        `onPrimaryAction` mapping, `stop()` invokes the injected `onStop`
        callback) against `useTimerSessionEngine(config, onStop, deps?)`.
        Confirm failing (hook doesn't exist yet).
-6. [ ] **Implement**: create `src/ui/hooks/use-timer-session-engine.ts` —
+6. [x] **Implement**: create `src/ui/hooks/use-timer-session-engine.ts` —
        extract the ~120-line tick effect + start/pause/resume/stop callbacks
        verbatim out of `timer-active.hook.ts`, generalizing the hardcoded
        `router.push("/timers")` into the `onStop` param; the engine takes a
@@ -233,7 +233,7 @@ Same TDD/`[P]` conventions as above.
 
 ## Group K — Revert `useTimerActive` to authenticated-only (sequential, depends on J)
 
-7. [ ] **Test first**: rewrite
+7. [x] **Test first**: rewrite
        `src/ui/components/timer-active/__tests__/timer-active.hook.test.ts` —
        drop all guest/`localAdapter` mocks and the two guest-lookup tests;
        assert the hook delegates to `useTimerSessionEngine` with
@@ -241,7 +241,7 @@ Same TDD/`[P]` conventions as above.
        `router.push("/timers")`; do not re-assert tick/cue behavior already
        covered by Group J's engine test (avoid duplicate coverage). Confirm
        failing.
-8. [ ] **Implement**: rewrite `timer-active.hook.ts` to accept
+8. [x] **Implement**: rewrite `timer-active.hook.ts` to accept
        `{ initialConfiguration: TimerConfiguration }` — drop
        `isAuthenticated`/`timerId`/`guestConfig`/`configError`/`localAdapter`
        entirely, delegate to `useTimerSessionEngine`. Update
@@ -249,7 +249,7 @@ Same TDD/`[P]` conventions as above.
        `{ initialConfiguration: TimerConfiguration }` (non-null), drop
        `TimerActiveDeps.localAdapter`, drop `"error"` from
        `TimerActiveStatus`. Confirm green.
-9. [ ] **Implement** (no test — presentational): update
+9. [x] **Implement** (no test — presentational): update
        `timer-active.tsx` — remove the `if (status === "error")` block
        (unreachable now that `TimerActiveStatus` drops `"error"`). Satisfies:
        spec "Active timer screen" (revert), "No guest path through this
@@ -257,19 +257,19 @@ Same TDD/`[P]` conventions as above.
 
 ## Group L — Revert `useTimerConfigurationForm` to authenticated-only (sequential, same pattern as K, independent files)
 
-10. [ ] **Test first**: rewrite
+10. [x] **Test first**: rewrite
         `src/ui/components/timer-configuration-form/__tests__/timer-configuration-form.hook.test.ts` —
         drop all guest/`localAdapter` mocks and the guest-resolution effect
         test; `TimerConfigurationFormProps` shrinks to
         `{ initialConfiguration: TimerConfiguration | null }` (no
         `isAuthenticated`/`timerId`). Confirm failing.
-11. [ ] **Implement**: rewrite `timer-configuration-form.hook.ts` — drop the
+11. [x] **Implement**: rewrite `timer-configuration-form.hook.ts` — drop the
         guest-resolution `useEffect`, `isAuthenticated`/`timerId`/
         `localAdapter` params entirely; `ops = useTimerConfigurations(true)`
         (Server Action calls only, no runtime branch). Update
         `timer-configuration-form.types.ts`: `TimerConfigurationFormProps` ->
         `{ initialConfiguration: TimerConfiguration | null }`. Confirm green.
-12. [ ] **Implement** (no test — presentational): update
+12. [x] **Implement** (no test — presentational): update
         `timer-configuration-form.tsx` — remove the
         `{props.isAuthenticated && (...)}` name-field wrapper added in Group
         E; the name input is unconditional again. Satisfies: spec "Timer
@@ -277,15 +277,15 @@ Same TDD/`[P]` conventions as above.
 
 ## Group M — Revert the three route files to authenticated-only (each `[P]`, depends on K for the active route, L for new/edit)
 
-13. [ ] `[P]` Update `src/app/timers/new/page.tsx` — drop the session-branch
+13. [x] `[P]` Update `src/app/timers/new/page.tsx` — drop the session-branch
         entirely; `redirect("/login")` when no session (mirror
         `src/app/page.tsx`), else render
         `<TimerConfigurationForm initialConfiguration={null} />`.
-14. [ ] `[P]` Update `src/app/timers/[id]/edit/page.tsx` — remove the
+14. [x] `[P]` Update `src/app/timers/[id]/edit/page.tsx` — remove the
         `if (!session)` guest branch, `redirect("/login")` instead; keep the
         authenticated `getById`/`notFound()` path unchanged; render
         `<TimerConfigurationForm initialConfiguration={initialConfiguration} />`.
-15. [ ] `[P]` Update `src/app/timers/[id]/active/page.tsx` — remove the
+15. [x] `[P]` Update `src/app/timers/[id]/active/page.tsx` — remove the
         `if (!session)` guest branch, `redirect("/login")` instead; render
         `<TimerActive initialConfiguration={initialConfiguration} />`.
         Satisfies: spec "Timer configuration form screen", "Active timer
