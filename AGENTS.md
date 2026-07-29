@@ -88,7 +88,7 @@ sign-in-with-google/
 - New shadcn/ui components go in `src/ui/components/shadcn/` (NOT `src/components/ui/`).
 - Own (non-shadcn) components, Server Actions, and use cases each get their own `kebab-case` folder — follow the folder patterns above exactly, including the `__tests__/` placement.
 - Presentational components are not tested; only their hooks are.
-- Use the ‘caveman’ skill to give clear and effective answers.
+- Use the 'caveman' skill for conversational replies and the 'ponytail' skill for implementation decisions — both are mandatory for every task in this project, to keep token usage down.
 
 ## Path Aliases
 
@@ -187,7 +187,7 @@ Do not bypass with `--no-verify`; CI (`.github/workflows/ci.yml`) re-runs lint, 
 
 ## Codebase Indexing
 
-This project is indexed in `codebase-memory-mcp` (project name `home-jorge-Code-app-boxing`). Before starting a new task, ask the user whether to refresh the index (`index_repository`, `mode: fast`) so structural queries (`search_graph`, `trace_path`, `get_architecture`, etc.) reflect the current code.
+This project uses CodeGraph (`.codegraph/`) for structural queries — repo maps, call chains, dependencies, symbol references, impact analysis. Prefer `codegraph_explore` (or the `codegraph` CLI) over broad Grep/Glob/Read for these questions. Before starting a new task, ask the user whether to run `codegraph sync` so the index reflects the current code — the watcher auto-syncs on edits, but a task may start after changes made outside this session.
 
 ## SDD
 

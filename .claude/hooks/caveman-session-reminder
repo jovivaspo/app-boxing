@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SKILL_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/skills/caveman/SKILL.md"
+printf '## CAVEMAN MODE ACTIVE (forced for this project — see AGENTS.md)\n\n%s\n' "$(cat "$SKILL_FILE")"

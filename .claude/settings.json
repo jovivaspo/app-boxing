@@ -1,0 +1,67 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api *)",
+      "Bash(rg -l \"\\\\.util\\\\.ts$\" /home/jorge/Code/app-boxing/src --type ts)",
+      "Bash(gh pr *)",
+      "Bash(gh label *)",
+      "Bash(sd 'requestJson\\\\\\(' 'httpClient\\(' src/infraestructure/timer-configuration/backend-timer-configuration.adapter.ts)",
+      "Bash(sd 'parseBody\\\\\\(' 'parseDto\\(' src/infraestructure/timer-configuration/backend-timer-configuration.adapter.ts)",
+      "Bash(git -C /home/jorge/Code/app-boxing log --oneline -- src/infraestructure/http/)",
+      "Bash(git -C /home/jorge/Code/app-boxing status --porcelain=v1 --untracked-files=all src/infraestructure/http/ openspec/changes/shared-http-client/)",
+      "Bash(sd -- '- \\\\[ \\\\] 1\\\\.1' '- [x] 1.1' openspec/changes/shared-http-client/tasks.md)",
+      "Bash(sd -- '- \\\\[ \\\\] 1\\\\.2' '- [x] 1.2' openspec/changes/shared-http-client/tasks.md)",
+      "Bash(sd -- '- \\\\[ \\\\] 1\\\\.3' '- [x] 1.3' openspec/changes/shared-http-client/tasks.md)",
+      "Bash(sd -- '- \\\\[ \\\\] 2\\\\.1' '- [x] 2.1' openspec/changes/shared-http-client/tasks.md)",
+      "Bash(sd -- '- \\\\[ \\\\] 2\\\\.2' '- [x] 2.2' openspec/changes/shared-http-client/tasks.md)",
+      "Bash(xargs -I{} sh -c 'echo ==={}===; cat {}')",
+      "Bash(rg -n \"backend request failed\" -r \"\" /home/jorge/Code/app-boxing/src)",
+      "Bash(rg -rn \"message\" /home/jorge/Code/app-boxing/src/application/use-cases)",
+      "Bash(echo \"---exit:$?\")",
+      "Bash(xargs -I{} sh -c 'echo ===={}====; cat {}')",
+      "Bash(bat /home/jorge/Code/app-boxing/.github/PULL_REQUEST_TEMPLATE.md)",
+      "Bash(rg --files /home/jorge/Code/app-boxing/src/app/timers)",
+      "Bash(rg -rn \"restDuration\" /home/jorge/Code/app-boxing/src/domain/errors/ /home/jorge/Code/app-boxing/src/application)",
+      "mcp__codebase-memory-mcp__list_projects",
+      "mcp__codebase-memory-mcp__index_repository",
+      "Bash(find ~/.claude/agents -maxdepth 1 -type f)",
+      "Read(//home/jorge/.claude/agents/**)",
+      "Bash(mkdir -p /home/jorge/Code/app-boxing/.claude/agents)",
+      "Bash(bat -p /home/jorge/Code/app-boxing/.claude/settings.json)",
+      "Read(//home/jorge/.claude/**)",
+      "Bash(rm /home/jorge/Code/app-boxing/.claude/agents/sdd-explore.md)",
+      "Bash(rmdir /home/jorge/Code/app-boxing/.claude/agents)",
+      "Bash(codegraph --help)",
+      "Bash(codegraph init *)",
+      "Bash(git -C /home/jorge/Code/app-boxing check-ignore -v .claude/settings.local.json)",
+      "Bash(git status *)"
+    ],
+    "additionalDirectories": ["/home/jorge/Code/app-boxing/.claude"]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/caveman-session-reminder\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/caveman-subagent-reminder\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

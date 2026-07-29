@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+SKILL_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/skills/caveman/SKILL.md"
+CONTEXT="## CAVEMAN MODE ACTIVE (forced for this project — see AGENTS.md)
+
+$(cat "$SKILL_FILE")"
+CONTEXT="$CONTEXT" python3 -c '
+import json, os
+print(json.dumps({"hookSpecificOutput": {"hookEventName": "SubagentStart", "additionalContext": os.environ["CONTEXT"]}}))
+'
