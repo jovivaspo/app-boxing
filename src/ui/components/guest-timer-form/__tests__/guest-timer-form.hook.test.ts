@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import type { FormEvent } from "react";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { makeGuestTimerConfigurationPort } from "@/application/ports/__mocks__/guest-timer-configuration-port.mock";
+import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders__/timer-configuration.builder";
 
 const pushMock = vi.fn();
 
@@ -92,19 +93,12 @@ describe("useGuestTimerForm", () => {
     expect(pushMock).toHaveBeenCalledWith("/guest-timer-active");
   });
 
-  it("should never read from the local adapter on mount", () => {
-    const localAdapter = emptyPort();
-
-    renderHook(() => useGuestTimerForm({ localAdapter }));
-
-    expect(localAdapter.read).not.toHaveBeenCalled();
-  });
-
-  it("should initialize duration fields to 0 on mount", () => {
+  it("should initialize blank when no existing configuration is stored", async () => {
     const { result } = renderHook(() =>
       useGuestTimerForm({ localAdapter: emptyPort() })
     );
 
+    await waitFor(() => expect(result.current.form.rounds).toBe(0));
     expect(result.current.form).toEqual({
       rounds: 0,
       roundMinutes: 0,
@@ -114,5 +108,32 @@ describe("useGuestTimerForm", () => {
       warnBeforeEnd: true,
       bellSound: true,
     });
+  });
+
+  it("should prefill the form from an existing guest configuration on mount", async () => {
+    const existing = buildTimerConfiguration({
+      rounds: 4,
+      roundDuration: 90,
+      restDuration: 30,
+      warnBeforeEnd: false,
+      bellSound: false,
+    });
+    const localAdapter = makeGuestTimerConfigurationPort({
+      read: vi.fn().mockResolvedValue(existing),
+    });
+
+    const { result } = renderHook(() => useGuestTimerForm({ localAdapter }));
+
+    await waitFor(() => expect(result.current.form.rounds).toBe(4));
+    expect(result.current.form).toEqual({
+      rounds: 4,
+      roundMinutes: 1,
+      roundSeconds: 30,
+      restMinutes: 0,
+      restSeconds: 30,
+      warnBeforeEnd: false,
+      bellSound: false,
+    });
+    expect(result.current.isStartEnabled).toBe(true);
   });
 });
