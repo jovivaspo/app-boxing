@@ -17,7 +17,7 @@ export interface GuestTimerConfigurationPort {
   /**
    * Persists `config` as the single stored record, overwriting any previous
    * one (never appends). `id` is generated once and reused across writes;
-   * `name` is always set to `"Mi Timer"`.
+   * `name` is always set to `"Guest timer"`.
    * @throws {import("@/domain/errors/timer-configuration-errors").InvalidTimerConfiguration} rounds, roundDuration, or restDuration is <= 0.
    */
   write(config: GuestTimerConfigurationInput): Promise<TimerConfiguration>;
