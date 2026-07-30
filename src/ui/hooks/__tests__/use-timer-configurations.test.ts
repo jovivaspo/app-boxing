@@ -3,7 +3,6 @@ import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders__/timer-configuration.builder";
-import { makeTimerConfigurationRepositoryPort } from "@/application/ports/__mocks__/timer-configuration-repository-port.mock";
 
 const listActionMock = vi.fn();
 const createActionMock = vi.fn();
@@ -51,151 +50,50 @@ describe("useTimerConfigurations", () => {
     vi.clearAllMocks();
   });
 
-  it("should call the list action, never the injected adapter, when authenticated", async () => {
-    listActionMock.mockResolvedValue({ ok: true, data: [] });
-    const localAdapter = makeTimerConfigurationRepositoryPort();
-
-    const { result } = renderHook(() =>
-      useTimerConfigurations(true, localAdapter)
-    );
-    await result.current.list();
-
-    expect(listActionMock).toHaveBeenCalledTimes(1);
-    expect(localAdapter.list).not.toHaveBeenCalled();
-  });
-
-  it("should call the list use case over the injected adapter, never the action, when guest", async () => {
-    const config = buildTimerConfiguration();
-    const localAdapter = makeTimerConfigurationRepositoryPort({
-      list: vi.fn().mockResolvedValue([config]),
-    });
-
-    const { result } = renderHook(() =>
-      useTimerConfigurations(false, localAdapter)
-    );
-    const value = await result.current.list();
-
-    expect(localAdapter.list).toHaveBeenCalledTimes(1);
-    expect(listActionMock).not.toHaveBeenCalled();
-    expect(value).toEqual({ ok: true, data: [config] });
-  });
-
-  it("should return a Result and never throw when the guest-path use case rejects", async () => {
-    const localAdapter = makeTimerConfigurationRepositoryPort({
-      list: vi.fn().mockRejectedValue(new Error("boom")),
-    });
-
-    const { result } = renderHook(() =>
-      useTimerConfigurations(false, localAdapter)
-    );
-
-    await expect(result.current.list()).resolves.toEqual({
-      ok: false,
-      code: "unknown",
-    });
-  });
-
-  it("should keep the returned operations object referentially stable across re-renders with the same isAuthenticated/localAdapter", () => {
-    const localAdapter = makeTimerConfigurationRepositoryPort();
-
-    const { result, rerender } = renderHook(
-      ({ isAuthenticated }: { isAuthenticated: boolean }) =>
-        useTimerConfigurations(isAuthenticated, localAdapter),
-      { initialProps: { isAuthenticated: true } }
-    );
+  it("should keep the returned operations object referentially stable across re-renders", () => {
+    const { result, rerender } = renderHook(() => useTimerConfigurations());
     const first = result.current;
-    rerender({ isAuthenticated: true });
+    rerender();
 
     expect(result.current).toBe(first);
   });
 
-  it("should call the create action, never the injected adapter, when authenticated", async () => {
+  it("should call the list action", async () => {
+    listActionMock.mockResolvedValue({ ok: true, data: [] });
+
+    const { result } = renderHook(() => useTimerConfigurations());
+    await result.current.list();
+
+    expect(listActionMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("should call the create action", async () => {
     const config = buildTimerConfiguration();
     const candidate = buildCandidate(config);
     createActionMock.mockResolvedValue({ ok: true, data: config });
-    const localAdapter = makeTimerConfigurationRepositoryPort();
 
-    const { result } = renderHook(() =>
-      useTimerConfigurations(true, localAdapter)
-    );
+    const { result } = renderHook(() => useTimerConfigurations());
     await result.current.create(candidate);
 
     expect(createActionMock).toHaveBeenCalledWith(candidate);
-    expect(localAdapter.create).not.toHaveBeenCalled();
   });
 
-  it("should call the create use case over the injected adapter, never the action, when guest", async () => {
-    const config = buildTimerConfiguration();
-    const candidate = buildCandidate(config);
-    const localAdapter = makeTimerConfigurationRepositoryPort({
-      create: vi.fn().mockResolvedValue(config),
-    });
-
-    const { result } = renderHook(() =>
-      useTimerConfigurations(false, localAdapter)
-    );
-    const value = await result.current.create(candidate);
-
-    expect(localAdapter.create).toHaveBeenCalledWith(candidate);
-    expect(createActionMock).not.toHaveBeenCalled();
-    expect(value).toEqual({ ok: true, data: config });
-  });
-
-  it("should call the update action, never the injected adapter, when authenticated", async () => {
+  it("should call the update action", async () => {
     const config = buildTimerConfiguration();
     updateActionMock.mockResolvedValue({ ok: true, data: config });
-    const localAdapter = makeTimerConfigurationRepositoryPort();
 
-    const { result } = renderHook(() =>
-      useTimerConfigurations(true, localAdapter)
-    );
+    const { result } = renderHook(() => useTimerConfigurations());
     await result.current.update(config);
 
     expect(updateActionMock).toHaveBeenCalledWith(config);
-    expect(localAdapter.update).not.toHaveBeenCalled();
   });
 
-  it("should call the update use case over the injected adapter, never the action, when guest", async () => {
-    const config = buildTimerConfiguration();
-    const localAdapter = makeTimerConfigurationRepositoryPort({
-      update: vi.fn().mockResolvedValue(config),
-    });
-
-    const { result } = renderHook(() =>
-      useTimerConfigurations(false, localAdapter)
-    );
-    const value = await result.current.update(config);
-
-    expect(localAdapter.update).toHaveBeenCalledWith(config);
-    expect(updateActionMock).not.toHaveBeenCalled();
-    expect(value).toEqual({ ok: true, data: config });
-  });
-
-  it("should call the remove action, never the injected adapter, when authenticated", async () => {
+  it("should call the remove action", async () => {
     deleteActionMock.mockResolvedValue({ ok: true, data: null });
-    const localAdapter = makeTimerConfigurationRepositoryPort();
 
-    const { result } = renderHook(() =>
-      useTimerConfigurations(true, localAdapter)
-    );
+    const { result } = renderHook(() => useTimerConfigurations());
     await result.current.remove("tc-1");
 
     expect(deleteActionMock).toHaveBeenCalledWith("tc-1");
-    expect(localAdapter.delete).not.toHaveBeenCalled();
-  });
-
-  it("should call the remove use case over the injected adapter, never the action, when guest", async () => {
-    const localAdapter = makeTimerConfigurationRepositoryPort({
-      delete: vi.fn().mockResolvedValue(undefined),
-    });
-
-    const { result } = renderHook(() =>
-      useTimerConfigurations(false, localAdapter)
-    );
-    const value = await result.current.remove("tc-1");
-
-    expect(localAdapter.delete).toHaveBeenCalledWith("tc-1");
-    expect(deleteActionMock).not.toHaveBeenCalled();
-    expect(value).toEqual({ ok: true, data: null });
   });
 });

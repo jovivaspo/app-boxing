@@ -1,67 +1,53 @@
-import { timerConfigurationNotFound } from "@/domain/errors/timer-configuration-errors";
+import { validateGuestTimerConfiguration } from "@/domain/errors/timer-configuration-errors";
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
-import type { TimerConfigurationRepositoryPort } from "@/application/ports/timer-configuration-repository.port";
-import { getItem, setItem } from "@/infraestructure/storage/localStorage";
+import type {
+  GuestTimerConfigurationInput,
+  GuestTimerConfigurationPort,
+} from "@/application/ports/guest-timer-configuration.port";
+import {
+  getItem,
+  removeItem,
+  setItem,
+} from "@/infraestructure/storage/localStorage";
 
-const STORAGE_KEY = "timer-configurations";
-
-function readAll(): TimerConfiguration[] {
-  return getItem<TimerConfiguration[]>(STORAGE_KEY) ?? [];
-}
+const STORAGE_KEY = "guest-timer";
+const GUEST_NAME = "Guest timer";
 
 /**
- * Creates the `TimerConfigurationRepositoryPort` implementation backed by
- * `localStorage` — used for the guest (no session) path. Single JSON blob
- * strategy (D3): the entire array lives under one `STORAGE_KEY`.
+ * Creates the `GuestTimerConfigurationPort` implementation backed by
+ * `localStorage` — used for the guest (no session) path. Single-record
+ * strategy (D2): at most one `TimerConfiguration` lives under `STORAGE_KEY`,
+ * `id` generated once on first write and reused on every subsequent write
+ * (create-overwrites-not-appends), `name` always fixed to `GUEST_NAME`.
  */
-export function createLocalTimerConfigurationAdapter(): TimerConfigurationRepositoryPort {
+export function createLocalTimerConfigurationAdapter(): GuestTimerConfigurationPort {
   return {
-    async create(
-      config: Omit<TimerConfiguration, "id">
+    async read(): Promise<TimerConfiguration | null> {
+      return getItem<TimerConfiguration>(STORAGE_KEY) ?? null;
+    },
+
+    async write(
+      config: GuestTimerConfigurationInput
     ): Promise<TimerConfiguration> {
       if (typeof window === "undefined") {
         throw new Error(
-          "Cannot create a timer configuration: localStorage is unavailable (SSR)"
+          "Cannot write a timer configuration: localStorage is unavailable (SSR)"
         );
       }
 
-      const all = readAll();
-      const created: TimerConfiguration = {
+      const existing = getItem<TimerConfiguration>(STORAGE_KEY);
+      const candidate: TimerConfiguration = {
         ...config,
-        id: crypto.randomUUID(),
+        id: existing?.id ?? crypto.randomUUID(),
+        name: GUEST_NAME,
       };
-      setItem(STORAGE_KEY, [...all, created]);
-      return created;
+      const record = validateGuestTimerConfiguration(candidate);
+      setItem(STORAGE_KEY, record);
+      return record;
     },
 
-    async list(): Promise<TimerConfiguration[]> {
-      return readAll();
-    },
-
-    async getById(id: string): Promise<TimerConfiguration> {
-      const found = readAll().find((c) => c.id === id);
-      if (!found) throw timerConfigurationNotFound(id);
-
-      return found;
-    },
-
-    async update(config: TimerConfiguration): Promise<TimerConfiguration> {
-      const all = readAll();
-      const index = all.findIndex((c) => c.id === config.id);
-      if (index === -1) throw timerConfigurationNotFound(config.id);
-
-      const updated = [...all];
-      updated[index] = config;
-      setItem(STORAGE_KEY, updated);
-      return config;
-    },
-
-    async delete(id: string): Promise<void> {
-      const all = readAll();
-      const remaining = all.filter((c) => c.id !== id);
-      if (remaining.length === all.length) throw timerConfigurationNotFound(id);
-
-      setItem(STORAGE_KEY, remaining);
+    async clear(): Promise<void> {
+      removeItem(STORAGE_KEY);
     },
   };
 }

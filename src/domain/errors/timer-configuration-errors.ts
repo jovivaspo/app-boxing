@@ -36,6 +36,22 @@ export function validateTimerConfiguration(
   return input;
 }
 
+/**
+ * @throws {InvalidTimerConfiguration} rounds or roundDuration is <= 0.
+ * Guest-only sibling of `validateTimerConfiguration`: intentionally skips
+ * `restDuration` (guests don't set it), never weakens the shared validator.
+ */
+export function validateGuestTimerConfiguration<
+  T extends Pick<TimerConfiguration, "rounds" | "roundDuration">,
+>(input: T): T {
+  if (input.rounds <= 0 || input.roundDuration <= 0) {
+    throw invalidTimerConfiguration(
+      "rounds and roundDuration must be greater than 0"
+    );
+  }
+  return input;
+}
+
 export interface TimerConfigurationNotFound extends Error {
   readonly _tag: "TimerConfigurationNotFound";
 }

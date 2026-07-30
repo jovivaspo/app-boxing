@@ -6,14 +6,11 @@ import { Plus } from "lucide-react";
 import { TimerConfigurationCard } from "@/ui/components/timer-configuration-card";
 
 import { useTimerConfigurationList } from "./timer-configuration-list.hook";
-import type { TimerConfigurationListProps } from "./timer-configuration-list.types";
 
-/** Presentational only (A2): all logic lives in the hook. */
-export function TimerConfigurationList({
-  isAuthenticated,
-}: TimerConfigurationListProps) {
+/** Presentational only (A2): all logic lives in the hook, authenticated-only. */
+export function TimerConfigurationList() {
   const { configurations, isEmpty, error, remove } =
-    useTimerConfigurationList(isAuthenticated);
+    useTimerConfigurationList();
 
   return (
     <div className="flex w-full max-w-2xl flex-col gap-6">

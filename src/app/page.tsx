@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 import { getCurrentSession } from "@/application/use-cases/get-current-session/get-current-session";
-import { TimerConfigurationMigrationRunner } from "@/ui/components/timer-configuration-migration-runner";
 
 // Force per-request rendering: `getCurrentSession()` reaches `cookies()`
 // only through the session adapter. If `SESSION_SECRET`/`BACKEND_URL` are
@@ -54,7 +53,6 @@ export default async function Home() {
           </form>
         </div>
       </main>
-      <TimerConfigurationMigrationRunner />
     </>
   );
 }

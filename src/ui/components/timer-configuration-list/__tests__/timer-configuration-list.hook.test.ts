@@ -33,7 +33,7 @@ describe("useTimerConfigurationList", () => {
     const config = buildTimerConfiguration();
     listMock.mockResolvedValue({ ok: true, data: [config] });
 
-    const { result } = renderHook(() => useTimerConfigurationList(true));
+    const { result } = renderHook(() => useTimerConfigurationList());
 
     await waitFor(() =>
       expect(result.current.configurations).toEqual([config])
@@ -44,7 +44,7 @@ describe("useTimerConfigurationList", () => {
   it("should expose the empty state when list resolves with []", async () => {
     listMock.mockResolvedValue({ ok: true, data: [] });
 
-    const { result } = renderHook(() => useTimerConfigurationList(true));
+    const { result } = renderHook(() => useTimerConfigurationList());
 
     await waitFor(() => expect(result.current.isEmpty).toBe(true));
   });
@@ -59,7 +59,7 @@ describe("useTimerConfigurationList", () => {
       })
     );
 
-    const { result } = renderHook(() => useTimerConfigurationList(true));
+    const { result } = renderHook(() => useTimerConfigurationList());
     await waitFor(() =>
       expect(result.current.configurations).toEqual([config])
     );
@@ -79,7 +79,7 @@ describe("useTimerConfigurationList", () => {
     listMock.mockResolvedValue({ ok: true, data: [config] });
     removeMock.mockResolvedValue({ ok: false, code: "unknown" });
 
-    const { result } = renderHook(() => useTimerConfigurationList(true));
+    const { result } = renderHook(() => useTimerConfigurationList());
     await waitFor(() =>
       expect(result.current.configurations).toEqual([config])
     );
@@ -97,7 +97,7 @@ describe("useTimerConfigurationList", () => {
   it("should set a load-specific error, distinct from the delete error, when the initial list call fails", async () => {
     listMock.mockResolvedValue({ ok: false, code: "unknown" });
 
-    const { result } = renderHook(() => useTimerConfigurationList(true));
+    const { result } = renderHook(() => useTimerConfigurationList());
 
     await waitFor(() => expect(result.current.error).not.toBeNull());
     expect(result.current.error).not.toBe(
@@ -108,7 +108,7 @@ describe("useTimerConfigurationList", () => {
   it("should not report isEmpty when the initial list call fails", async () => {
     listMock.mockResolvedValue({ ok: false, code: "unknown" });
 
-    const { result } = renderHook(() => useTimerConfigurationList(true));
+    const { result } = renderHook(() => useTimerConfigurationList());
 
     await waitFor(() => expect(result.current.error).not.toBeNull());
     expect(result.current.isEmpty).toBe(false);
@@ -119,7 +119,7 @@ describe("useTimerConfigurationList", () => {
     listMock.mockResolvedValue({ ok: true, data: [config] });
     removeMock.mockResolvedValue({ ok: true, data: null });
 
-    const { result } = renderHook(() => useTimerConfigurationList(true), {
+    const { result } = renderHook(() => useTimerConfigurationList(), {
       wrapper: StrictMode,
     });
     await waitFor(() =>
@@ -140,7 +140,7 @@ describe("useTimerConfigurationList", () => {
     listMock.mockResolvedValue({ ok: true, data: [first, middle, last] });
     removeMock.mockResolvedValue({ ok: false, code: "unknown" });
 
-    const { result } = renderHook(() => useTimerConfigurationList(true));
+    const { result } = renderHook(() => useTimerConfigurationList());
     await waitFor(() =>
       expect(result.current.configurations).toEqual([first, middle, last])
     );

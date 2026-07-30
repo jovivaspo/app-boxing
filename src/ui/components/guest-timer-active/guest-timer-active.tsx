@@ -7,8 +7,11 @@ import type { TimerPhase } from "@/domain/timer-session/timer-session.model";
 import { cn } from "@/lib/utils";
 import { Button } from "@/ui/components/shadcn/button";
 
-import { useTimerActive, WARNING_SECONDS } from "./timer-active.hook";
-import type { TimerActiveProps } from "./timer-active.types";
+import {
+  useGuestTimerActive,
+  WARNING_SECONDS,
+} from "./guest-timer-active.hook";
+import type { GuestTimerActiveProps } from "./guest-timer-active.types";
 
 const PHASE_LABEL: Record<TimerPhase, string> = {
   work: "TRABAJO",
@@ -25,8 +28,8 @@ const PHASE_RING_CLASS: Record<TimerPhase, string> = {
   rest: "stroke-accent",
 };
 
-/** Presentational only (A2): all session logic lives in `useTimerActive`. */
-export function TimerActive(props: TimerActiveProps) {
+/** Presentational only (A2): all session logic lives in `useGuestTimerActive`. Reuses `TimerActive`'s markup, no "error" state. */
+export function GuestTimerActive(props: GuestTimerActiveProps) {
   const {
     status,
     name,
@@ -42,7 +45,7 @@ export function TimerActive(props: TimerActiveProps) {
     primaryIcon,
     onPrimaryAction,
     stop,
-  } = useTimerActive(props);
+  } = useGuestTimerActive(props);
 
   if (status === "finished") {
     return (
@@ -65,7 +68,7 @@ export function TimerActive(props: TimerActiveProps) {
           asChild
           className="font-heading h-16 w-full max-w-md rounded-none text-lg uppercase italic"
         >
-          <Link href="/timers">VOLVER A MIS TIMERS</Link>
+          <Link href="/guest-timer">VOLVER</Link>
         </Button>
       </div>
     );

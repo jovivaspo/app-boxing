@@ -19,15 +19,11 @@ const createBackendTimerConfigurationAdapterMock = vi.fn(
   (_token: string) => ({})
 );
 const notFoundMock = vi.fn();
+const redirectMock = vi.fn();
 const timerConfigurationFormMock = vi.fn(
-  (props: {
-    isAuthenticated: boolean;
-    initialConfiguration: unknown;
-    timerId?: string;
-  }) => (
+  (props: { initialConfiguration: unknown }) => (
     <div data-testid="timer-configuration-form">
-      {String(props.isAuthenticated)}:
-      {JSON.stringify(props.initialConfiguration)}:{props.timerId}
+      {JSON.stringify(props.initialConfiguration)}
     </div>
   )
 );
@@ -63,14 +59,15 @@ vi.mock("next/navigation", () => ({
     notFoundMock();
     throw new Error("NEXT_NOT_FOUND");
   },
+  redirect: (path: string) => {
+    redirectMock(path);
+    throw new Error("NEXT_REDIRECT");
+  },
 }));
 
 vi.mock("@/ui/components/timer-configuration-form", () => ({
-  TimerConfigurationForm: (props: {
-    isAuthenticated: boolean;
-    initialConfiguration: unknown;
-    timerId?: string;
-  }) => timerConfigurationFormMock(props),
+  TimerConfigurationForm: (props: { initialConfiguration: unknown }) =>
+    timerConfigurationFormMock(props),
 }));
 
 const AUTHENTICATED_SESSION = {
@@ -94,23 +91,35 @@ describe("Edit timer page", () => {
     getTimerConfigurationMock.mockClear();
     createBackendTimerConfigurationAdapterMock.mockClear();
     notFoundMock.mockClear();
+    redirectMock.mockClear();
     timerConfigurationFormMock.mockClear();
   });
 
   it("should await props.params and read id before use", async () => {
-    getCurrentSessionExecuteMock.mockResolvedValue(null);
+    const config = buildTimerConfiguration({ id: "tc-1" });
+    getCurrentSessionExecuteMock.mockResolvedValue(AUTHENTICATED_SESSION);
+    getTimerConfigurationExecuteMock.mockResolvedValue(config);
     const { default: EditTimerPage } = await import("../page");
 
     render(
       await EditTimerPage({
         params: Promise.resolve({ id: "tc-1" }),
-        searchParams: Promise.resolve({}),
       })
     );
 
-    expect(screen.getByTestId("timer-configuration-form")).toHaveTextContent(
-      "tc-1"
-    );
+    expect(getTimerConfigurationExecuteMock).toHaveBeenCalledWith("tc-1");
+  });
+
+  it("should redirect to /login when there is no session", async () => {
+    getCurrentSessionExecuteMock.mockResolvedValue(null);
+    const { default: EditTimerPage } = await import("../page");
+
+    await expect(
+      EditTimerPage({ params: Promise.resolve({ id: "tc-1" }) })
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(redirectMock).toHaveBeenCalledWith("/login");
+    expect(getTimerConfigurationMock).not.toHaveBeenCalled();
   });
 
   it("should call notFound() when authenticated and getTimerConfiguration rejects with TimerConfigurationNotFound", async () => {
@@ -121,10 +130,7 @@ describe("Edit timer page", () => {
     const { default: EditTimerPage } = await import("../page");
 
     await expect(
-      EditTimerPage({
-        params: Promise.resolve({ id: "tc-1" }),
-        searchParams: Promise.resolve({}),
-      })
+      EditTimerPage({ params: Promise.resolve({ id: "tc-1" }) })
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
     expect(notFoundMock).toHaveBeenCalledTimes(1);
@@ -137,30 +143,10 @@ describe("Edit timer page", () => {
     const { default: EditTimerPage } = await import("../page");
 
     await expect(
-      EditTimerPage({
-        params: Promise.resolve({ id: "tc-1" }),
-        searchParams: Promise.resolve({}),
-      })
+      EditTimerPage({ params: Promise.resolve({ id: "tc-1" }) })
     ).rejects.toBe(backendError);
 
     expect(notFoundMock).not.toHaveBeenCalled();
-  });
-
-  it("should pass null initialConfiguration for a guest identity (no server-side lookup)", async () => {
-    getCurrentSessionExecuteMock.mockResolvedValue(null);
-    const { default: EditTimerPage } = await import("../page");
-
-    render(
-      await EditTimerPage({
-        params: Promise.resolve({ id: "tc-1" }),
-        searchParams: Promise.resolve({}),
-      })
-    );
-
-    expect(getTimerConfigurationMock).not.toHaveBeenCalled();
-    expect(screen.getByTestId("timer-configuration-form")).toHaveTextContent(
-      "false:null:tc-1"
-    );
   });
 
   it("should pass the fetched configuration as initialConfiguration when authenticated and found", async () => {
@@ -172,7 +158,6 @@ describe("Edit timer page", () => {
     render(
       await EditTimerPage({
         params: Promise.resolve({ id: "tc-1" }),
-        searchParams: Promise.resolve({}),
       })
     );
 

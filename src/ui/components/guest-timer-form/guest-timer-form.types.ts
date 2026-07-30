@@ -1,13 +1,12 @@
 import type { FormEvent } from "react";
 
-import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
+import type { GuestTimerConfigurationPort } from "@/application/ports/guest-timer-configuration.port";
 
-export interface TimerConfigurationFormProps {
-  initialConfiguration: TimerConfiguration | null;
+export interface GuestTimerFormProps {
+  localAdapter?: GuestTimerConfigurationPort;
 }
 
-export interface TimerConfigurationFormState {
-  name: string;
+export interface GuestTimerFormState {
   rounds: number;
   roundMinutes: string;
   roundSeconds: string;
@@ -17,17 +16,10 @@ export interface TimerConfigurationFormState {
   bellSound: boolean;
 }
 
-export interface TimerConfigurationFieldErrors {
-  roundDuration?: string;
-  restDuration?: string;
-}
-
-export interface UseTimerConfigurationFormResult {
-  form: TimerConfigurationFormState;
-  fieldErrors: TimerConfigurationFieldErrors;
-  formError: string | null;
+export interface UseGuestTimerFormResult {
+  form: GuestTimerFormState;
+  isStartEnabled: boolean;
   isSubmitting: boolean;
-  setName: (value: string) => void;
   setRounds: (value: number) => void;
   setRoundMinutes: (value: string) => void;
   setRoundSeconds: (value: string) => void;
