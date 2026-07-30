@@ -121,13 +121,16 @@ These are two structurally different rules:
   `timer-configuration-form.tsx` stays as a real, load-bearing check — not a fallback for a case
   the components already prevent.
 
-### Prefill removal (guest form)
+### Prefill removal (guest form) — reversed post-implementation
 
 `guest-timer-form.hook.ts`'s `useEffect` that reads a previous session from `localAdapter.read()`
-and calls `setForm(toFormState(existing))` is removed. This is issue-mandated ("Valor por defecto
-SIEMPRE 00:00"), not a side effect of the new components. **Tradeoff**: guests lose the ability to
-return to the page and resume their last-used duration — every visit now starts blank. Flagged as
-a deliberate, accepted UX regression per the issue, not an oversight.
+and calls `setForm(toFormState(existing))` was removed in the first pass, per the issue's "Valor
+por defecto SIEMPRE 00:00". After PRs #40–#42 were open, the user explicitly reversed this
+decision during manual testing: every visit to `/guest-timer` (including returning after
+Stop) must load the last saved configuration from `localAdapter` if one exists. The prefill
+`useEffect` was restored unchanged from its pre-issue-#39 form (only the field types differ:
+`number` instead of `string`, matching the rest of this change). This supersedes the issue's
+literal text — the "always 00:00" requirement no longer applies.
 
 ## Affected Areas
 
@@ -137,7 +140,7 @@ a deliberate, accepted UX regression per the issue, not an oversight.
 | `src/ui/components/duration-wheel-input/`                                     | New       | Mobile/tablet trigger + Dialog + wheel |
 | `src/ui/components/shadcn/dialog.tsx`                                         | New       | `npx shadcn add dialog`                |
 | `src/ui/components/guest-timer-form/guest-timer-form.tsx`                     | Modified  | 4 inputs → new components              |
-| `src/ui/components/guest-timer-form/guest-timer-form.hook.ts`                 | Modified  | Remove prefill `useEffect`             |
+| `src/ui/components/guest-timer-form/guest-timer-form.hook.ts`                 | Modified  | Prefill `useEffect` restored (numeric) |
 | `src/ui/components/timer-configuration-form/timer-configuration-form.tsx`     | Modified  | 4 inputs → new components              |
 | `src/ui/components/timer-configuration-form/timer-configuration-form.hook.ts` | Unchanged | `>0` validation stays                  |
 | `src/lib/duration.ts`                                                         | Unchanged | Reused as-is                           |
@@ -148,7 +151,7 @@ a deliberate, accepted UX regression per the issue, not an oversight.
 | Risk                                                                                                   | Likelihood | Mitigation                                                                                                            |
 | ------------------------------------------------------------------------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------- |
 | Custom wheel picker (drag/scroll/snap, no library) is the highest-effort, highest-bug-surface piece    | Med        | Isolated in one component's hook, unit-testable interaction math (position → value) independent of DOM gesture wiring |
-| Losing guest prefill (resume-editing) UX regresses returning guests                                    | Low–Med    | Issue-mandated; explicitly called out, not silent                                                                     |
+| ~~Losing guest prefill (resume-editing) UX regresses returning guests~~ — reversed, see below          | N/A        | Prefill restored per explicit user decision post-implementation                                                       |
 | CSS-toggled dual-render (both variants mounted) doubles DOM nodes per field                            | Low        | Both are cheap (button/input + hidden dialog), no measurable cost at this scale                                       |
 | Wheel picker single-value-per-field choice diverges from issue's reference link (combined mm:ss wheel) | Low        | Flagged in Proposal question round; cheap to change before design/tasks                                               |
 
@@ -172,8 +175,8 @@ removal is isolated.
 - [ ] `guest-timer-form` and `timer-configuration-form` both consume the same two components for
       all 4 duration fields, with no remaining raw `<input type="number">` for duration.
 - [ ] Responsive switch happens at `md:` via Tailwind classes, no JS media-query hook.
-- [ ] `guest-timer-form.hook.ts` no longer reads localStorage for prefill; form always starts at
-      `00:00`.
+- [ ] `guest-timer-form.hook.ts` reads localStorage on mount and prefills the form when a
+      previous configuration exists; starts at `00:00` only when none exists.
 - [ ] `timer-configuration-form.hook.ts`'s `>0` validation and `fieldErrors` display are
       unchanged and still covered by tests.
 - [ ] No native `<input type="time">`, no new npm dependency besides the `dialog` shadcn addition.
