@@ -13,7 +13,15 @@ export function invalidTimerConfiguration(
 }
 
 /**
- * @throws {InvalidTimerConfiguration} rounds, roundDuration, or restDuration is <= 0.
+ * Upper bound for any duration, in seconds: 59:59. Durations are authored and
+ * displayed as a minutes:seconds pair, so a value above this has no
+ * representation in the UI.
+ */
+export const MAX_DURATION_SECONDS = 3599;
+
+/**
+ * @throws {InvalidTimerConfiguration} rounds, roundDuration, or restDuration is <= 0,
+ * or roundDuration/restDuration is above `MAX_DURATION_SECONDS`.
  */
 export function validateTimerConfiguration(
   input: TimerConfiguration
@@ -33,11 +41,20 @@ export function validateTimerConfiguration(
       "rounds, roundDuration, and restDuration must be greater than 0"
     );
   }
+  if (
+    input.roundDuration > MAX_DURATION_SECONDS ||
+    input.restDuration > MAX_DURATION_SECONDS
+  ) {
+    throw invalidTimerConfiguration(
+      `roundDuration and restDuration must not exceed ${MAX_DURATION_SECONDS} seconds`
+    );
+  }
   return input;
 }
 
 /**
- * @throws {InvalidTimerConfiguration} rounds or roundDuration is <= 0.
+ * @throws {InvalidTimerConfiguration} rounds or roundDuration is <= 0, or
+ * roundDuration is above `MAX_DURATION_SECONDS`.
  * Guest-only sibling of `validateTimerConfiguration`: intentionally skips
  * `restDuration` (guests don't set it), never weakens the shared validator.
  */
@@ -47,6 +64,11 @@ export function validateGuestTimerConfiguration<
   if (input.rounds <= 0 || input.roundDuration <= 0) {
     throw invalidTimerConfiguration(
       "rounds and roundDuration must be greater than 0"
+    );
+  }
+  if (input.roundDuration > MAX_DURATION_SECONDS) {
+    throw invalidTimerConfiguration(
+      `roundDuration must not exceed ${MAX_DURATION_SECONDS} seconds`
     );
   }
   return input;
