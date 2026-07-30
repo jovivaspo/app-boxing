@@ -54,41 +54,48 @@ export function DurationWheelInput({
         <DialogHeader>
           <DialogTitle>{ariaLabel}</DialogTitle>
         </DialogHeader>
-        <div
-          ref={containerRef}
-          role="listbox"
-          aria-label={ariaLabel}
-          aria-activedescendant={`${optionIdPrefix}-${draft}`}
-          tabIndex={0}
-          onScroll={(event) => handleScroll(event.currentTarget.scrollTop)}
-          onKeyDown={(event) => {
-            if (event.key === "ArrowUp") {
-              event.preventDefault();
-              handleArrowKey("up");
-            } else if (event.key === "ArrowDown") {
-              event.preventDefault();
-              handleArrowKey("down");
-            }
-          }}
-          style={{
-            height: CONTAINER_HEIGHT,
-            paddingTop: CENTER_PADDING,
-            paddingBottom: CENTER_PADDING,
-          }}
-          className="snap-y snap-mandatory overflow-y-scroll"
-        >
-          {WHEEL_VALUES.map((item) => (
-            <div
-              key={item}
-              id={`${optionIdPrefix}-${item}`}
-              role="option"
-              aria-selected={item === draft}
-              style={{ height: ITEM_HEIGHT }}
-              className="flex snap-center items-center justify-center text-2xl"
-            >
-              {String(item).padStart(2, "0")}
-            </div>
-          ))}
+        <div className="relative">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 z-10 border-y-2 border-orange-500"
+            style={{ top: CENTER_PADDING, height: ITEM_HEIGHT }}
+          />
+          <div
+            ref={containerRef}
+            role="listbox"
+            aria-label={ariaLabel}
+            aria-activedescendant={`${optionIdPrefix}-${draft}`}
+            tabIndex={0}
+            onScroll={(event) => handleScroll(event.currentTarget.scrollTop)}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowUp") {
+                event.preventDefault();
+                handleArrowKey("up");
+              } else if (event.key === "ArrowDown") {
+                event.preventDefault();
+                handleArrowKey("down");
+              }
+            }}
+            style={{
+              height: CONTAINER_HEIGHT,
+              paddingTop: CENTER_PADDING,
+              paddingBottom: CENTER_PADDING,
+            }}
+            className="snap-y snap-mandatory overflow-y-scroll"
+          >
+            {WHEEL_VALUES.map((item) => (
+              <div
+                key={item}
+                id={`${optionIdPrefix}-${item}`}
+                role="option"
+                aria-selected={item === draft}
+                style={{ height: ITEM_HEIGHT }}
+                className="flex snap-center items-center justify-center text-2xl"
+              >
+                {String(item).padStart(2, "0")}
+              </div>
+            ))}
+          </div>
         </div>
         <DialogFooter>
           <Button type="button" onClick={handleConfirm}>
