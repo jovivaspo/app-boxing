@@ -16,10 +16,10 @@ import type {
 
 const EMPTY_FORM: GuestTimerFormState = {
   rounds: 0,
-  roundMinutes: "",
-  roundSeconds: "",
-  restMinutes: "",
-  restSeconds: "",
+  roundMinutes: 0,
+  roundSeconds: 0,
+  restMinutes: 0,
+  restSeconds: 0,
   warnBeforeEnd: true,
   bellSound: true,
 };
@@ -34,10 +34,10 @@ function toFormState(config: TimerConfiguration): GuestTimerFormState {
   const rest = splitDuration(config.restDuration);
   return {
     rounds: config.rounds,
-    roundMinutes: String(round.minutes),
-    roundSeconds: String(round.seconds),
-    restMinutes: String(rest.minutes),
-    restSeconds: String(rest.seconds),
+    roundMinutes: round.minutes,
+    roundSeconds: round.seconds,
+    restMinutes: rest.minutes,
+    restSeconds: rest.seconds,
     warnBeforeEnd: config.warnBeforeEnd,
     bellSound: config.bellSound,
   };
@@ -51,9 +51,9 @@ export function useGuestTimerForm({
   const [form, setForm] = useState<GuestTimerFormState>(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Prefill from the guest's existing single record, if any, so returning to
-  // `/guest-timer` after a previous START edits the same config instead of
-  // always starting blank.
+  // Prefill from the guest's existing single record, if any, so every visit
+  // to `/guest-timer` (including returning after Stop) shows the last-used
+  // values instead of always starting blank.
   useEffect(() => {
     let cancelled = false;
 
@@ -72,19 +72,19 @@ export function useGuestTimerForm({
     []
   );
   const setRoundMinutes = useCallback(
-    (value: string) => setForm((f) => ({ ...f, roundMinutes: value })),
+    (value: number) => setForm((f) => ({ ...f, roundMinutes: value })),
     []
   );
   const setRoundSeconds = useCallback(
-    (value: string) => setForm((f) => ({ ...f, roundSeconds: value })),
+    (value: number) => setForm((f) => ({ ...f, roundSeconds: value })),
     []
   );
   const setRestMinutes = useCallback(
-    (value: string) => setForm((f) => ({ ...f, restMinutes: value })),
+    (value: number) => setForm((f) => ({ ...f, restMinutes: value })),
     []
   );
   const setRestSeconds = useCallback(
-    (value: string) => setForm((f) => ({ ...f, restSeconds: value })),
+    (value: number) => setForm((f) => ({ ...f, restSeconds: value })),
     []
   );
   const setWarnBeforeEnd = useCallback(
@@ -96,14 +96,8 @@ export function useGuestTimerForm({
     []
   );
 
-  const roundDuration = toTotalSeconds(
-    Number(form.roundMinutes),
-    Number(form.roundSeconds)
-  );
-  const restDuration = toTotalSeconds(
-    Number(form.restMinutes),
-    Number(form.restSeconds)
-  );
+  const roundDuration = toTotalSeconds(form.roundMinutes, form.roundSeconds);
+  const restDuration = toTotalSeconds(form.restMinutes, form.restSeconds);
   const isStartEnabled = form.rounds > 0 && roundDuration > 0;
 
   const handleSubmit = useCallback(
