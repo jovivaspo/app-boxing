@@ -1,10 +1,11 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { toTotalSeconds } from "@/lib/duration";
+import { splitDuration, toTotalSeconds } from "@/lib/duration";
+import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import { createLocalTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/local-timer-configuration.adapter";
 
 import type {
@@ -28,6 +29,20 @@ const EMPTY_FORM: GuestTimerFormState = {
 // callers can inject a fake at the port boundary.
 const defaultLocalAdapter = createLocalTimerConfigurationAdapter();
 
+function toFormState(config: TimerConfiguration): GuestTimerFormState {
+  const round = splitDuration(config.roundDuration);
+  const rest = splitDuration(config.restDuration);
+  return {
+    rounds: config.rounds,
+    roundMinutes: String(round.minutes),
+    roundSeconds: String(round.seconds),
+    restMinutes: String(rest.minutes),
+    restSeconds: String(rest.seconds),
+    warnBeforeEnd: config.warnBeforeEnd,
+    bellSound: config.bellSound,
+  };
+}
+
 /** Owns the guest-only `/guest-timer` form logic (A2): no `name` field, START gated on rounds/roundDuration only. */
 export function useGuestTimerForm({
   localAdapter = defaultLocalAdapter,
@@ -35,6 +50,22 @@ export function useGuestTimerForm({
   const router = useRouter();
   const [form, setForm] = useState<GuestTimerFormState>(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Prefill from the guest's existing single record, if any, so returning to
+  // `/guest-timer` after a previous START edits the same config instead of
+  // always starting blank.
+  useEffect(() => {
+    let cancelled = false;
+
+    localAdapter.read().then((existing) => {
+      if (cancelled || !existing) return;
+      setForm(toFormState(existing));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [localAdapter]);
 
   const setRounds = useCallback(
     (value: number) => setForm((f) => ({ ...f, rounds: value })),
