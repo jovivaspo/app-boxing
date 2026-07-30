@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type {
   UseDurationWheelInputParams,
@@ -10,6 +10,7 @@ import type {
 const MIN_VALUE = 0;
 const MAX_VALUE = 59;
 export const ITEM_HEIGHT = 40;
+export const CONTAINER_HEIGHT = 160;
 
 /** Pure: maps a scroll position to the nearest clamped 0-59 value. */
 export function scrollTopToValue(scrollTop: number, itemHeight: number) {
@@ -33,6 +34,7 @@ export function useDurationWheelInput({
 }: UseDurationWheelInputParams): UseDurationWheelInputResult {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(value);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -44,6 +46,12 @@ export function useDurationWheelInput({
     [value]
   );
 
+  useEffect(() => {
+    if (open && containerRef.current) {
+      containerRef.current.scrollTop = valueToScrollTop(value, ITEM_HEIGHT);
+    }
+  }, [open, value]);
+
   const handleScroll = useCallback((scrollTop: number) => {
     setDraft(scrollTopToValue(scrollTop, ITEM_HEIGHT));
   }, []);
@@ -53,5 +61,24 @@ export function useDurationWheelInput({
     setOpen(false);
   }, [draft, onChange]);
 
-  return { open, draft, handleOpenChange, handleScroll, handleConfirm };
+  const handleArrowKey = useCallback((direction: "up" | "down") => {
+    setDraft((current) => {
+      const next = direction === "up" ? current - 1 : current + 1;
+      const clamped = Math.min(Math.max(next, MIN_VALUE), MAX_VALUE);
+      if (containerRef.current) {
+        containerRef.current.scrollTop = valueToScrollTop(clamped, ITEM_HEIGHT);
+      }
+      return clamped;
+    });
+  }, []);
+
+  return {
+    open,
+    draft,
+    containerRef,
+    handleOpenChange,
+    handleScroll,
+    handleConfirm,
+    handleArrowKey,
+  };
 }

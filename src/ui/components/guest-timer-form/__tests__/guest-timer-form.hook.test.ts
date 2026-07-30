@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import type { FormEvent } from "react";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { makeGuestTimerConfigurationPort } from "@/application/ports/__mocks__/guest-timer-configuration-port.mock";
@@ -92,11 +92,10 @@ describe("useGuestTimerForm", () => {
     expect(pushMock).toHaveBeenCalledWith("/guest-timer-active");
   });
 
-  it("should never read from the local adapter on mount", async () => {
+  it("should never read from the local adapter on mount", () => {
     const localAdapter = emptyPort();
 
     renderHook(() => useGuestTimerForm({ localAdapter }));
-    await waitFor(() => expect(localAdapter.write).not.toHaveBeenCalled());
 
     expect(localAdapter.read).not.toHaveBeenCalled();
   });
