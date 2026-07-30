@@ -1,11 +1,10 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { splitDuration, toTotalSeconds } from "@/lib/duration";
-import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
+import { toTotalSeconds } from "@/lib/duration";
 import { createLocalTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/local-timer-configuration.adapter";
 
 import type {
@@ -16,10 +15,10 @@ import type {
 
 const EMPTY_FORM: GuestTimerFormState = {
   rounds: 0,
-  roundMinutes: "",
-  roundSeconds: "",
-  restMinutes: "",
-  restSeconds: "",
+  roundMinutes: 0,
+  roundSeconds: 0,
+  restMinutes: 0,
+  restSeconds: 0,
   warnBeforeEnd: true,
   bellSound: true,
 };
@@ -29,21 +28,7 @@ const EMPTY_FORM: GuestTimerFormState = {
 // callers can inject a fake at the port boundary.
 const defaultLocalAdapter = createLocalTimerConfigurationAdapter();
 
-function toFormState(config: TimerConfiguration): GuestTimerFormState {
-  const round = splitDuration(config.roundDuration);
-  const rest = splitDuration(config.restDuration);
-  return {
-    rounds: config.rounds,
-    roundMinutes: String(round.minutes),
-    roundSeconds: String(round.seconds),
-    restMinutes: String(rest.minutes),
-    restSeconds: String(rest.seconds),
-    warnBeforeEnd: config.warnBeforeEnd,
-    bellSound: config.bellSound,
-  };
-}
-
-/** Owns the guest-only `/guest-timer` form logic (A2): no `name` field, START gated on rounds/roundDuration only. */
+/** Owns the guest-only `/guest-timer` form logic (A2): no `name` field, START gated on rounds/roundDuration only. Always initializes blank — no prefill from a previous session. */
 export function useGuestTimerForm({
   localAdapter = defaultLocalAdapter,
 }: GuestTimerFormProps): UseGuestTimerFormResult {
@@ -51,40 +36,24 @@ export function useGuestTimerForm({
   const [form, setForm] = useState<GuestTimerFormState>(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Prefill from the guest's existing single record, if any, so returning to
-  // `/guest-timer` after a previous START edits the same config instead of
-  // always starting blank.
-  useEffect(() => {
-    let cancelled = false;
-
-    localAdapter.read().then((existing) => {
-      if (cancelled || !existing) return;
-      setForm(toFormState(existing));
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [localAdapter]);
-
   const setRounds = useCallback(
     (value: number) => setForm((f) => ({ ...f, rounds: value })),
     []
   );
   const setRoundMinutes = useCallback(
-    (value: string) => setForm((f) => ({ ...f, roundMinutes: value })),
+    (value: number) => setForm((f) => ({ ...f, roundMinutes: value })),
     []
   );
   const setRoundSeconds = useCallback(
-    (value: string) => setForm((f) => ({ ...f, roundSeconds: value })),
+    (value: number) => setForm((f) => ({ ...f, roundSeconds: value })),
     []
   );
   const setRestMinutes = useCallback(
-    (value: string) => setForm((f) => ({ ...f, restMinutes: value })),
+    (value: number) => setForm((f) => ({ ...f, restMinutes: value })),
     []
   );
   const setRestSeconds = useCallback(
-    (value: string) => setForm((f) => ({ ...f, restSeconds: value })),
+    (value: number) => setForm((f) => ({ ...f, restSeconds: value })),
     []
   );
   const setWarnBeforeEnd = useCallback(
@@ -96,14 +65,8 @@ export function useGuestTimerForm({
     []
   );
 
-  const roundDuration = toTotalSeconds(
-    Number(form.roundMinutes),
-    Number(form.roundSeconds)
-  );
-  const restDuration = toTotalSeconds(
-    Number(form.restMinutes),
-    Number(form.restSeconds)
-  );
+  const roundDuration = toTotalSeconds(form.roundMinutes, form.roundSeconds);
+  const restDuration = toTotalSeconds(form.restMinutes, form.restSeconds);
   const isStartEnabled = form.rounds > 0 && roundDuration > 0;
 
   const handleSubmit = useCallback(

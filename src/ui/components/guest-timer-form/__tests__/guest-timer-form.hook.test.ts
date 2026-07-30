@@ -4,7 +4,6 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { makeGuestTimerConfigurationPort } from "@/application/ports/__mocks__/guest-timer-configuration-port.mock";
-import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders__/timer-configuration.builder";
 
 const pushMock = vi.fn();
 
@@ -29,20 +28,18 @@ describe("useGuestTimerForm", () => {
     });
   }
 
-  it("should disable START when no input is provided", async () => {
+  it("should disable START when no input is provided", () => {
     const { result } = renderHook(() =>
       useGuestTimerForm({ localAdapter: emptyPort() })
     );
 
-    await waitFor(() => expect(result.current.form.rounds).toBe(0));
     expect(result.current.isStartEnabled).toBe(false);
   });
 
-  it("should disable START when only rounds is set", async () => {
+  it("should disable START when only rounds is set", () => {
     const { result } = renderHook(() =>
       useGuestTimerForm({ localAdapter: emptyPort() })
     );
-    await waitFor(() => expect(result.current.form.rounds).toBe(0));
 
     act(() => {
       result.current.setRounds(3);
@@ -51,42 +48,39 @@ describe("useGuestTimerForm", () => {
     expect(result.current.isStartEnabled).toBe(false);
   });
 
-  it("should disable START when only round duration is set", async () => {
+  it("should disable START when only round duration is set", () => {
     const { result } = renderHook(() =>
       useGuestTimerForm({ localAdapter: emptyPort() })
     );
-    await waitFor(() => expect(result.current.form.rounds).toBe(0));
 
     act(() => {
-      result.current.setRoundMinutes("1");
+      result.current.setRoundMinutes(1);
     });
 
     expect(result.current.isStartEnabled).toBe(false);
   });
 
-  it("should enable START when rounds and round duration are both set, regardless of rest duration", async () => {
+  it("should enable START when rounds and round duration are both set, regardless of rest duration", () => {
     const { result } = renderHook(() =>
       useGuestTimerForm({ localAdapter: emptyPort() })
     );
-    await waitFor(() => expect(result.current.form.rounds).toBe(0));
 
     act(() => {
       result.current.setRounds(3);
-      result.current.setRoundMinutes("1");
+      result.current.setRoundMinutes(1);
     });
 
-    expect(result.current.form.restMinutes).toBe("");
+    expect(result.current.form.restMinutes).toBe(0);
     expect(result.current.isStartEnabled).toBe(true);
   });
 
   it("should write via the injected port and navigate to /guest-timer-active on START", async () => {
     const localAdapter = emptyPort();
     const { result } = renderHook(() => useGuestTimerForm({ localAdapter }));
-    await waitFor(() => expect(result.current.form.rounds).toBe(0));
 
     act(() => {
       result.current.setRounds(3);
-      result.current.setRoundMinutes("1");
+      result.current.setRoundMinutes(1);
     });
     await act(async () => {
       result.current.handleSubmit(fakeSubmitEvent());
@@ -98,30 +92,28 @@ describe("useGuestTimerForm", () => {
     expect(pushMock).toHaveBeenCalledWith("/guest-timer-active");
   });
 
-  it("should prefill the form from an existing guest configuration on mount", async () => {
-    const existing = buildTimerConfiguration({
-      rounds: 4,
-      roundDuration: 90,
-      restDuration: 30,
-      warnBeforeEnd: false,
-      bellSound: false,
-    });
-    const localAdapter = makeGuestTimerConfigurationPort({
-      read: vi.fn().mockResolvedValue(existing),
-    });
+  it("should never read from the local adapter on mount", async () => {
+    const localAdapter = emptyPort();
 
-    const { result } = renderHook(() => useGuestTimerForm({ localAdapter }));
+    renderHook(() => useGuestTimerForm({ localAdapter }));
+    await waitFor(() => expect(localAdapter.write).not.toHaveBeenCalled());
 
-    await waitFor(() => expect(result.current.form.rounds).toBe(4));
+    expect(localAdapter.read).not.toHaveBeenCalled();
+  });
+
+  it("should initialize duration fields to 0 on mount", () => {
+    const { result } = renderHook(() =>
+      useGuestTimerForm({ localAdapter: emptyPort() })
+    );
+
     expect(result.current.form).toEqual({
-      rounds: 4,
-      roundMinutes: "1",
-      roundSeconds: "30",
-      restMinutes: "0",
-      restSeconds: "30",
-      warnBeforeEnd: false,
-      bellSound: false,
+      rounds: 0,
+      roundMinutes: 0,
+      roundSeconds: 0,
+      restMinutes: 0,
+      restSeconds: 0,
+      warnBeforeEnd: true,
+      bellSound: true,
     });
-    expect(result.current.isStartEnabled).toBe(true);
   });
 });
