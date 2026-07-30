@@ -9,10 +9,10 @@ export interface TimerConfigurationFormProps {
 export interface TimerConfigurationFormState {
   name: string;
   rounds: number;
-  roundMinutes: string;
-  roundSeconds: string;
-  restMinutes: string;
-  restSeconds: string;
+  roundMinutes: number;
+  roundSeconds: number;
+  restMinutes: number;
+  restSeconds: number;
   warnBeforeEnd: boolean;
   bellSound: boolean;
 }
@@ -29,10 +29,10 @@ export interface UseTimerConfigurationFormResult {
   isSubmitting: boolean;
   setName: (value: string) => void;
   setRounds: (value: number) => void;
-  setRoundMinutes: (value: string) => void;
-  setRoundSeconds: (value: string) => void;
-  setRestMinutes: (value: string) => void;
-  setRestSeconds: (value: string) => void;
+  setRoundMinutes: (value: number) => void;
+  setRoundSeconds: (value: number) => void;
+  setRestMinutes: (value: number) => void;
+  setRestSeconds: (value: number) => void;
   setWarnBeforeEnd: (value: boolean) => void;
   setBellSound: (value: boolean) => void;
   handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
