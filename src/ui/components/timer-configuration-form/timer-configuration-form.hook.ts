@@ -19,10 +19,10 @@ import type {
 const EMPTY_FORM: TimerConfigurationFormState = {
   name: "",
   rounds: 1,
-  roundMinutes: "",
-  roundSeconds: "",
-  restMinutes: "",
-  restSeconds: "",
+  roundMinutes: 0,
+  roundSeconds: 0,
+  restMinutes: 0,
+  restSeconds: 0,
   warnBeforeEnd: true,
   bellSound: true,
 };
@@ -40,10 +40,10 @@ function toFormState(config: TimerConfiguration): TimerConfigurationFormState {
   return {
     name: config.name,
     rounds: config.rounds,
-    roundMinutes: String(round.minutes),
-    roundSeconds: String(round.seconds),
-    restMinutes: String(rest.minutes),
-    restSeconds: String(rest.seconds),
+    roundMinutes: round.minutes,
+    roundSeconds: round.seconds,
+    restMinutes: rest.minutes,
+    restSeconds: rest.seconds,
     warnBeforeEnd: config.warnBeforeEnd,
     bellSound: config.bellSound,
   };
@@ -74,19 +74,19 @@ export function useTimerConfigurationForm({
     []
   );
   const setRoundMinutes = useCallback(
-    (value: string) => setForm((f) => ({ ...f, roundMinutes: value })),
+    (value: number) => setForm((f) => ({ ...f, roundMinutes: value })),
     []
   );
   const setRoundSeconds = useCallback(
-    (value: string) => setForm((f) => ({ ...f, roundSeconds: value })),
+    (value: number) => setForm((f) => ({ ...f, roundSeconds: value })),
     []
   );
   const setRestMinutes = useCallback(
-    (value: string) => setForm((f) => ({ ...f, restMinutes: value })),
+    (value: number) => setForm((f) => ({ ...f, restMinutes: value })),
     []
   );
   const setRestSeconds = useCallback(
-    (value: string) => setForm((f) => ({ ...f, restSeconds: value })),
+    (value: number) => setForm((f) => ({ ...f, restSeconds: value })),
     []
   );
   const setWarnBeforeEnd = useCallback(
@@ -104,13 +104,10 @@ export function useTimerConfigurationForm({
       setFormError(null);
 
       const roundDuration = toTotalSeconds(
-        Number(form.roundMinutes),
-        Number(form.roundSeconds)
+        form.roundMinutes,
+        form.roundSeconds
       );
-      const restDuration = toTotalSeconds(
-        Number(form.restMinutes),
-        Number(form.restSeconds)
-      );
+      const restDuration = toTotalSeconds(form.restMinutes, form.restSeconds);
       const errors: TimerConfigurationFieldErrors = {};
       if (roundDuration <= 0) {
         errors.roundDuration = "La duración de trabajo debe ser mayor a 0.";
