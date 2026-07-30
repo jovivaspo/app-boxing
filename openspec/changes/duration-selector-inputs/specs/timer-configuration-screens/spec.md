@@ -64,15 +64,22 @@ hook.
 ### Requirement: Guest timer form duration fields
 
 `guest-timer-form` MUST use `DurationNumberInput`/`DurationWheelInput` for
-all 4 duration fields, MUST always initialize every field to `00` on load,
-and MUST NOT read any previously stored duration from `localStorage` for
-prefill.
+all 4 duration fields. On every mount — including returning from
+`/guest-timer-active` after Stop — it MUST read the guest's stored
+configuration from `localStorage` and prefill all fields when a record
+exists; it MUST initialize every field to `00` only when no record exists.
 
-#### Scenario: Form always starts blank
+#### Scenario: Form prefills from a stored configuration
 
 - GIVEN a guest previously submitted a session with non-zero durations
-- WHEN the guest timer form loads again
-- THEN every duration field MUST show `00`, with no localStorage read for prefill
+- WHEN the guest timer form loads (fresh visit or returning after Stop)
+- THEN every duration field MUST show the stored values, converted via `splitDuration`
+
+#### Scenario: Form starts blank when no configuration is stored
+
+- GIVEN no guest configuration exists in `localStorage`
+- WHEN the guest timer form loads
+- THEN every duration field MUST show `00`
 
 #### Scenario: Round-trip through duration helpers is unaffected
 

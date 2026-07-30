@@ -5,12 +5,11 @@ import { Save } from "lucide-react";
 import { Button } from "@/ui/components/shadcn/button";
 import { Switch } from "@/ui/components/shadcn/switch";
 import { RoundsStepper } from "@/ui/components/rounds-stepper";
+import { DurationNumberInput } from "@/ui/components/duration-number-input";
+import { DurationWheelInput } from "@/ui/components/duration-wheel-input";
 
 import { useTimerConfigurationForm } from "./timer-configuration-form.hook";
 import type { TimerConfigurationFormProps } from "./timer-configuration-form.types";
-
-const DURATION_INPUT_CLASSNAME =
-  "font-heading text-primary w-12 border-none bg-transparent p-0 text-center text-2xl focus:border-b-2 focus:border-primary focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
 
 /** Presentational only (A2): all logic lives in the hook. */
 export function TimerConfigurationForm(props: TimerConfigurationFormProps) {
@@ -67,25 +66,34 @@ export function TimerConfigurationForm(props: TimerConfigurationFormProps) {
           <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
             Trabajo
           </span>
-          <div className="flex items-baseline justify-center gap-1">
-            <input
-              type="number"
-              min={0}
+          <div className="hidden items-baseline justify-center gap-1 md:flex">
+            <DurationNumberInput
               aria-label="Minutos de trabajo"
               value={form.roundMinutes}
-              onChange={(event) => setRoundMinutes(event.target.value)}
-              className={DURATION_INPUT_CLASSNAME}
+              onChange={setRoundMinutes}
             />
             <span className="font-heading text-muted-foreground text-2xl">
               :
             </span>
-            <input
-              type="number"
-              min={0}
+            <DurationNumberInput
               aria-label="Segundos de trabajo"
               value={form.roundSeconds}
-              onChange={(event) => setRoundSeconds(event.target.value)}
-              className={DURATION_INPUT_CLASSNAME}
+              onChange={setRoundSeconds}
+            />
+          </div>
+          <div className="flex items-baseline justify-center gap-1 md:hidden">
+            <DurationWheelInput
+              aria-label="Minutos de trabajo"
+              value={form.roundMinutes}
+              onChange={setRoundMinutes}
+            />
+            <span className="font-heading text-muted-foreground text-2xl">
+              :
+            </span>
+            <DurationWheelInput
+              aria-label="Segundos de trabajo"
+              value={form.roundSeconds}
+              onChange={setRoundSeconds}
             />
           </div>
           {fieldErrors.roundDuration && (
@@ -99,25 +107,34 @@ export function TimerConfigurationForm(props: TimerConfigurationFormProps) {
           <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
             Descanso
           </span>
-          <div className="flex items-baseline justify-center gap-1">
-            <input
-              type="number"
-              min={0}
+          <div className="hidden items-baseline justify-center gap-1 md:flex">
+            <DurationNumberInput
               aria-label="Minutos de descanso"
               value={form.restMinutes}
-              onChange={(event) => setRestMinutes(event.target.value)}
-              className={DURATION_INPUT_CLASSNAME}
+              onChange={setRestMinutes}
             />
             <span className="font-heading text-muted-foreground text-2xl">
               :
             </span>
-            <input
-              type="number"
-              min={0}
+            <DurationNumberInput
               aria-label="Segundos de descanso"
               value={form.restSeconds}
-              onChange={(event) => setRestSeconds(event.target.value)}
-              className={DURATION_INPUT_CLASSNAME}
+              onChange={setRestSeconds}
+            />
+          </div>
+          <div className="flex items-baseline justify-center gap-1 md:hidden">
+            <DurationWheelInput
+              aria-label="Minutos de descanso"
+              value={form.restMinutes}
+              onChange={setRestMinutes}
+            />
+            <span className="font-heading text-muted-foreground text-2xl">
+              :
+            </span>
+            <DurationWheelInput
+              aria-label="Segundos de descanso"
+              value={form.restSeconds}
+              onChange={setRestSeconds}
             />
           </div>
           {fieldErrors.restDuration && (
