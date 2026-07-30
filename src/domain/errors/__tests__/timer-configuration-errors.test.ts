@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders__/timer-configuration.builder";
 import {
+  MAX_DURATION_SECONDS,
   timerConfigurationNotFound,
   validateGuestTimerConfiguration,
   validateTimerConfiguration,
@@ -39,6 +40,35 @@ describe("validateTimerConfiguration", () => {
     );
   });
 
+  it("should throw when roundDuration exceeds the maximum duration", () => {
+    const config = buildTimerConfiguration({
+      roundDuration: MAX_DURATION_SECONDS + 1,
+    });
+
+    expect(() => validateTimerConfiguration(config)).toThrow(
+      expect.objectContaining({ _tag: "InvalidTimerConfiguration" })
+    );
+  });
+
+  it("should throw when restDuration exceeds the maximum duration", () => {
+    const config = buildTimerConfiguration({
+      restDuration: MAX_DURATION_SECONDS + 1,
+    });
+
+    expect(() => validateTimerConfiguration(config)).toThrow(
+      expect.objectContaining({ _tag: "InvalidTimerConfiguration" })
+    );
+  });
+
+  it("should not throw when durations are exactly the maximum duration", () => {
+    const config = buildTimerConfiguration({
+      roundDuration: MAX_DURATION_SECONDS,
+      restDuration: MAX_DURATION_SECONDS,
+    });
+
+    expect(() => validateTimerConfiguration(config)).not.toThrow();
+  });
+
   it("should return the input unchanged when all fields are valid", () => {
     const config = buildTimerConfiguration();
 
@@ -70,6 +100,24 @@ describe("validateGuestTimerConfiguration", () => {
       rounds: 3,
       roundDuration: 30,
       restDuration: 0,
+    });
+
+    expect(() => validateGuestTimerConfiguration(config)).not.toThrow();
+  });
+
+  it("should throw when roundDuration exceeds the maximum duration", () => {
+    const config = buildTimerConfiguration({
+      roundDuration: MAX_DURATION_SECONDS + 1,
+    });
+
+    expect(() => validateGuestTimerConfiguration(config)).toThrow(
+      expect.objectContaining({ _tag: "InvalidTimerConfiguration" })
+    );
+  });
+
+  it("should not throw when restDuration exceeds the maximum duration", () => {
+    const config = buildTimerConfiguration({
+      restDuration: MAX_DURATION_SECONDS + 1,
     });
 
     expect(() => validateGuestTimerConfiguration(config)).not.toThrow();

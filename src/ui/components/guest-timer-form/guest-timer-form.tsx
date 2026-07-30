@@ -5,12 +5,11 @@ import { Play } from "lucide-react";
 import { Button } from "@/ui/components/shadcn/button";
 import { Switch } from "@/ui/components/shadcn/switch";
 import { RoundsStepper } from "@/ui/components/rounds-stepper";
+import { DurationNumberInput } from "@/ui/components/duration-number-input";
+import { DurationWheelInput } from "@/ui/components/duration-wheel-input";
 
 import { useGuestTimerForm } from "./guest-timer-form.hook";
 import type { GuestTimerFormProps } from "./guest-timer-form.types";
-
-const DURATION_INPUT_CLASSNAME =
-  "font-heading text-primary w-12 border-none bg-transparent p-0 text-center text-2xl focus:border-b-2 focus:border-primary focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
 
 /** Presentational only (A2): all logic lives in `useGuestTimerForm`. No `name` field — guest-only route. */
 export function GuestTimerForm(props: GuestTimerFormProps) {
@@ -46,25 +45,37 @@ export function GuestTimerForm(props: GuestTimerFormProps) {
             Trabajo
           </span>
           <div className="flex items-baseline justify-center gap-1">
-            <input
-              type="number"
-              min={0}
-              aria-label="Minutos de trabajo"
-              value={form.roundMinutes}
-              onChange={(event) => setRoundMinutes(event.target.value)}
-              className={DURATION_INPUT_CLASSNAME}
-            />
+            <div className="hidden md:block">
+              <DurationNumberInput
+                value={form.roundMinutes}
+                onChange={setRoundMinutes}
+                aria-label="Minutos de trabajo"
+              />
+            </div>
+            <div className="md:hidden">
+              <DurationWheelInput
+                value={form.roundMinutes}
+                onChange={setRoundMinutes}
+                aria-label="Minutos de trabajo"
+              />
+            </div>
             <span className="font-heading text-muted-foreground text-2xl">
               :
             </span>
-            <input
-              type="number"
-              min={0}
-              aria-label="Segundos de trabajo"
-              value={form.roundSeconds}
-              onChange={(event) => setRoundSeconds(event.target.value)}
-              className={DURATION_INPUT_CLASSNAME}
-            />
+            <div className="hidden md:block">
+              <DurationNumberInput
+                value={form.roundSeconds}
+                onChange={setRoundSeconds}
+                aria-label="Segundos de trabajo"
+              />
+            </div>
+            <div className="md:hidden">
+              <DurationWheelInput
+                value={form.roundSeconds}
+                onChange={setRoundSeconds}
+                aria-label="Segundos de trabajo"
+              />
+            </div>
           </div>
         </div>
 
@@ -73,25 +84,37 @@ export function GuestTimerForm(props: GuestTimerFormProps) {
             Descanso
           </span>
           <div className="flex items-baseline justify-center gap-1">
-            <input
-              type="number"
-              min={0}
-              aria-label="Minutos de descanso"
-              value={form.restMinutes}
-              onChange={(event) => setRestMinutes(event.target.value)}
-              className={DURATION_INPUT_CLASSNAME}
-            />
+            <div className="hidden md:block">
+              <DurationNumberInput
+                value={form.restMinutes}
+                onChange={setRestMinutes}
+                aria-label="Minutos de descanso"
+              />
+            </div>
+            <div className="md:hidden">
+              <DurationWheelInput
+                value={form.restMinutes}
+                onChange={setRestMinutes}
+                aria-label="Minutos de descanso"
+              />
+            </div>
             <span className="font-heading text-muted-foreground text-2xl">
               :
             </span>
-            <input
-              type="number"
-              min={0}
-              aria-label="Segundos de descanso"
-              value={form.restSeconds}
-              onChange={(event) => setRestSeconds(event.target.value)}
-              className={DURATION_INPUT_CLASSNAME}
-            />
+            <div className="hidden md:block">
+              <DurationNumberInput
+                value={form.restSeconds}
+                onChange={setRestSeconds}
+                aria-label="Segundos de descanso"
+              />
+            </div>
+            <div className="md:hidden">
+              <DurationWheelInput
+                value={form.restSeconds}
+                onChange={setRestSeconds}
+                aria-label="Segundos de descanso"
+              />
+            </div>
           </div>
         </div>
       </div>
