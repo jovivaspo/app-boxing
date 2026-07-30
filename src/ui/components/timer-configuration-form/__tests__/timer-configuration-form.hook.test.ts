@@ -45,10 +45,10 @@ describe("useTimerConfigurationForm", () => {
       useTimerConfigurationForm({ initialConfiguration: config })
     );
 
-    expect(result.current.form.roundMinutes).toBe("1");
-    expect(result.current.form.roundSeconds).toBe("30");
-    expect(result.current.form.restMinutes).toBe("0");
-    expect(result.current.form.restSeconds).toBe("45");
+    expect(result.current.form.roundMinutes).toBe(1);
+    expect(result.current.form.roundSeconds).toBe(30);
+    expect(result.current.form.restMinutes).toBe(0);
+    expect(result.current.form.restSeconds).toBe(45);
   });
 
   it("should combine minutes and seconds into total seconds on submit", async () => {
@@ -62,10 +62,10 @@ describe("useTimerConfigurationForm", () => {
     );
 
     act(() => {
-      result.current.setRoundMinutes("1");
-      result.current.setRoundSeconds("30");
-      result.current.setRestMinutes("0");
-      result.current.setRestSeconds("30");
+      result.current.setRoundMinutes(1);
+      result.current.setRoundSeconds(30);
+      result.current.setRestMinutes(0);
+      result.current.setRestSeconds(30);
     });
     await act(async () => {
       result.current.handleSubmit(fakeSubmitEvent());
@@ -101,8 +101,8 @@ describe("useTimerConfigurationForm", () => {
     );
 
     act(() => {
-      result.current.setRoundMinutes("1");
-      result.current.setRestMinutes("1");
+      result.current.setRoundMinutes(1);
+      result.current.setRestMinutes(1);
     });
     await act(async () => {
       result.current.handleSubmit(fakeSubmitEvent());
@@ -119,8 +119,8 @@ describe("useTimerConfigurationForm", () => {
     );
 
     act(() => {
-      result.current.setRoundMinutes("1");
-      result.current.setRestMinutes("1");
+      result.current.setRoundMinutes(1);
+      result.current.setRestMinutes(1);
     });
     await act(async () => {
       result.current.handleSubmit(fakeSubmitEvent());
