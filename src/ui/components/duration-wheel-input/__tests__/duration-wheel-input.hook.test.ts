@@ -77,4 +77,77 @@ describe("useDurationWheelInput", () => {
 
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it("should scroll the container to the value's offset when the dialog opens", () => {
+    const onChange = vi.fn();
+    const { result } = renderHook(() =>
+      useDurationWheelInput({ value: 45, onChange })
+    );
+    result.current.containerRef.current = document.createElement("div");
+
+    act(() => {
+      result.current.handleOpenChange(true);
+    });
+
+    expect(result.current.containerRef.current.scrollTop).toBe(
+      valueToScrollTop(45, ITEM_HEIGHT)
+    );
+  });
+
+  it("should increment draft and scroll position on ArrowDown", () => {
+    const onChange = vi.fn();
+    const { result } = renderHook(() =>
+      useDurationWheelInput({ value: 10, onChange })
+    );
+    result.current.containerRef.current = document.createElement("div");
+
+    act(() => {
+      result.current.handleArrowKey("down");
+    });
+
+    expect(result.current.draft).toBe(11);
+    expect(result.current.containerRef.current.scrollTop).toBe(
+      valueToScrollTop(11, ITEM_HEIGHT)
+    );
+  });
+
+  it("should decrement draft and scroll position on ArrowUp", () => {
+    const onChange = vi.fn();
+    const { result } = renderHook(() =>
+      useDurationWheelInput({ value: 10, onChange })
+    );
+    result.current.containerRef.current = document.createElement("div");
+
+    act(() => {
+      result.current.handleArrowKey("up");
+    });
+
+    expect(result.current.draft).toBe(9);
+  });
+
+  it("should clamp ArrowUp at 0 and not go negative", () => {
+    const onChange = vi.fn();
+    const { result } = renderHook(() =>
+      useDurationWheelInput({ value: 0, onChange })
+    );
+
+    act(() => {
+      result.current.handleArrowKey("up");
+    });
+
+    expect(result.current.draft).toBe(0);
+  });
+
+  it("should clamp ArrowDown at 59 and not exceed it", () => {
+    const onChange = vi.fn();
+    const { result } = renderHook(() =>
+      useDurationWheelInput({ value: 59, onChange })
+    );
+
+    act(() => {
+      result.current.handleArrowKey("down");
+    });
+
+    expect(result.current.draft).toBe(59);
+  });
 });

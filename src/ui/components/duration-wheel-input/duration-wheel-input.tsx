@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from "react";
+
 import {
   Dialog,
   DialogContent,
@@ -11,12 +13,14 @@ import {
 import { Button } from "@/ui/components/shadcn/button";
 
 import {
+  CONTAINER_HEIGHT,
   ITEM_HEIGHT,
   useDurationWheelInput,
 } from "./duration-wheel-input.hook";
 import type { DurationWheelInputProps } from "./duration-wheel-input.types";
 
 const WHEEL_VALUES = Array.from({ length: 60 }, (_, index) => index);
+const CENTER_PADDING = (CONTAINER_HEIGHT - ITEM_HEIGHT) / 2;
 
 /** Presentational only (A2): all logic lives in `useDurationWheelInput`. */
 export function DurationWheelInput({
@@ -24,8 +28,16 @@ export function DurationWheelInput({
   onChange,
   "aria-label": ariaLabel,
 }: DurationWheelInputProps) {
-  const { open, draft, handleOpenChange, handleScroll, handleConfirm } =
-    useDurationWheelInput({ value, onChange });
+  const {
+    open,
+    draft,
+    containerRef,
+    handleOpenChange,
+    handleScroll,
+    handleConfirm,
+    handleArrowKey,
+  } = useDurationWheelInput({ value, onChange });
+  const optionIdPrefix = useId();
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -43,14 +55,32 @@ export function DurationWheelInput({
           <DialogTitle>{ariaLabel}</DialogTitle>
         </DialogHeader>
         <div
+          ref={containerRef}
           role="listbox"
           aria-label={ariaLabel}
+          aria-activedescendant={`${optionIdPrefix}-${draft}`}
+          tabIndex={0}
           onScroll={(event) => handleScroll(event.currentTarget.scrollTop)}
-          className="h-40 snap-y snap-mandatory overflow-y-scroll"
+          onKeyDown={(event) => {
+            if (event.key === "ArrowUp") {
+              event.preventDefault();
+              handleArrowKey("up");
+            } else if (event.key === "ArrowDown") {
+              event.preventDefault();
+              handleArrowKey("down");
+            }
+          }}
+          style={{
+            height: CONTAINER_HEIGHT,
+            paddingTop: CENTER_PADDING,
+            paddingBottom: CENTER_PADDING,
+          }}
+          className="snap-y snap-mandatory overflow-y-scroll"
         >
           {WHEEL_VALUES.map((item) => (
             <div
               key={item}
+              id={`${optionIdPrefix}-${item}`}
               role="option"
               aria-selected={item === draft}
               style={{ height: ITEM_HEIGHT }}
