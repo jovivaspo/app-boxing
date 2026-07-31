@@ -1,0 +1,200 @@
+name: AC Explorer
+
+# Advisory, non-blocking check: boots the app and has Claude drive it with
+# Playwright to exercise the acceptance criteria (Given/When/Then) of the
+# openspec/ changes touched by this PR, looking for bugs a code-only review
+# can't catch. Runs alongside claude-pr-review.yml and does not gate merging —
+# it only posts a PR comment with findings.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  explore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Find openspec changes and PR-level AC
+        id: changes
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
+          CHANGED_SPECS=$(git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD" -- openspec/changes \
+            | grep -v '^openspec/changes/archive/' \
+            | sed -E 's#^(openspec/changes/[^/]+)/.*#\1#' \
+            | sort -u)
+
+          # Pull the "## Acceptance Criteria" section out of the PR description
+          # (see .github/PULL_REQUEST_TEMPLATE.md) and strip the instructional
+          # HTML comment, so an untouched template counts as empty.
+          AC_TEXT=$(printf '%s' "$PR_BODY" | perl -0777 -ne '
+            if (/^## Acceptance Criteria[ \t]*\r?\n(.*?)(?=\n## |\z)/ms) {
+              my $t = $1;
+              $t =~ s/<!--.*?-->//gs;
+              $t =~ s/^\s+|\s+$//g;
+              print $t;
+            }
+          ')
+
+          if [ -z "$CHANGED_SPECS" ] && [ -z "$AC_TEXT" ]; then
+            echo "No openspec/changes touched and no AC filled in the PR description — skipping AC exploration."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "list<<GH_EOF_SPECS_9f3c1b"
+              echo "${CHANGED_SPECS:-(none touched)}"
+              echo "GH_EOF_SPECS_9f3c1b"
+            } >> "$GITHUB_OUTPUT"
+            {
+              echo "ac_text<<GH_EOF_AC_9f3c1b"
+              echo "${AC_TEXT:-(none provided in the PR description)}"
+              echo "GH_EOF_AC_9f3c1b"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Playwright browser
+        if: steps.changes.outputs.has_changes == 'true'
+        run: npx --yes playwright install --with-deps chromium
+
+      - name: Build app
+        if: steps.changes.outputs.has_changes == 'true'
+        run: npm run build
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+
+      - name: Start app
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          npm start &
+          npx --yes wait-on http://localhost:3000 --timeout 60000
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+
+      # Real Google OAuth can't be automated in CI. Instead, mint a session
+      # cookie pair (jwt + HMAC-signed user, same shape as
+      # src/infraestructure/session/cookie-session.adapter.ts) for a fake CI
+      # test user, signed with the same SESSION_SECRET the running app
+      # trusts, and hand it to Playwright as storage state. This unlocks
+      # authenticated screens without touching the login UI. The jwt value
+      # itself is not verified by this app (only the `user` cookie is,
+      # via SESSION_SECRET), so a placeholder is fine UNLESS a scenario also
+      # needs the backend to accept it. Set the optional CI_TEST_JWT secret
+      # to a real token from a staging test account to unlock those
+      # backend-dependent scenarios in CI; otherwise it falls back to a
+      # placeholder and those calls will fail as a known limitation.
+      - name: Mint CI test session cookie
+        if: steps.changes.outputs.has_changes == 'true'
+        env:
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          CI_TEST_JWT: ${{ secrets.CI_TEST_JWT }}
+        run: |
+          node -e "
+          const { createHmac } = require('node:crypto');
+          const secret = process.env.SESSION_SECRET;
+          const jwt = process.env.CI_TEST_JWT || 'ci-test-token';
+          const user = JSON.stringify({ id: 'ci-test-user', name: 'CI Test User', email: 'ci-test@example.com' });
+          const payload = Buffer.from(user, 'utf8').toString('base64url');
+          const mac = createHmac('sha256', secret).update(payload).digest('base64url');
+          const signedUser = payload + '.' + mac;
+          const expires = Math.floor(Date.now() / 1000) + 604800;
+          const state = {
+            cookies: [
+              { name: 'jwt', value: jwt, domain: 'localhost', path: '/', httpOnly: true, secure: false, sameSite: 'Lax', expires },
+              { name: 'user', value: signedUser, domain: 'localhost', path: '/', httpOnly: true, secure: false, sameSite: 'Lax', expires }
+            ],
+            origins: []
+          };
+          require('fs').writeFileSync('/tmp/storage-state.json', JSON.stringify(state));
+          "
+
+      - name: Create Playwright MCP config
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          cat > /tmp/mcp-config.json << 'EOF'
+          {
+            "mcpServers": {
+              "playwright": {
+                "command": "npx",
+                "args": ["-y", "@playwright/mcp@latest", "--isolated", "--storage-state=/tmp/storage-state.json"]
+              }
+            }
+          }
+          EOF
+
+      - name: Explore acceptance criteria with Claude + Playwright
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+            APP URL: http://localhost:3000
+
+            This PR touches the following openspec changes:
+            ${{ steps.changes.outputs.list }}
+
+            PR-level Acceptance Criteria (from the "Acceptance Criteria"
+            section of the PR description):
+            ${{ steps.changes.outputs.ac_text }}
+
+            Treat the PR-level Acceptance Criteria above as the primary,
+            authoritative scenarios for this PR when present. If openspec
+            changes are also listed, read their Given/When/Then scenarios in
+            openspec/changes/<change>/specs/*/spec.md (and proposal.md for
+            context) too — use them as extra scenarios/context, and flag it in
+            your report if they contradict the PR-level AC. If no PR-level AC
+            was provided, fall back entirely to the openspec scenarios.
+
+            Then use the Playwright MCP tools to drive the running app at
+            http://localhost:3000 and manually exercise each scenario
+            end-to-end.
+
+            The browser context already has a signed-in session (test user
+            "ci-test-user") loaded via storage state, so you don't need to go
+            through the real Google OAuth flow to reach authenticated screens —
+            navigate directly to the relevant route. Note: unless a real
+            staging token was configured for this run, the session's jwt is a
+            placeholder, so calls that hit BACKEND_URL with that token may
+            fail — treat those as a known CI limitation, not a bug, unless
+            the failure mode itself looks wrong (e.g. a
+            crash instead of a handled error state).
+
+            For every scenario: note whether the observed behavior matches the
+            Given/When/Then, capture any console errors, failed network
+            requests, or visibly broken UI, and try at least one edge case per
+            scenario (empty input, rapid double-submit, invalid data) beyond
+            the happy path.
+
+            Post a single PR comment (via `gh pr comment`) summarizing what you
+            tested and any bugs found, with reproduction steps. This check is
+            advisory only — do not fail the workflow and do not submit a
+            review; just report findings as a comment.
+
+          claude_args: |
+            --model claude-sonnet-5 --mcp-config /tmp/mcp-config.json --allowedTools "mcp__playwright__browser_navigate,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_snapshot,mcp__playwright__browser_console_messages,mcp__playwright__browser_network_requests,mcp__playwright__browser_wait_for,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_fill_form,mcp__playwright__browser_evaluate,Bash(gh pr comment:*),Read,Grep" --max-turns 40
+          show_full_output: true
