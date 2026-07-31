@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { splitDuration, toTotalSeconds } from "@/lib/duration";
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import { createLocalTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/local-timer-configuration.adapter";
+import { useHydrated } from "@/ui/hooks/use-hydrated";
 
 import type {
   GuestTimerFormProps,
@@ -50,11 +51,14 @@ export function useGuestTimerForm({
   const router = useRouter();
   const [form, setForm] = useState<GuestTimerFormState>(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isHydrated = useHydrated();
 
   // Prefill from the guest's existing single record, if any, so returning to
   // `/guest-timer` after a previous START edits the same config instead of
   // always starting blank.
   useEffect(() => {
+    if (!isHydrated) return;
+
     let cancelled = false;
 
     localAdapter.read().then((existing) => {
@@ -65,7 +69,7 @@ export function useGuestTimerForm({
     return () => {
       cancelled = true;
     };
-  }, [localAdapter]);
+  }, [isHydrated, localAdapter]);
 
   const setRounds = useCallback(
     (value: number) => setForm((f) => ({ ...f, rounds: value })),

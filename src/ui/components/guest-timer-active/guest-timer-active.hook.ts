@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
 import { useTimerSessionEngine } from "@/ui/hooks/use-timer-session-engine";
 import { createLocalTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/local-timer-configuration.adapter";
+import { useHydrated } from "@/ui/hooks/use-hydrated";
 
 import type {
   GuestTimerActiveDeps,
@@ -27,8 +28,11 @@ export function useGuestTimerActive(
 ): UseGuestTimerActiveResult {
   const router = useRouter();
   const [config, setConfig] = useState<TimerConfiguration | null>(null);
+  const isHydrated = useHydrated();
 
   useEffect(() => {
+    if (!isHydrated) return;
+
     let cancelled = false;
 
     localAdapter.read().then((record) => {
@@ -43,7 +47,7 @@ export function useGuestTimerActive(
     return () => {
       cancelled = true;
     };
-  }, [localAdapter, router]);
+  }, [isHydrated, localAdapter, router]);
 
   const engine = useTimerSessionEngine(
     config,
