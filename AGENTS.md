@@ -7,7 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Project
 
-A boxing app for managing training sessions, fighters, and gym activity. The codebase follows Clean/Hexagonal Architecture (see below) and evolves through Spec-Driven Development (SDD), with all planning artifacts persisted in Engram.
+A boxing app for managing training sessions, fighters, and gym activity. The codebase follows Clean/Hexagonal Architecture (see below) and evolves through Spec-Driven Development (SDD), with all planning artifacts persisted as files under `openspec/`.
 
 ## Tech Stack
 
@@ -191,9 +191,9 @@ This project uses CodeGraph (`.codegraph/`) for structural queries — repo maps
 
 ## SDD
 
-This project uses spec-driven development with Engram as the artifact store: SDD artifacts (explorations, proposals, specs, tasks) are persisted as Engram memories under `sdd/<change>/<phase>` topic keys. The `openspec/` directory holds file snapshots of SDD artifacts (config, main specs, active and archived changes) — Engram is the source of truth for SDD state; do not treat `openspec/` files as canonical on their own.
+This project uses spec-driven development with `openspec/` as the sole, canonical artifact store — matches `openspec/config.yaml`'s `persistence: openspec`. SDD artifacts (explorations, proposals, specs, tasks, verify reports) are persisted as files under `openspec/changes/<change>/` (config, main specs, active and archived changes). Do not persist per-change SDD artifacts (exploration/proposal/design/specs/tasks/verify-report) to Engram or any other memory store — `openspec/` files are canonical on their own, no duplicate write is needed. Engram, if invoked at all, is reserved for cross-cutting project knowledge that doesn't belong in a spec file (e.g. general codebase notes) — never for the per-change SDD lifecycle.
 
-- **Init**: run `sdd-init` before any SDD work. Testing capabilities are cached in Engram.
+- **Init**: run `sdd-init` before any SDD work.
 - Pending work is tracked in GitHub Issues.
 
 ## Tailwind CSS v4 Notes
