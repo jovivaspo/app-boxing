@@ -1,10 +1,12 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { toTotalSeconds } from "@/lib/duration";
+import type { TimerConfiguration } from "@/domain/timer-configuration/timer-configuration.model";
+import { splitDuration, toTotalSeconds } from "@/lib/duration";
+import { useIsHydrated } from "@/ui/hooks/use-is-hydrated";
 import { createLocalTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/local-timer-configuration.adapter";
 
 import type {
@@ -14,7 +16,7 @@ import type {
 } from "./guest-timer-form.types";
 
 const EMPTY_FORM: GuestTimerFormState = {
-  rounds: 0,
+  rounds: 1,
   roundMinutes: 0,
   roundSeconds: 0,
   restMinutes: 0,
@@ -35,6 +37,21 @@ export function useGuestTimerForm({
   const router = useRouter();
   const [form, setForm] = useState<GuestTimerFormState>(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isHydrated = useIsHydrated();
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    let cancelled = false;
+    localAdapter.read().then((record) => {
+      if (cancelled || !record) return;
+      setForm(toFormState(record));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isHydrated, localAdapter]);
 
   const setRounds = useCallback(
     (value: number) => setForm((f) => ({ ...f, rounds: value })),
@@ -105,5 +122,19 @@ export function useGuestTimerForm({
     setWarnBeforeEnd,
     setBellSound,
     handleSubmit,
+  };
+}
+
+function toFormState(config: TimerConfiguration): GuestTimerFormState {
+  const round = splitDuration(config.roundDuration);
+  const rest = splitDuration(config.restDuration);
+  return {
+    rounds: config.rounds,
+    roundMinutes: round.minutes,
+    roundSeconds: round.seconds,
+    restMinutes: rest.minutes,
+    restSeconds: rest.seconds,
+    warnBeforeEnd: config.warnBeforeEnd,
+    bellSound: config.bellSound,
   };
 }

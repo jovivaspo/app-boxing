@@ -51,6 +51,52 @@ describe("useTimerConfigurationForm", () => {
     expect(result.current.form.restSeconds).toBe(45);
   });
 
+  it("should default to a single round and zeroed durations when there is no initialConfiguration", () => {
+    const { result } = renderHook(() =>
+      useTimerConfigurationForm({ initialConfiguration: null })
+    );
+
+    expect(result.current.form).toEqual({
+      name: "",
+      rounds: 1,
+      roundMinutes: 0,
+      roundSeconds: 0,
+      restMinutes: 0,
+      restSeconds: 0,
+      warnBeforeEnd: true,
+      bellSound: true,
+    });
+  });
+
+  it("should keep every other pre-filled field when a single field changes", () => {
+    const config = buildTimerConfiguration({
+      name: "Sparring",
+      rounds: 5,
+      roundDuration: 125,
+      restDuration: 45,
+      warnBeforeEnd: false,
+      bellSound: false,
+    });
+    const { result } = renderHook(() =>
+      useTimerConfigurationForm({ initialConfiguration: config })
+    );
+
+    act(() => {
+      result.current.setRoundMinutes(4);
+    });
+
+    expect(result.current.form).toEqual({
+      name: "Sparring",
+      rounds: 5,
+      roundMinutes: 4,
+      roundSeconds: 5,
+      restMinutes: 0,
+      restSeconds: 45,
+      warnBeforeEnd: false,
+      bellSound: false,
+    });
+  });
+
   it("should combine minutes and seconds into total seconds on submit", async () => {
     opsCreateMock.mockResolvedValue({
       ok: true,
