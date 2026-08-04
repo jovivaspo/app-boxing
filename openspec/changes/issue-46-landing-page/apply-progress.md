@@ -151,3 +151,151 @@ npx prettier --check   # all matched files use Prettier code style
 - `.env.example` — document `SITE_URL`.
 - Depends on PR2 (this run) for `/`'s `metadata` export — PR2 is now complete,
   so PR3 is unblocked for the next run.
+
+## Run 3 — PR3 (Phase 3) + two carried-over test corrections
+
+Scope: SEO surface only, per the orchestrator's PR3-only scope for this run,
+plus two non-blocking test-quality findings carried over from PR2's bounded
+review against `src/app/__tests__/page.test.tsx`.
+
+### Completed tasks
+
+- [x] 3.1 — RED: wrote `src/infraestructure/config/__tests__/site-url.test.ts`
+      (2 tests: returns `SITE_URL` when set; falls back to
+      `http://localhost:3000` when unset via `vi.stubEnv("SITE_URL", undefined)`
+      — `undefined` deletes the stubbed var per vitest's `VitestUtils.stubEnv`
+      type, verified in `node_modules/vitest/dist/index.d.ts`). Confirmed both
+      failed (`Cannot find module '../site-url'`) before creating the module.
+- [x] 3.2 — GREEN: created `src/infraestructure/config/site-url.ts` —
+      `siteUrl(): string` returning `process.env.SITE_URL || "http://localhost:3000"`
+      (`||`, not `??`, so an empty-string env value also falls back). Both
+      tests pass.
+- [x] 3.3 — Modified `src/app/layout.tsx` — imports `siteUrl` from
+      `@/infraestructure/config/site-url`, adds
+      `metadataBase: new URL(siteUrl())` to the root `metadata` export.
+- [x] 3.4 — Modified `src/app/page.tsx` — added a page-level `metadata`
+      export (`title`, Spanish `description`, `openGraph`, `twitter`, OG/
+      Twitter image `/logo-iron-pulse.png`, the only image asset in
+      `public/`). Static declarative object, no branch/loop — no RED test,
+      matches the design's testing table.
+- [x] 3.5 — RED: wrote `src/app/__tests__/robots.test.ts` (2 tests: allows
+      `/`, `/login`, `/guest-timer`; `sitemap` field is
+      `${siteUrl()}/sitemap.xml`). Confirmed both failed
+      (`Cannot find module '../robots'`) before creating the module.
+- [x] 3.6 — GREEN: created `src/app/robots.ts` — typed
+      `MetadataRoute.Robots`, `export const dynamic = "force-dynamic"`.
+      Verified the caching gotcha against
+      `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/01-metadata/robots.md`
+      before implementing: "`robots.js` is a special Route Handler that is
+      cached by default unless it uses a Request-time API or dynamic config
+      option." Both tests pass.
+- [x] 3.7 — RED: wrote `src/app/__tests__/sitemap.test.ts` (2 tests: exactly
+      `/`, `/login`, `/guest-timer` in that order; `/guest-timer-active`
+      absent). Confirmed both failed (`Cannot find module '../sitemap'`)
+      before creating the module.
+- [x] 3.8 — GREEN: created `src/app/sitemap.ts` — typed
+      `MetadataRoute.Sitemap`, `export const dynamic = "force-dynamic"`.
+      Same gotcha verified against the sitemap doc counterpart
+      (`.../01-metadata/sitemap.md`, identical wording). Both tests pass.
+- [ ] 3.9 — **BLOCKED, not completed.** `.env.example` is hard-denied by this
+      sandbox's permission settings for Read, Write, and Bash (`cat`) alike —
+      confirmed with three independent attempts, all returning "File is in a
+      directory that is denied by your permission settings." Separately (not
+      the blocker, but worth flagging): `git log --all` shows `.env.example`
+      has **never been committed** on any local or remote branch, and
+      `git check-ignore -v .env.example` resolves to `.gitignore:37:.env*` —
+      the pattern `.env*` (with only `!.env.local.example` carved out) also
+      currently ignores `.env.example` itself, contradicting AGENTS.md's
+      "`.env.example` is the committed template; keep it updated" (Security
+      section). Both issues need a session with different sandbox
+      permissions and, separately, a `.gitignore` fix (`!.env.example`) that
+      is out of this run's scope to make unprompted.
+- [x] 3.10 — Verified PR3 boundary green (see Verification below), including
+      `npm run build` (the DoD-mandated check for `metadataBase` and Route
+      Handler compilation) plus a manual `npm run build && npm run start` + `curl /robots.txt /sitemap.xml` runtime check — both routes render
+      `ƒ (Dynamic)` in the build's route table (not prerendered/cached) and
+      the fallback `http://localhost:3000` resolves correctly at runtime
+      (no `SITE_URL` set in this environment's `.env`), proving the
+      `force-dynamic` gotcha fix actually works end-to-end, not just at the
+      unit-test level.
+
+### Carried-over test corrections (also this run)
+
+Both applied to `src/app/__tests__/page.test.tsx`:
+
+1. `"should render exactly three benefit items"` previously only asserted
+   the three known titles were present via three separate `getByText`
+   calls — never a count, so a fourth benefit would still pass. Replaced
+   with `screen.getAllByRole("heading", { level: 3 })` mapped to
+   `textContent` and compared via `toEqual` against the exact 3-element
+   array of expected titles in order — proves both the count (array-length
+   mismatch fails `toEqual`) and the identity/order in one assertion,
+   stronger than either the original or a bare `toHaveLength(3)`.
+2. Primary/secondary CTA tests replaced `getAllByRole(...)[0]` (DOM-order-
+   dependent, only safe because the hero and `LandingCta` share the
+   "Probar el timer" label/href) with `within(...)` scoped to the hero
+   `<section>` (found via `.closest("section")` from the H1 heading), then
+   an unscoped `getByRole` inside that scope — now identifies the hero's
+   CTA specifically, not "whichever renders first". `"Iniciar sesión"` is
+   unique today, but the pattern stays defensive and symmetric with the
+   primary-CTA fix.
+
+### Deviations from design/tasks
+
+- Task 3.9 not completed — see the BLOCKED note above. This is a sandbox
+  permission limitation in this run, not a design or scope decision.
+- `siteUrl()` uses `||` rather than `??` against `process.env.SITE_URL` so
+  an accidentally-set empty-string env value also falls back to the
+  placeholder, matching the spec's "unset falls back" scenario in spirit
+  (an empty string is not a usable origin either). Not explicitly specified
+  by the design, judged the safer reading of "unset."
+- `robots.ts`'s `allow` field is an explicit 3-element array
+  (`["/", "/login", "/guest-timer"]`) rather than a single `"/"` wildcard —
+  matches the spec's literal "allows crawling of the public routes (`/`,
+  `/login`, `/guest-timer`)" wording precisely instead of the broader
+  `Allow: /` the Stitch/docs examples show.
+- Landing `metadata`'s OG/Twitter image reuses `/logo-iron-pulse.png`
+  (the only image asset in `public/`) rather than a dedicated 1200×630 OG
+  asset — no such asset exists in the repo and generating one is outside
+  this run's scope (no new dependency, no design-asset pipeline).
+
+### Verification (this run)
+
+```
+npm run lint          # 0 errors, 16 pre-existing warnings (unrelated files)
+npx tsc --noEmit       # clean, no output
+npm run test           # 54 files, 308 tests passed (302 + 6 new: site-url x2, robots x2, sitemap x2)
+npm run build          # succeeds; route table shows `/robots.txt` and `/sitemap.xml` as ƒ (Dynamic)
+npm run build && npm run start + curl   # /robots.txt and /sitemap.xml resolve correctly at runtime,
+                                          # SITE_URL fallback (localhost:3000) confirmed live, no
+                                          # /guest-timer-active entry in the sitemap
+```
+
+### Remaining
+
+- Task 3.9 (`.env.example`) — needs a differently-scoped session; the change
+  itself is a one-line addition (`SITE_URL=http://localhost:3000`) once
+  permission/`.gitignore` access is available.
+- PR1, PR2, PR3 are otherwise all complete. This was the final planned slice
+  per `tasks.md`'s work-unit table.
+
+### Post-review correction (after PR #56 feedback)
+
+- `metadataBase` moved off `src/app/layout.tsx` onto the landing page's own
+  `metadata` in `src/app/page.tsx`. The layout wraps `/guest-timer` and
+  `/guest-timer-active`, which Next statically prerenders, so a base there was
+  evaluated at build time and baked the build-time origin into their metadata —
+  the same failure `force-dynamic` prevents for `robots.ts`/`sitemap.ts`.
+  Forcing those two pages dynamic would have cost them their static rendering
+  for a problem they do not have; `metadataBase` applies to the current route
+  segment and below, and the landing is the only route with relative metadata
+  URLs and already renders per request.
+- Landing copy switched from Rioplatense voseo to peninsular Spanish per the
+  repo owner's PR comment. Voseo remains elsewhere in the app
+  (`timer-configuration-form`, `timer-configuration-list`, `not-found`) and is
+  out of this change's scope.
+- Not verified end to end: starting the built server with a non-default
+  `SITE_URL` and curling `/robots.txt`, `/sitemap.xml` and the landing. The
+  sandbox terminates backgrounded servers and did not propagate the variable
+  into them. Runtime origin resolution is evidenced by the `siteUrl()` unit
+  tests, the `dynamic` export assertions, and the build route table only.
