@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { siteUrl } from "@/infraestructure/config/site-url";
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 import { getCurrentSession } from "@/application/use-cases/get-current-session/get-current-session";
 import { Topbar } from "@/ui/components/topbar";
@@ -9,13 +10,16 @@ import { LandingBenefits } from "@/ui/components/landing-benefits";
 import { LandingCta } from "@/ui/components/landing-cta";
 
 // Landing page metadata (`seo-metadata` capability) — overrides the root
-// layout defaults for crawlers and link-preview services. Static
-// declarative data, resolves to absolute URLs via layout.tsx's
-// `metadataBase`.
+// layout defaults for crawlers and link-preview services. `metadataBase` sits
+// here rather than on the layout: this is the only route with relative
+// metadata URLs, and it renders per request, so the origin is resolved from
+// the runtime `SITE_URL` instead of being baked into statically prerendered
+// sibling routes.
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: "Iron Pulse — Timer de boxeo por rounds",
   description:
-    "Timer de boxeo configurable y de alto rendimiento. Rounds, descansos y avisos a tu medida. Sin registro, empezá en 10 segundos.",
+    "Timer de boxeo configurable y de alto rendimiento. Rounds, descansos y avisos a tu medida. Sin registro, empieza en 10 segundos.",
   openGraph: {
     title: "Iron Pulse — Timer de boxeo por rounds",
     description:
