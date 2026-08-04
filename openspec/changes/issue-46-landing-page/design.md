@@ -81,8 +81,13 @@ ships with **zero client JS**; logout stays `<form action="/api/logout" method="
 ### D-4 — `SITE_URL` confirmed, resolved through one infra helper
 
 `src/infraestructure/config/site-url.ts` exports `siteUrl(): string` returning
-`process.env.SITE_URL ?? "http://localhost:3000"` (env reads belong to infra; `app/` is the
-composition root that consumes it). `page.tsx` sets `metadataBase: new URL(siteUrl())`;
+`process.env.SITE_URL` when it is set AND parses as an absolute URL (`URL.canParse`), and
+`http://localhost:3000` otherwise — unset, empty, or malformed all degrade to the
+placeholder. Validating rather than only null-checking is deliberate: callers feed the
+result straight into `new URL()` at module scope, so a value like `ironpulse.example` with
+no scheme would throw and take every route down instead of degrading. Env reads belong to
+infra; `app/` is the composition root that consumes it. `page.tsx` sets
+`metadataBase: new URL(siteUrl())`;
 `robots.ts` and `sitemap.ts` build absolute URLs from it. `metadataBase` deliberately does
 NOT sit on `layout.tsx`: the layout wraps `/guest-timer` and `/guest-timer-active`, which are
 statically prerendered, so a base there would be evaluated at build time and bake the
@@ -155,22 +160,22 @@ If the adapter fails closed, `session` is `null` and only the Topbar changes.
 
 ## File Changes
 
-| File                                                                             | Action    | Description                                                                                   |
-| -------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------- |
-| `src/ui/components/topbar/{topbar.tsx,topbar.types.ts,index.ts}`                 | Create    | Session-aware presentational topbar                                                           |
-| `src/ui/components/footer/{footer.tsx,index.ts}`                                 | Create    | Shared footer, content from `login-footer`                                                    |
-| `src/ui/components/login-header/`, `.../login-footer/`                           | Delete    | Superseded by the shared shell                                                                |
-| `src/app/login/page.tsx`                                                         | Modify    | Session read + `redirect("/timers")` guard, `force-dynamic`, shell imports (`session={null}`) |
-| `src/app/login/__tests__/page.test.tsx`                                          | Create    | Proves the guard and the logged-out shared shell                                              |
-| `src/infraestructure/actions/google-login/google-login.action.ts`                | Modify    | Line 44: `redirect("/")` → `redirect("/timers")`                                              |
-| `src/infraestructure/actions/google-login/__tests__/google-login.action.test.ts` | Modify    | Line 78 assertion + line 59 title retargeted to `/timers`                                     |
-| `src/ui/components/landing-{hero,benefits,cta}/`                                 | Create    | Marketing sections                                                                            |
-| `src/app/page.tsx`                                                               | Modify    | Drops `redirect()` and the authenticated body; composition root + `metadata`                  |
-| `src/app/__tests__/page.test.tsx`                                                | Rewrite   | Redirect/greeting assertions replaced                                                         |
-| `src/infraestructure/config/site-url.ts` + `__tests__/`                          | Create    | `siteUrl()` with documented fallback                                                          |
-| `src/app/layout.tsx`                                                             | Unchanged | Deliberately carries no `metadataBase` (see above)                                            |
-| `src/app/{robots.ts,sitemap.ts}` + `src/app/__tests__/{robots,sitemap}.test.ts`  | Create    | Typed `MetadataRoute.*`, `force-dynamic`                                                      |
-| `.env.example`                                                                   | Modify    | Documents `SITE_URL`                                                                          |
+| File                                                                             | Action  | Description                                                                                   |
+| -------------------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------- |
+| `src/ui/components/topbar/{topbar.tsx,topbar.types.ts,index.ts}`                 | Create  | Session-aware presentational topbar                                                           |
+| `src/ui/components/footer/{footer.tsx,index.ts}`                                 | Create  | Shared footer, content from `login-footer`                                                    |
+| `src/ui/components/login-header/`, `.../login-footer/`                           | Delete  | Superseded by the shared shell                                                                |
+| `src/app/login/page.tsx`                                                         | Modify  | Session read + `redirect("/timers")` guard, `force-dynamic`, shell imports (`session={null}`) |
+| `src/app/login/__tests__/page.test.tsx`                                          | Create  | Proves the guard and the logged-out shared shell                                              |
+| `src/infraestructure/actions/google-login/google-login.action.ts`                | Modify  | Line 44: `redirect("/")` → `redirect("/timers")`                                              |
+| `src/infraestructure/actions/google-login/__tests__/google-login.action.test.ts` | Modify  | Line 78 assertion + line 59 title retargeted to `/timers`                                     |
+| `src/ui/components/landing-{hero,benefits,cta}/`                                 | Create  | Marketing sections                                                                            |
+| `src/app/page.tsx`                                                               | Modify  | Drops `redirect()` and the authenticated body; composition root + `metadata`                  |
+| `src/app/__tests__/page.test.tsx`                                                | Rewrite | Redirect/greeting assertions replaced                                                         |
+| `src/infraestructure/config/site-url.ts` + `__tests__/`                          | Create  | `siteUrl()` with documented fallback                                                          |
+| `src/app/layout.tsx`                                                             | Modify  | Documents why it deliberately carries no `metadataBase` (see D-4)                             |
+| `src/app/{robots.ts,sitemap.ts}` + `src/app/__tests__/{robots,sitemap}.test.ts`  | Create  | Typed `MetadataRoute.*`, `force-dynamic`                                                      |
+| `.env.example`                                                                   | Modify  | Documents `SITE_URL`                                                                          |
 
 ## Testing Strategy (strict TDD — RED first)
 

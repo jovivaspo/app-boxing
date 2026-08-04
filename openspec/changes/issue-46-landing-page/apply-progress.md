@@ -294,6 +294,11 @@ npm run build && npm run start + curl   # /robots.txt and /sitemap.xml resolve c
   repo owner's PR comment. Voseo remains elsewhere in the app
   (`timer-configuration-form`, `timer-configuration-list`, `not-found`) and is
   out of this change's scope.
+- `siteUrl()` also gained `URL.canParse` validation during PR3's bounded review,
+  which raised the unguarded `new URL()` at root-layout module scope as a
+  CRITICAL: a malformed `SITE_URL` threw during module evaluation and took every
+  route down. The original Run 3 log above describes only the `||`-versus-`??`
+  empty-string choice, which predates that correction.
 - Not verified end to end: starting the built server with a non-default
   `SITE_URL` and curling `/robots.txt`, `/sitemap.xml` and the landing. The
   sandbox terminates backgrounded servers and did not propagate the variable
