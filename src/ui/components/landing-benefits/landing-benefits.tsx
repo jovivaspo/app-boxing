@@ -16,7 +16,7 @@ const BENEFITS: Benefit[] = [
     icon: SlidersHorizontal,
     title: "Rounds a tu medida",
     description:
-      "Definís la cantidad de rounds, duración de cada uno y tiempo exacto de descanso. Adaptable a cualquier disciplina de combate.",
+      "Defines la cantidad de rounds, la duración de cada uno y el tiempo exacto de descanso. Adaptable a cualquier disciplina de combate.",
   },
   {
     icon: BellRing,
@@ -26,9 +26,9 @@ const BENEFITS: Benefit[] = [
   },
   {
     icon: Save,
-    title: "Guardá tus timers",
+    title: "Guarda tus timers",
     description:
-      "Iniciá sesión con Google para guardar rutinas de 3, 5 o 12 rounds y accedé a ellas desde cualquier dispositivo al instante.",
+      "Inicia sesión con Google para guardar rutinas de 3, 5 o 12 rounds y accede a ellas desde cualquier dispositivo al instante.",
   },
 ];
 
@@ -48,7 +48,7 @@ export function LandingBenefits() {
             key={title}
             className="bg-card border-border border-l-primary relative flex flex-col gap-4 border border-l-4 p-6"
           >
-            <Icon className="text-foreground size-8" />
+            <Icon className="text-foreground size-8" aria-hidden="true" />
             <h3 className="font-heading text-foreground text-xl uppercase">
               {title}
             </h3>

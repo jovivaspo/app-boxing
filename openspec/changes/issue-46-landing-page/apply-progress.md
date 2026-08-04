@@ -95,9 +95,9 @@ scope for this run. PR3 (SEO) explicitly out of scope, not started.
       the Stitch mock's single-CTA cierre section. Presentational, no test.
 - [x] 2.4 — RED: rewrote `src/app/__tests__/page.test.tsx` — dropped the
       `next/navigation` mock entirely (7 tests): hero heading renders with no
-      session; identical `data-testid="landing-body"` innerHTML across
-      logged-out/logged-in renders (byte-for-byte body proof, stronger than the
-      design's suggested assertion list); primary/secondary CTA hrefs; exactly
+      session; identical `<main>` innerHTML across logged-out/logged-in renders
+      (byte-for-byte body proof, stronger than the design's suggested assertion
+      list); primary/secondary CTA hrefs; exactly
       3 benefit items; logged-in Topbar shows `/timers`; logged-in Topbar hides
       "Iniciar Sesión". Confirmed 5 of 7 failed against the pre-change page
       (`NEXT_REDIRECT` thrown) before touching `page.tsx` — the other 2 passed
@@ -107,9 +107,8 @@ scope for this run. PR3 (SEO) explicitly out of scope, not started.
       old authenticated greeting/links/logout body; kept `force-dynamic` (same
       fail-closed-before-`cookies()` rationale as `/login`); reads session
       once, passes to `Topbar`; composes
-      `LandingHero → LandingBenefits → LandingCta` inside a
-      `data-testid="landing-body"` wrapper (session-agnostic) + shared
-      `Footer`. All 7 tests pass.
+      `LandingHero → LandingBenefits → LandingCta` inside the page's `<main>`
+      (session-agnostic) + shared `Footer`. All 7 tests pass.
 - [x] 2.6 — Not needed: `Topbar`'s `next/image` did not trip jsdom in the
       route test, same result as PR1's `/login` test — no local mock added.
 - [x] 2.7 — Verified PR2 boundary green (see Verification below).
@@ -122,12 +121,14 @@ scope for this run. PR3 (SEO) explicitly out of scope, not started.
   Translated all mock spacing to the repo's standard numeric Tailwind scale
   (`gap-6`, `px-4`, `py-10`, etc.) instead of inventing new tokens, per the
   run's "no new tokens" instruction.
-- Route test: used one `data-testid="landing-body"` wrapper + `innerHTML`
-  equality between a logged-out and logged-in render, rather than only the
-  design's suggested "identical body markup" assertion list. This gives a
-  byte-for-byte proof of the `landing-page` spec's "Landing Body Is
-  Session-Agnostic" requirement instead of relying on the absence of a few
-  spot-checked strings.
+- Route test: used `<main>` `innerHTML` equality between a logged-out and a
+  logged-in render, rather than only the design's suggested "identical body
+  markup" assertion list. This gives a byte-for-byte proof of the
+  `landing-page` spec's "Landing Body Is Session-Agnostic" requirement instead
+  of relying on the absence of a few spot-checked strings. An earlier draft
+  reached the body through a `data-testid`; that was dropped, since `<main>`
+  already carries an implicit role and production markup should not grow
+  attributes that exist only for tests.
 - `LandingCta`'s button also reads "Probar el timer" (same label as the hero's
   primary CTA, per the Stitch mock's cierre section) — the route test's
   `getAllByRole(...)[0]` picks the hero instance (first in DOM order) for the

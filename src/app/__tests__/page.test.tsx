@@ -97,9 +97,12 @@ describe("Home page (landing)", () => {
 
     render(await Home());
 
-    expect(screen.getByText("Rounds a tu medida")).toBeInTheDocument();
-    expect(screen.getByText("Campana y avisos")).toBeInTheDocument();
-    expect(screen.getByText("Guardá tus timers")).toBeInTheDocument();
+    const benefitHeadings = screen.getAllByRole("heading", { level: 3 });
+    expect(benefitHeadings.map((heading) => heading.textContent)).toEqual([
+      "Rounds a tu medida",
+      "Campana y avisos",
+      "Guarda tus timers",
+    ]);
   });
 
   it("should render the logged-in Topbar links when a session exists", async () => {
