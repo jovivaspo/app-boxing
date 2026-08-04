@@ -85,7 +85,9 @@ ships with **zero client JS**; logout stays `<form action="/api/logout" method="
 `http://localhost:3000` otherwise — unset, empty, or malformed all degrade to the
 placeholder. Validating rather than only null-checking is deliberate: callers feed the
 result straight into `new URL()` at module scope, so a value like `ironpulse.example` with
-no scheme would throw and take every route down instead of degrading. Env reads belong to
+no scheme would throw and fail that route instead of degrading. The blast radius is the
+landing route today; it was every route while `metadataBase` still sat on the layout, which
+is how PR3's review classified it as critical. Env reads belong to
 infra; `app/` is the composition root that consumes it. `page.tsx` sets
 `metadataBase: new URL(siteUrl())`;
 `robots.ts` and `sitemap.ts` build absolute URLs from it. `metadataBase` deliberately does

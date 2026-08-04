@@ -51,7 +51,7 @@ Chain strategy: feature-branch-chain
 
 ## Phase 3 (PR3): SEO Metadata
 
-- [x] 3.1 RED: write `src/infraestructure/config/__tests__/site-url.test.ts` — returns `SITE_URL` when set; falls back to `http://localhost:3000` when unset (`vi.stubEnv`).
+- [x] 3.1 RED: write `src/infraestructure/config/__tests__/site-url.test.ts` — returns `SITE_URL` when set; falls back to `http://localhost:3000` when unset, empty, or not a parseable absolute URL (`vi.stubEnv`).
 - [x] 3.2 GREEN: create `src/infraestructure/config/site-url.ts` exporting `siteUrl(): string`.
 - [x] 3.3 Add `metadataBase: new URL(siteUrl())` to the landing page's `metadata` in
       `src/app/page.tsx`. Superseded the original plan of putting it on `layout.tsx`: the

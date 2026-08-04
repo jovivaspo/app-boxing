@@ -6,9 +6,11 @@ const FALLBACK_SITE_URL = "http://localhost:3000";
  * when it is unset, empty, or not a parseable absolute URL.
  *
  * The malformed case matters: callers feed this straight into `new URL()`,
- * and the root layout does so at module scope. Throwing here would take every
- * route down over a misconfigured deploy (e.g. `SITE_URL=ironpulse.example`
+ * and the landing page does so at module scope. Throwing there would fail the
+ * whole route over a misconfigured deploy (e.g. `SITE_URL=ironpulse.example`
  * with no scheme), so an unusable value degrades to the placeholder instead.
+ * Keep it that way if a future caller moves the construction up into a layout,
+ * where the blast radius would be every route beneath it.
  */
 export function siteUrl(): string {
   const configured = process.env.SITE_URL;
