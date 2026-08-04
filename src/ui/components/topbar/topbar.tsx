@@ -49,9 +49,15 @@ export function Topbar({ session }: TopbarProps) {
             </>
           ) : (
             <>
+              {/*
+                Emphasised with colour only, never an "active" underline: the
+                shared Topbar has no route awareness, so on `/` that underline
+                claimed a current page it was not on. It was styling inherited
+                from the login-only header, which did know its route.
+              */}
               <Link
                 href="/login"
-                className="text-foreground border-primary border-b-2 px-3 py-1.5 font-mono text-xs tracking-widest uppercase"
+                className="text-foreground px-3 py-1.5 font-mono text-xs tracking-widest uppercase"
               >
                 Iniciar Sesión
               </Link>

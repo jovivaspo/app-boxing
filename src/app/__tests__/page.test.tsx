@@ -121,7 +121,7 @@ describe("Home page (landing)", () => {
     expect(benefitHeadings.map((heading) => heading.textContent)).toEqual([
       "Rounds a tu medida",
       "Campana y avisos",
-      "Guardá tus timers",
+      "Guarda tus timers",
     ]);
   });
 

@@ -84,6 +84,23 @@ describe("Login page", () => {
     ).not.toBeInTheDocument();
   });
 
+  // `app-shell` scenario "No Functioning Registration Entry Point": the
+  // affordance is visible but must not be reachable. Asserting it is not a
+  // link is the whole point — a plain presence check would pass even if it
+  // were wired to a route.
+  it("should render Registrarse as a non-interactive affordance", async () => {
+    getCurrentSessionExecuteMock.mockResolvedValue(null);
+    const { default: LoginPage } = await import("../page");
+
+    render(await LoginPage());
+
+    expect(screen.getByText("Registrarse")).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    );
+    expect(screen.queryByRole("link", { name: "Registrarse" })).toBeNull();
+  });
+
   it("should render the Login Card when no session exists", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: LoginPage } = await import("../page");

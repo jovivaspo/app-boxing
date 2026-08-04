@@ -19,7 +19,7 @@ export function LandingCta() {
         className="font-heading h-16 w-full max-w-md rounded-none text-lg uppercase italic"
       >
         <Link href="/guest-timer">
-          <Play className="size-5" />
+          <Play className="size-5" aria-hidden="true" />
           Probar el timer
         </Link>
       </Button>

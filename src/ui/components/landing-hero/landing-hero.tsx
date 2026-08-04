@@ -24,8 +24,8 @@ export function LandingHero() {
 
       <p className="text-muted-foreground max-w-2xl text-lg">
         Un timer de boxeo configurable y de alto rendimiento. Diseñado para
-        peleadores que necesitan precisión, avisos claros y cero distracciones
-        durante el sparring o el trabajo de bolsa.
+        boxeadores que necesitan precisión, avisos claros y cero distracciones
+        durante el sparring o el trabajo de saco.
       </p>
 
       <div className="mt-4 flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
@@ -34,7 +34,7 @@ export function LandingHero() {
           className="font-heading h-16 w-full rounded-none text-lg uppercase italic sm:w-auto"
         >
           <Link href="/guest-timer">
-            <Timer className="size-5" />
+            <Timer className="size-5" aria-hidden="true" />
             Probar el timer
           </Link>
         </Button>
@@ -48,7 +48,7 @@ export function LandingHero() {
       </div>
 
       <p className="text-muted-foreground mt-2 font-mono text-xs tracking-widest uppercase">
-        Sin registro · Empezá en 10 segundos
+        Sin registro · Empieza en 10 segundos
       </p>
     </section>
   );
