@@ -41,13 +41,13 @@ Chain strategy: feature-branch-chain
 
 ## Phase 2 (PR2): Landing Composition + `/` Rehoming
 
-- [ ] 2.1 Create `src/ui/components/landing-hero/{landing-hero.tsx,index.ts}` — hero copy, primary CTA "Probar el timer" → `/guest-timer`, secondary "Iniciar sesión" → `/login`, primary visually/structurally prioritized. Presentational, no test.
-- [ ] 2.2 Create `src/ui/components/landing-benefits/{landing-benefits.tsx,index.ts}` — exactly 3 items from a local const array. Presentational, no test.
-- [ ] 2.3 Create `src/ui/components/landing-cta/{landing-cta.tsx,index.ts}` — closing CTA reaching `/guest-timer` (and/or `/login`). Presentational, no test.
-- [ ] 2.4 RED: rewrite `src/app/__tests__/page.test.tsx` — drop the `next/navigation` redirect mock; assert no-redirect render for both session states, identical body markup, CTA hrefs, exactly 3 benefit items, Topbar state (`/profile`/`/timers`/logout when session, sign-in link when not). Keep `getCurrentSession`/`createCookieSessionAdapter` mocks and the `// @vitest-environment jsdom` docblock. Expect failure (old page still redirects).
-- [ ] 2.5 GREEN: rewrite `src/app/page.tsx` — drop `redirect()` and the authenticated body; keep `force-dynamic`; read session once, pass to `Topbar`; render `LandingHero → LandingBenefits → LandingCta` (session-agnostic) + shared `Footer`.
-- [ ] 2.6 If jsdom trips on `Topbar`'s `next/image`, add a local `next/image` mock in the route test file rather than changing the component (per design's open question).
-- [ ] 2.7 Verify PR2 boundary green: `npm run lint`, `npx tsc --noEmit`, `npm run test`.
+- [x] 2.1 Create `src/ui/components/landing-hero/{landing-hero.tsx,index.ts}` — hero copy, primary CTA "Probar el timer" → `/guest-timer`, secondary "Iniciar sesión" → `/login`, primary visually/structurally prioritized. Presentational, no test.
+- [x] 2.2 Create `src/ui/components/landing-benefits/{landing-benefits.tsx,index.ts}` — exactly 3 items from a local const array. Presentational, no test.
+- [x] 2.3 Create `src/ui/components/landing-cta/{landing-cta.tsx,index.ts}` — closing CTA reaching `/guest-timer` (and/or `/login`). Presentational, no test.
+- [x] 2.4 RED: rewrite `src/app/__tests__/page.test.tsx` — drop the `next/navigation` redirect mock; assert no-redirect render for both session states, identical body markup, CTA hrefs, exactly 3 benefit items, Topbar state (`/profile`/`/timers`/logout when session, sign-in link when not). Keep `getCurrentSession`/`createCookieSessionAdapter` mocks and the `// @vitest-environment jsdom` docblock. Expect failure (old page still redirects).
+- [x] 2.5 GREEN: rewrite `src/app/page.tsx` — drop `redirect()` and the authenticated body; keep `force-dynamic`; read session once, pass to `Topbar`; render `LandingHero → LandingBenefits → LandingCta` (session-agnostic) + shared `Footer`.
+- [x] 2.6 If jsdom trips on `Topbar`'s `next/image`, add a local `next/image` mock in the route test file rather than changing the component (per design's open question). Not needed — same as PR1, jsdom did not trip.
+- [x] 2.7 Verify PR2 boundary green: `npm run lint`, `npx tsc --noEmit`, `npm run test`.
 
 ## Phase 3 (PR3): SEO Metadata
 
