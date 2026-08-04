@@ -33,8 +33,8 @@ describe("siteUrl", () => {
   });
 
   // A malformed value must degrade, never throw: `siteUrl()` feeds
-  // `new URL()` at root-layout module scope, so throwing here would take
-  // every route down over an ops typo.
+  // `new URL()` at the landing page's module scope, so throwing here would
+  // fail that route over an ops typo.
   it("should fall back to http://localhost:3000 when SITE_URL has no scheme", async () => {
     vi.stubEnv("SITE_URL", "ironpulse.example");
     const { siteUrl } = await import("../site-url");
