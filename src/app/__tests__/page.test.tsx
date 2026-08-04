@@ -69,26 +69,46 @@ describe("Home page (landing)", () => {
     expect(loggedInBody).toBe(loggedOutBody);
   });
 
+  // Scoped to the hero section on purpose: the closing LandingCta shares the
+  // same "Probar el timer" label and /guest-timer href (both instances are
+  // legitimate), so an unscoped/index-based query would only be correct by
+  // coincidence of DOM order rather than identifying the hero's CTA.
   it("should render the primary CTA linking to /guest-timer", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: Home } = await import("../page");
 
     render(await Home());
 
-    expect(
-      screen.getAllByRole("link", { name: "Probar el timer" })[0]
-    ).toHaveAttribute("href", "/guest-timer");
+    const hero = within(
+      screen
+        .getByRole("heading", { name: /tu ring\. tu ritmo\. tu round\./i })
+        .closest("section") as HTMLElement
+    );
+    expect(hero.getByRole("link", { name: "Probar el timer" })).toHaveAttribute(
+      "href",
+      "/guest-timer"
+    );
   });
 
+  // Scoped to the hero section for the same reason as the primary CTA above:
+  // the landing body renders "Iniciar sesión" in exactly one place today,
+  // but scoping keeps the assertion tied to the hero's secondary CTA rather
+  // than "whichever link matches the name first".
   it("should render the secondary CTA linking to /login", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: Home } = await import("../page");
 
     render(await Home());
 
-    expect(
-      screen.getAllByRole("link", { name: "Iniciar sesión" })[0]
-    ).toHaveAttribute("href", "/login");
+    const hero = within(
+      screen
+        .getByRole("heading", { name: /tu ring\. tu ritmo\. tu round\./i })
+        .closest("section") as HTMLElement
+    );
+    expect(hero.getByRole("link", { name: "Iniciar sesión" })).toHaveAttribute(
+      "href",
+      "/login"
+    );
   });
 
   it("should render exactly three benefit items", async () => {
@@ -97,9 +117,12 @@ describe("Home page (landing)", () => {
 
     render(await Home());
 
-    expect(screen.getByText("Rounds a tu medida")).toBeInTheDocument();
-    expect(screen.getByText("Campana y avisos")).toBeInTheDocument();
-    expect(screen.getByText("Guardá tus timers")).toBeInTheDocument();
+    const benefitHeadings = screen.getAllByRole("heading", { level: 3 });
+    expect(benefitHeadings.map((heading) => heading.textContent)).toEqual([
+      "Rounds a tu medida",
+      "Campana y avisos",
+      "Guardá tus timers",
+    ]);
   });
 
   it("should render the logged-in Topbar links when a session exists", async () => {

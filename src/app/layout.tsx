@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Anton, Inter, JetBrains_Mono } from "next/font/google";
+import { siteUrl } from "@/infraestructure/config/site-url";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,6 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: "Iron Pulse",
   description: "Inicia sesión con tu cuenta de Google",
 };
