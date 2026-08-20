@@ -81,9 +81,20 @@ ships with **zero client JS**; logout stays `<form action="/api/logout" method="
 ### D-4 — `SITE_URL` confirmed, resolved through one infra helper
 
 `src/infraestructure/config/site-url.ts` exports `siteUrl(): string` returning
-`process.env.SITE_URL ?? "http://localhost:3000"` (env reads belong to infra; `app/` is the
-composition root that consumes it). `layout.tsx` sets `metadataBase: new URL(siteUrl())`;
-`robots.ts` and `sitemap.ts` build absolute URLs from it. `.env.example` gains
+`process.env.SITE_URL` when it is set AND parses as an absolute URL (`URL.canParse`), and
+`http://localhost:3000` otherwise — unset, empty, or malformed all degrade to the
+placeholder. Validating rather than only null-checking is deliberate: callers feed the
+result straight into `new URL()` at module scope, so a value like `ironpulse.example` with
+no scheme would throw and fail that route instead of degrading. The blast radius is the
+landing route today; it was every route while `metadataBase` still sat on the layout, which
+is how PR3's review classified it as critical. Env reads belong to
+infra; `app/` is the composition root that consumes it. `page.tsx` sets
+`metadataBase: new URL(siteUrl())`;
+`robots.ts` and `sitemap.ts` build absolute URLs from it. `metadataBase` deliberately does
+NOT sit on `layout.tsx`: the layout wraps `/guest-timer` and `/guest-timer-active`, which are
+statically prerendered, so a base there would be evaluated at build time and bake the
+build-time origin into their metadata. The landing is the only route with relative metadata
+URLs and already renders per request. `.env.example` gains
 `SITE_URL=http://localhost:3000` (AGENTS.md requires the template stay current);
 server-only, never `NEXT_PUBLIC_`.
 
@@ -164,7 +175,7 @@ If the adapter fails closed, `session` is `null` and only the Topbar changes.
 | `src/app/page.tsx`                                                               | Modify  | Drops `redirect()` and the authenticated body; composition root + `metadata`                  |
 | `src/app/__tests__/page.test.tsx`                                                | Rewrite | Redirect/greeting assertions replaced                                                         |
 | `src/infraestructure/config/site-url.ts` + `__tests__/`                          | Create  | `siteUrl()` with documented fallback                                                          |
-| `src/app/layout.tsx`                                                             | Modify  | Adds `metadataBase`                                                                           |
+| `src/app/layout.tsx`                                                             | Modify  | Documents why it deliberately carries no `metadataBase` (see D-4)                             |
 | `src/app/{robots.ts,sitemap.ts}` + `src/app/__tests__/{robots,sitemap}.test.ts`  | Create  | Typed `MetadataRoute.*`, `force-dynamic`                                                      |
 | `.env.example`                                                                   | Modify  | Documents `SITE_URL`                                                                          |
 

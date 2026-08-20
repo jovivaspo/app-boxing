@@ -22,7 +22,7 @@ Chain strategy: feature-branch-chain
 | ---- | --------------------------------------------------------------------- | --- | ------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | 1    | Shared Topbar/Footer + `/login` guard + `/timers` post-login redirect | PR1 | `npm run test -- login google-login`              | `npm run dev`, visit `/login` logged-in/out                         | Revert `topbar/`, `footer/`, `/login` page, `google-login.action.ts` + its test; delete none pre-existing |
 | 2    | `/` rehomed to public landing, session-agnostic body                  | PR2 | `npm run test -- src/app/__tests__/page.test.tsx` | `npm run dev`, visit `/` logged-in/out                              | Revert `landing-*` components + `page.tsx`/`page.test.tsx`; PR1 stays intact                              |
-| 3    | `siteUrl()`, `metadataBase`, `robots.ts`, `sitemap.ts`                | PR3 | `npm run test -- site-url robots sitemap`         | `npm run build && npm run start`, curl `/robots.txt` `/sitemap.xml` | Revert `site-url.ts`, `layout.tsx` metadataBase, `robots.ts`, `sitemap.ts`, `.env.example`                |
+| 3    | `siteUrl()`, `metadataBase`, `robots.ts`, `sitemap.ts`                | PR3 | `npm run test -- site-url robots sitemap`         | `npm run build && npm run start`, curl `/robots.txt` `/sitemap.xml` | Revert `site-url.ts`, `page.tsx` metadataBase, `robots.ts`, `sitemap.ts`, `.env.example`                  |
 
 ## Phase 0: Spec Verification
 
@@ -51,13 +51,15 @@ Chain strategy: feature-branch-chain
 
 ## Phase 3 (PR3): SEO Metadata
 
-- [ ] 3.1 RED: write `src/infraestructure/config/__tests__/site-url.test.ts` — returns `SITE_URL` when set; falls back to `http://localhost:3000` when unset (`vi.stubEnv`).
-- [ ] 3.2 GREEN: create `src/infraestructure/config/site-url.ts` exporting `siteUrl(): string`.
-- [ ] 3.3 Modify `src/app/layout.tsx` — add `metadataBase: new URL(siteUrl())` to root `metadata`.
-- [ ] 3.4 Modify `src/app/page.tsx` — add page-level `metadata` export: `title`, Spanish `description`, `openGraph`, `twitter`. Static declarative data, no branch/loop — no RED test per design's testing table.
-- [ ] 3.5 RED: write `src/app/__tests__/robots.test.ts` — allows `/`, `/login`, `/guest-timer`; references `${siteUrl()}/sitemap.xml`.
-- [ ] 3.6 GREEN: create `src/app/robots.ts` — typed `MetadataRoute.Robots`, `export const dynamic = "force-dynamic"`.
-- [ ] 3.7 RED: write `src/app/__tests__/sitemap.test.ts` — exactly `/`, `/login`, `/guest-timer`; `/guest-timer-active` absent.
-- [ ] 3.8 GREEN: create `src/app/sitemap.ts` — typed `MetadataRoute.Sitemap`, `export const dynamic = "force-dynamic"`.
-- [ ] 3.9 Modify `.env.example` — document `SITE_URL=http://localhost:3000`.
-- [ ] 3.10 Verify PR3 boundary green: `npm run lint`, `npx tsc --noEmit`, `npm run test`, `npm run build`.
+- [x] 3.1 RED: write `src/infraestructure/config/__tests__/site-url.test.ts` — returns `SITE_URL` when set; falls back to `http://localhost:3000` when unset, empty, or not a parseable absolute URL (`vi.stubEnv`).
+- [x] 3.2 GREEN: create `src/infraestructure/config/site-url.ts` exporting `siteUrl(): string`.
+- [x] 3.3 Add `metadataBase: new URL(siteUrl())` to the landing page's `metadata` in
+      `src/app/page.tsx`. Superseded the original plan of putting it on `layout.tsx`: the
+      layout wraps statically prerendered routes, which would bake the build-time origin.
+- [x] 3.4 Modify `src/app/page.tsx` — add page-level `metadata` export: `title`, Spanish `description`, `openGraph`, `twitter`. Static declarative data, no branch/loop — no RED test per design's testing table.
+- [x] 3.5 RED: write `src/app/__tests__/robots.test.ts` — allows `/`, `/login`, `/guest-timer`; references `${siteUrl()}/sitemap.xml`.
+- [x] 3.6 GREEN: create `src/app/robots.ts` — typed `MetadataRoute.Robots`, `export const dynamic = "force-dynamic"`.
+- [x] 3.7 RED: write `src/app/__tests__/sitemap.test.ts` — exactly `/`, `/login`, `/guest-timer`; `/guest-timer-active` absent.
+- [x] 3.8 GREEN: create `src/app/sitemap.ts` — typed `MetadataRoute.Sitemap`, `export const dynamic = "force-dynamic"`.
+- [ ] 3.9 Modify `.env.example` — document `SITE_URL=http://localhost:3000`. **BLOCKED**: sandbox permission settings hard-deny Read/Write/Bash access to `.env.example` in this environment (unrelated to `.gitignore`'s `.env*` pattern, which also currently ignores this file — see apply-progress.md Run 3 deviations). Needs a human/differently-scoped session to apply the one-line addition.
+- [x] 3.10 Verify PR3 boundary green: `npm run lint`, `npx tsc --noEmit`, `npm run test`, `npm run build`.
