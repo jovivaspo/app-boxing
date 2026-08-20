@@ -69,7 +69,7 @@ describe("Login page", () => {
 
     expect(redirectMock).not.toHaveBeenCalled();
     expect(
-      screen.getByRole("link", { name: "Iniciar Sesión" })
+      screen.getByRole("link", { name: "Iniciar sesión" })
     ).toHaveAttribute("href", "/login");
   });
 

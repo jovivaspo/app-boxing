@@ -80,15 +80,20 @@ describe("Home page (landing)", () => {
     ).toHaveAttribute("href", "/guest-timer");
   });
 
+  // Scoped to <main> on purpose: the Topbar's sign-in link now carries the
+  // same accessible name, and it precedes the hero in DOM order — an unscoped
+  // query would assert against the Topbar instead of the landing's CTA.
   it("should render the secondary CTA linking to /login", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: Home } = await import("../page");
 
     render(await Home());
 
-    expect(
-      screen.getAllByRole("link", { name: "Iniciar sesión" })[0]
-    ).toHaveAttribute("href", "/login");
+    const body = within(screen.getByRole("main"));
+    expect(body.getByRole("link", { name: "Iniciar sesión" })).toHaveAttribute(
+      "href",
+      "/login"
+    );
   });
 
   it("should render exactly three benefit items", async () => {
