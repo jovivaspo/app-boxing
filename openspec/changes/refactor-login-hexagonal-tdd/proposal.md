@@ -7,6 +7,7 @@ The shipped login (GSI client button → ID token → monolithic Server Action �
 ## Scope
 
 ### In Scope
+
 - Ports in `application/ports/`: `AuthPort` (exchange ID token → session) and `SessionPort` (read/verify/clear session).
 - Use cases in `application/use-cases/`: `signInWithGoogle`, `getCurrentSession`, `signOut`.
 - Adapters in `infraestructure/`: backend HTTP adapter, cookie session adapter (signature/integrity-verified), DTO↔domain mapper, GSI script loader adapter.
@@ -17,6 +18,7 @@ The shipped login (GSI client button → ID token → monolithic Server Action �
 - Mark `openspec/changes/oauth-login-flow/` as superseded (cross-reference; archive bookkeeping at `sdd-archive`).
 
 ### Out of Scope
+
 - Migrating to PKCE / Authorization-Code flow or `/api/auth/callback`.
 - New product features, token refresh, RBAC, backend contract changes.
 - Reconciling `domain/user.model.ts` shape beyond what the mapper needs (flagged below).
@@ -25,14 +27,17 @@ The shipped login (GSI client button → ID token → monolithic Server Action �
 ## Capabilities
 
 ### New Capabilities
+
 - `session-authentication`: GSI ID-token acquisition, backend token exchange, integrity-verified session cookie lifecycle (create/read/verify/clear), guarded pages, and logout — expressed as ports, use cases, and adapters.
 
 ### Modified Capabilities
+
 - None. (`oauth-login-flow`'s `oauth-authentication` and `login-page` were proposed but never merged into `openspec/specs/`; they are SUPERSEDED by `session-authentication`, not modified.)
 
 ## Approach
 
 Apply the dependency rule (domain ← application ← infraestructure; ui → application):
+
 1. **Domain**: keep `User` pure; add typed domain errors (`InvalidCredentials`, `BackendUnavailable`, `SessionInvalid`).
 2. **Application ports**: `AuthPort.exchange(idToken): Promise<Session>`, `SessionPort.get()/verify()/clear()`.
 3. **Use cases**: orchestrate ports, return domain models/errors — no fetch, no `next/*`.
@@ -41,29 +46,29 @@ Apply the dependency rule (domain ← application ← infraestructure; ui → ap
 
 ## Affected Areas
 
-| Area | Impact | Description |
-|------|--------|-------------|
-| `src/domain/` | Modified | Domain errors; keep `User` framework-free |
-| `src/application/ports/` | New | `AuthPort`, `SessionPort` |
-| `src/application/use-cases/` | New | signInWithGoogle, getCurrentSession, signOut |
-| `src/infraestructure/` | New | backend adapter, cookie session adapter, mapper, GSI loader |
-| `src/app/login/actions.ts` | Modified | Thin adapter; remove logging + IP fallback |
-| `src/ui/hooks/use-google-auth.ts` | Modified | Split infra loader vs UI hook |
-| `src/ui/components/login-card.tsx` | Modified | Consume use case, not action directly |
-| `src/app/page.tsx`, `src/app/profile/page.tsx` | Modified | Read session via `SessionPort` |
-| `src/app/api/logout/route.ts` | Modified | Call `signOut` use case |
-| `vitest.config.mts`, `package.json` | Modified | jsdom + testing-library, env config |
-| `openspec/changes/oauth-login-flow/` | Modified | Marked superseded |
+| Area                                           | Impact   | Description                                                 |
+| ---------------------------------------------- | -------- | ----------------------------------------------------------- |
+| `src/domain/`                                  | Modified | Domain errors; keep `User` framework-free                   |
+| `src/application/ports/`                       | New      | `AuthPort`, `SessionPort`                                   |
+| `src/application/use-cases/`                   | New      | signInWithGoogle, getCurrentSession, signOut                |
+| `src/infraestructure/`                         | New      | backend adapter, cookie session adapter, mapper, GSI loader |
+| `src/app/login/actions.ts`                     | Modified | Thin adapter; remove logging + IP fallback                  |
+| `src/ui/hooks/use-google-auth.ts`              | Modified | Split infra loader vs UI hook                               |
+| `src/ui/components/login-card.tsx`             | Modified | Consume use case, not action directly                       |
+| `src/app/page.tsx`, `src/app/profile/page.tsx` | Modified | Read session via `SessionPort`                              |
+| `src/app/api/logout/route.ts`                  | Modified | Call `signOut` use case                                     |
+| `vitest.config.mts`, `package.json`            | Modified | jsdom + testing-library, env config                         |
+| `openspec/changes/oauth-login-flow/`           | Modified | Marked superseded                                           |
 
 ## Risks
 
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| Behavior drift (cookies/redirects/UX change) | Med | Characterization tests first; assert same cookie names/flags/redirects |
-| Signed cookie breaks existing sessions | Med | Force re-login: an unsigned/invalid session cookie is treated as unauthenticated, no legacy-format read path to maintain |
-| GSI window-globals hard to unit-test | Med | Adapter/port boundary + fake in jsdom |
-| jsdom/testing-library setup destabilizes node tests | Low | Per-file environment; keep pure logic on node |
-| Domain/DTO shape mismatch (`user.model.ts`) | Med | Mapper owns translation; do not leak DTO into domain |
+| Risk                                                | Likelihood | Mitigation                                                                                                               |
+| --------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Behavior drift (cookies/redirects/UX change)        | Med        | Characterization tests first; assert same cookie names/flags/redirects                                                   |
+| Signed cookie breaks existing sessions              | Med        | Force re-login: an unsigned/invalid session cookie is treated as unauthenticated, no legacy-format read path to maintain |
+| GSI window-globals hard to unit-test                | Med        | Adapter/port boundary + fake in jsdom                                                                                    |
+| jsdom/testing-library setup destabilizes node tests | Low        | Per-file environment; keep pure logic on node                                                                            |
+| Domain/DTO shape mismatch (`user.model.ts`)         | Med        | Mapper owns translation; do not leak DTO into domain                                                                     |
 
 ## Rollback Plan
 

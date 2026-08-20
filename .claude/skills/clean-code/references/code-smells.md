@@ -1,9 +1,9 @@
 # Code Smells and Heuristics
 
-Comprehensive catalog of code smells organized by category, with identification criteria and targeted refactorings. Based on Robert C. Martin's *Clean Code*, Chapter 17.
-
+Comprehensive catalog of code smells organized by category, with identification criteria and targeted refactorings. Based on Robert C. Martin's _Clean Code_, Chapter 17.
 
 ## Table of Contents
+
 1. [What Is a Code Smell?](#what-is-a-code-smell)
 2. [Comment Smells](#comment-smells)
 3. [Environment Smells](#environment-smells)
@@ -29,12 +29,12 @@ Comments that indicate problems in the code:
 
 Comments that hold information better kept in other systems.
 
-| Information type | Where it belongs | Not in comments |
-|-----------------|-----------------|-----------------|
-| Change history | Git log | Not `// Changed by John on 2024-01-15` |
-| Author attribution | `git blame` | Not `// Author: john@company.com` |
-| Issue tracking | Jira/GitHub Issues | Not `// Fixes bug #1234` (use commit message) |
-| Build instructions | README or Makefile | Not `// Run with -Xmx512m flag` |
+| Information type   | Where it belongs   | Not in comments                               |
+| ------------------ | ------------------ | --------------------------------------------- |
+| Change history     | Git log            | Not `// Changed by John on 2024-01-15`        |
+| Author attribution | `git blame`        | Not `// Author: john@company.com`             |
+| Issue tracking     | Jira/GitHub Issues | Not `// Fixes bug #1234` (use commit message) |
+| Build instructions | README or Makefile | Not `// Run with -Xmx512m flag`               |
 
 **Comments should only contain technical notes about the code itself.**
 
@@ -127,15 +127,16 @@ If running tests requires starting databases, setting up fixtures manually, or r
 
 More than three arguments is a smell. Arguments are hard to understand, hard to remember, and hard to test (every combination of arguments is a test case).
 
-| Arguments | Assessment | Action |
-|-----------|------------|--------|
-| 0 | Ideal | Keep as is |
-| 1 | Good | Common and clear |
-| 2 | Acceptable | Ensure natural pairing |
-| 3 | Questionable | Can any be grouped into an object? |
-| 4+ | Refactor | Introduce parameter object or builder |
+| Arguments | Assessment   | Action                                |
+| --------- | ------------ | ------------------------------------- |
+| 0         | Ideal        | Keep as is                            |
+| 1         | Good         | Common and clear                      |
+| 2         | Acceptable   | Ensure natural pairing                |
+| 3         | Questionable | Can any be grouped into an object?    |
+| 4+        | Refactor     | Introduce parameter object or builder |
 
 **Refactoring:**
+
 ```python
 # BAD: Too many arguments
 def create_user(first_name, last_name, email, phone, address, city, state, zip_code):
@@ -185,6 +186,7 @@ def create_user_account(user_data):
 Functions that are never called should be deleted. Don't keep them around "just in case." Your version control system remembers them if you ever need them back.
 
 **How to find dead functions:**
+
 - IDE "Find Usages" reports zero callers
 - Static analysis tools flag unreachable code
 - Code coverage reports show 0% coverage
@@ -198,11 +200,11 @@ Functions that are never called should be deleted. Don't keep them around "just 
 
 A single source file should contain one language. Mixing HTML, JavaScript, CSS, SQL, and server-side code in one file creates confusion.
 
-| Acceptable | Problematic |
-|------------|-------------|
-| JavaScript in a `.js` file | SQL strings embedded in Java |
-| CSS in a `.css` file | HTML templates inline in Python |
-| SQL in a `.sql` migration file | CSS-in-JS with complex logic |
+| Acceptable                     | Problematic                     |
+| ------------------------------ | ------------------------------- |
+| JavaScript in a `.js` file     | SQL strings embedded in Java    |
+| CSS in a `.css` file           | HTML templates inline in Python |
+| SQL in a `.sql` migration file | CSS-in-JS with complex logic    |
 
 **Minimize** the extent and number of extra languages in source files.
 
@@ -223,14 +225,14 @@ Follow the Principle of Least Surprise. Users and callers should not be surprise
 
 Don't rely on your intuition for boundary cases. **Write tests for every boundary condition.** Things that commonly fail at boundaries:
 
-| Boundary | Common failure |
-|----------|---------------|
-| Empty input | NullPointerException, IndexOutOfBounds |
-| Single element | Off-by-one in loops |
-| Maximum capacity | Buffer overflow, performance cliff |
-| Negative values | Unexpected results in calculations |
-| Unicode | Encoding issues, wrong string length |
-| Concurrent access | Race conditions, deadlocks |
+| Boundary          | Common failure                         |
+| ----------------- | -------------------------------------- |
+| Empty input       | NullPointerException, IndexOutOfBounds |
+| Single element    | Off-by-one in loops                    |
+| Maximum capacity  | Buffer overflow, performance cliff     |
+| Negative values   | Unexpected results in calculations     |
+| Unicode           | Encoding issues, wrong string length   |
+| Concurrent access | Race conditions, deadlocks             |
 
 ### G4: Overridden Safeties
 
@@ -249,12 +251,12 @@ Turning off compiler warnings or ignoring failing tests is like ignoring a check
 
 Duplication is the single most important smell. Every instance represents a missed opportunity for abstraction.
 
-| Duplication type | How to find it | Refactoring |
-|-----------------|----------------|-------------|
-| **Exact clones** | Copy-paste detection tools | Extract shared function |
-| **Structural clones** | Same algorithm, different data | Template Method or Strategy pattern |
-| **Conditional chains** | Repeated `if/else` or `switch` | Polymorphism |
-| **Cross-module** | Same logic in multiple modules | Extract shared library or module |
+| Duplication type       | How to find it                 | Refactoring                         |
+| ---------------------- | ------------------------------ | ----------------------------------- |
+| **Exact clones**       | Copy-paste detection tools     | Extract shared function             |
+| **Structural clones**  | Same algorithm, different data | Template Method or Strategy pattern |
+| **Conditional chains** | Repeated `if/else` or `switch` | Polymorphism                        |
+| **Cross-module**       | Same logic in multiple modules | Extract shared library or module    |
 
 **The Rule of Three:** First instance: just write it. Second instance: note the duplication. Third instance: refactor.
 
@@ -368,6 +370,7 @@ price = amount * SALES_TAX_RATE
 Code that is never executed: unreachable conditions, unused variables, functions with no callers, impossible `catch` blocks.
 
 **Types of dead code:**
+
 - Conditions that can never be true
 - `catch` blocks for exceptions that are never thrown
 - Variables that are assigned but never read
@@ -399,6 +402,7 @@ class FileDownloader:  # The how is an implementation detail
 ### N3: Using Standard Nomenclature Where Possible
 
 Use names from well-known patterns and conventions:
+
 - `Factory`, `Strategy`, `Visitor`, `Iterator` for design patterns
 - `Repository`, `Service`, `Controller` for architectural layers
 - Domain terms from the business (Ubiquitous Language from DDD)
@@ -419,24 +423,24 @@ def rename_file(old_path, new_path)
 
 The length of a name should be proportional to the size of the scope that contains it.
 
-| Scope | Name length | Example |
-|-------|-------------|---------|
-| 1-line lambda | 1 char | `x` in `items.map(x => x.id)` |
-| 5-line method | Short | `i`, `sum`, `item` |
-| Class field | Medium | `retryCount`, `lastUpdate` |
-| Module constant | Long | `MAX_CONNECTION_POOL_SIZE` |
-| Global/public API | Very long | `DEFAULT_SESSION_TIMEOUT_MINUTES` |
+| Scope             | Name length | Example                           |
+| ----------------- | ----------- | --------------------------------- |
+| 1-line lambda     | 1 char      | `x` in `items.map(x => x.id)`     |
+| 5-line method     | Short       | `i`, `sum`, `item`                |
+| Class field       | Medium      | `retryCount`, `lastUpdate`        |
+| Module constant   | Long        | `MAX_CONNECTION_POOL_SIZE`        |
+| Global/public API | Very long   | `DEFAULT_SESSION_TIMEOUT_MINUTES` |
 
 ### N6: Avoid Encodings
 
 Don't use Hungarian notation, member prefixes, or interface prefixes.
 
-| Encoding | Example | Better |
-|----------|---------|--------|
-| Hungarian | `strName`, `iCount` | `name`, `count` |
-| Member prefix | `m_name`, `_name` | `name` (context is the class) |
-| Interface prefix | `IUserService` | `UserService` (implementations get suffix: `UserServiceImpl`) |
-| Type suffix | `nameString` | `name` |
+| Encoding         | Example             | Better                                                        |
+| ---------------- | ------------------- | ------------------------------------------------------------- |
+| Hungarian        | `strName`, `iCount` | `name`, `count`                                               |
+| Member prefix    | `m_name`, `_name`   | `name` (context is the class)                                 |
+| Interface prefix | `IUserService`      | `UserService` (implementations get suffix: `UserServiceImpl`) |
+| Type suffix      | `nameString`        | `name`                                                        |
 
 ---
 
@@ -482,13 +486,13 @@ Slow tests don't get run. A test suite that takes 30 minutes will be run once a 
 
 ## Smell Detection Quick Reference
 
-| Category | Key Smells | First Action |
-|----------|-----------|--------------|
-| **Comments** | Obsolete, redundant, commented-out code | Delete the comment; improve the code |
-| **Environment** | Multi-step build or test | Script to single command |
-| **Functions** | Too many args, flag args, dead functions | Extract object, split function, delete |
-| **General** | Duplication, wrong abstraction level, feature envy | Extract, move, consolidate |
-| **Names** | Ambiguous, wrong level, encoded | Rename to reveal intent |
-| **Tests** | Insufficient, slow, skipped, no boundaries | Add tests, mock dependencies, fix or delete |
+| Category        | Key Smells                                         | First Action                                |
+| --------------- | -------------------------------------------------- | ------------------------------------------- |
+| **Comments**    | Obsolete, redundant, commented-out code            | Delete the comment; improve the code        |
+| **Environment** | Multi-step build or test                           | Script to single command                    |
+| **Functions**   | Too many args, flag args, dead functions           | Extract object, split function, delete      |
+| **General**     | Duplication, wrong abstraction level, feature envy | Extract, move, consolidate                  |
+| **Names**       | Ambiguous, wrong level, encoded                    | Rename to reveal intent                     |
+| **Tests**       | Insufficient, slow, skipped, no boundaries         | Add tests, mock dependencies, fix or delete |
 
 **Remember:** Not every smell requires immediate action. Use professional judgment. A smell in frequently-changed code demands attention. A smell in stable code that never changes may not be worth the risk of refactoring.

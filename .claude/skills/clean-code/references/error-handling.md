@@ -1,9 +1,9 @@
 # Error Handling
 
-Comprehensive guide to writing clean error handling that keeps business logic readable. Based on Robert C. Martin's *Clean Code*, Chapter 7.
-
+Comprehensive guide to writing clean error handling that keeps business logic readable. Based on Robert C. Martin's _Clean Code_, Chapter 7.
 
 ## Table of Contents
+
 1. [The Core Problem](#the-core-problem)
 2. [Use Exceptions, Not Return Codes](#use-exceptions-not-return-codes)
 3. [Write Your Try-Catch-Finally Statement First](#write-your-try-catch-finally-statement-first)
@@ -105,12 +105,12 @@ def load_configuration(path):
 
 Checked exceptions (Java's `throws` clause) violate the Open/Closed Principle. If you throw a checked exception from a low-level function, every function in the call chain between the throw and the catch must declare that exception. A single change at a low level forces signature changes all the way up.
 
-| Aspect | Checked exceptions | Unchecked exceptions |
-|--------|-------------------|---------------------|
-| **Coupling** | Every caller must declare or catch | Only relevant callers catch |
-| **Encapsulation** | Low-level details leak to high-level | Abstraction layers maintained |
-| **Refactoring** | Adding new exception type cascades changes | New exceptions don't affect existing callers |
-| **When appropriate** | Critical library APIs where caller MUST handle | Application code, most library code |
+| Aspect               | Checked exceptions                             | Unchecked exceptions                         |
+| -------------------- | ---------------------------------------------- | -------------------------------------------- |
+| **Coupling**         | Every caller must declare or catch             | Only relevant callers catch                  |
+| **Encapsulation**    | Low-level details leak to high-level           | Abstraction layers maintained                |
+| **Refactoring**      | Adding new exception type cascades changes     | New exceptions don't affect existing callers |
+| **When appropriate** | Critical library APIs where caller MUST handle | Application code, most library code          |
 
 **In practice:** Use unchecked exceptions for application code. The cost of checked exceptions in dependency management outweighs their documentary benefit.
 
@@ -122,12 +122,12 @@ Each exception should provide enough context to determine the source and locatio
 
 ### What to Include
 
-| Context element | Why | Example |
-|----------------|-----|---------|
-| **Operation that failed** | Identifies what was attempted | "Failed to save invoice" |
-| **Input that caused failure** | Enables reproduction | "Invoice #1234 for customer 'Acme'" |
-| **Constraint that was violated** | Explains why it failed | "Total amount exceeds maximum of $1,000,000" |
-| **Suggested recovery** | Helps caller respond | "Retry after 30 seconds" or "Check network connection" |
+| Context element                  | Why                           | Example                                                |
+| -------------------------------- | ----------------------------- | ------------------------------------------------------ |
+| **Operation that failed**        | Identifies what was attempted | "Failed to save invoice"                               |
+| **Input that caused failure**    | Enables reproduction          | "Invoice #1234 for customer 'Acme'"                    |
+| **Constraint that was violated** | Explains why it failed        | "Total amount exceeds maximum of $1,000,000"           |
+| **Suggested recovery**           | Helps caller respond          | "Retry after 30 seconds" or "Check network connection" |
 
 ### Implementation Pattern
 
@@ -226,6 +226,7 @@ try {
 ```
 
 **Benefits of wrapping:**
+
 - Minimizes dependencies on the third-party API
 - Makes it easy to swap vendors
 - Simplifies testing with mocks
@@ -239,13 +240,13 @@ Returning null from a method is an invitation for NullPointerExceptions. Every n
 
 ### Alternatives to Returning Null
 
-| Instead of null | Return this | When |
-|----------------|-------------|------|
-| Null collection | Empty collection | Method returns a list, set, or map |
-| Null string | Empty string `""` | Method returns text |
-| Null object | Special case object | Object has default behavior |
-| Null optional value | `Optional.empty()` | Value may legitimately be absent |
-| Null on error | Throw exception | Absence indicates a problem |
+| Instead of null     | Return this         | When                               |
+| ------------------- | ------------------- | ---------------------------------- |
+| Null collection     | Empty collection    | Method returns a list, set, or map |
+| Null string         | Empty string `""`   | Method returns text                |
+| Null object         | Special case object | Object has default behavior        |
+| Null optional value | `Optional.empty()`  | Value may legitimately be absent   |
+| Null on error       | Throw exception     | Absence indicates a problem        |
 
 ### The Special Case Pattern
 
@@ -330,28 +331,28 @@ public double calculateMetric(Point p1, Point p2) {
 
 ## Error Handling Patterns Summary
 
-| Pattern | When to use | Benefit |
-|---------|-------------|---------|
-| **Try-catch-finally first** | Any code that could fail | Defines transaction boundary upfront |
-| **Wrap third-party APIs** | Calling external libraries | Isolates vendor dependencies |
-| **Special Case pattern** | Default behavior for missing data | Eliminates null/error checks in callers |
-| **Null Object pattern** | Polymorphic default behavior | No null checks in calling code |
-| **Guard clauses** | Input validation | Fail fast with clear messages |
-| **Custom exception hierarchy** | Domain-specific errors | Caller handles by intent, not implementation |
-| **Exception with context** | All thrown exceptions | Enables diagnosis without debugging |
-| **Empty over null** | Collections, strings, optionals | Eliminates NullPointerException risk |
+| Pattern                        | When to use                       | Benefit                                      |
+| ------------------------------ | --------------------------------- | -------------------------------------------- |
+| **Try-catch-finally first**    | Any code that could fail          | Defines transaction boundary upfront         |
+| **Wrap third-party APIs**      | Calling external libraries        | Isolates vendor dependencies                 |
+| **Special Case pattern**       | Default behavior for missing data | Eliminates null/error checks in callers      |
+| **Null Object pattern**        | Polymorphic default behavior      | No null checks in calling code               |
+| **Guard clauses**              | Input validation                  | Fail fast with clear messages                |
+| **Custom exception hierarchy** | Domain-specific errors            | Caller handles by intent, not implementation |
+| **Exception with context**     | All thrown exceptions             | Enables diagnosis without debugging          |
+| **Empty over null**            | Collections, strings, optionals   | Eliminates NullPointerException risk         |
 
 ---
 
 ## Common Error Handling Anti-Patterns
 
-| Anti-pattern | Problem | Fix |
-|-------------|---------|-----|
-| **Catch-and-ignore** | `catch (Exception e) { }` -- swallows all errors silently | At minimum log; usually re-throw or handle specifically |
-| **Catch-and-log-and-rethrow** | Duplicates logging at every level | Catch at one level, let others propagate |
-| **Returning error codes** | Forces immediate checking, clutters happy path | Use exceptions |
-| **Returning -1 or sentinel values** | Magic values that callers forget to check | Use Optional or throw |
-| **Exception for control flow** | Using try-catch instead of if-else for expected conditions | Use exceptions only for exceptional situations |
-| **Overly broad catch** | `catch (Exception e)` catches bugs too | Catch specific exception types |
-| **Nested try-catch** | Multiple try blocks in one function | Extract each try block into its own function |
-| **Throws declaration cascade** | Checked exceptions forcing changes up the call stack | Use unchecked exceptions for application errors |
+| Anti-pattern                        | Problem                                                    | Fix                                                     |
+| ----------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------- |
+| **Catch-and-ignore**                | `catch (Exception e) { }` -- swallows all errors silently  | At minimum log; usually re-throw or handle specifically |
+| **Catch-and-log-and-rethrow**       | Duplicates logging at every level                          | Catch at one level, let others propagate                |
+| **Returning error codes**           | Forces immediate checking, clutters happy path             | Use exceptions                                          |
+| **Returning -1 or sentinel values** | Magic values that callers forget to check                  | Use Optional or throw                                   |
+| **Exception for control flow**      | Using try-catch instead of if-else for expected conditions | Use exceptions only for exceptional situations          |
+| **Overly broad catch**              | `catch (Exception e)` catches bugs too                     | Catch specific exception types                          |
+| **Nested try-catch**                | Multiple try blocks in one function                        | Extract each try block into its own function            |
+| **Throws declaration cascade**      | Checked exceptions forcing changes up the call stack       | Use unchecked exceptions for application errors         |

@@ -138,7 +138,10 @@ expect(input.files[0]).toBe(file);
 expect(input.files).toHaveLength(1);
 
 // Multiple files
-const files = [new File(["a"], "a.png", { type: "image/png" }), new File(["b"], "b.png", { type: "image/png" })];
+const files = [
+  new File(["a"], "a.png", { type: "image/png" }),
+  new File(["b"], "b.png", { type: "image/png" }),
+];
 await user.upload(input, files);
 ```
 

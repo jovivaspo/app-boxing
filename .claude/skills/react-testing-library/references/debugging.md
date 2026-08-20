@@ -186,7 +186,9 @@ console.log(screen.queryAllByRole("button"));
 
 // Check accessible name
 const buttons = screen.getAllByRole("button");
-buttons.forEach((b) => console.log(b.textContent, b.getAttribute("aria-label")));
+buttons.forEach((b) =>
+  console.log(b.textContent, b.getAttribute("aria-label"))
+);
 ```
 
 ---

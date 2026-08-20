@@ -3,13 +3,19 @@
 ## React.memo
 
 ```tsx
-import { memo } from 'react';
+import { memo } from "react";
 
 // Memoize component - only re-renders when props change
-const ExpensiveList = memo(function ExpensiveList({ items }: { items: Item[] }) {
+const ExpensiveList = memo(function ExpensiveList({
+  items,
+}: {
+  items: Item[];
+}) {
   return (
     <ul>
-      {items.map(item => <li key={item.id}>{item.name}</li>)}
+      {items.map((item) => (
+        <li key={item.id}>{item.name}</li>
+      ))}
     </ul>
   );
 });
@@ -29,11 +35,11 @@ const UserCard = memo(
 // Problem: New object/function on each render
 function Parent() {
   // ❌ Creates new object every render
-  return <Child style={{ color: 'red' }} onClick={() => doSomething()} />;
+  return <Child style={{ color: "red" }} onClick={() => doSomething()} />;
 }
 
 // Solution: Memoize or lift out
-const style = { color: 'red' }; // Lifted out
+const style = { color: "red" }; // Lifted out
 
 function Parent() {
   const handleClick = useCallback(() => doSomething(), []);
@@ -44,11 +50,11 @@ function Parent() {
 ## Code Splitting with lazy()
 
 ```tsx
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense } from "react";
 
 // Split heavy components
-const HeavyChart = lazy(() => import('./HeavyChart'));
-const AdminPanel = lazy(() => import('./AdminPanel'));
+const HeavyChart = lazy(() => import("./HeavyChart"));
+const AdminPanel = lazy(() => import("./AdminPanel"));
 
 function App() {
   return (
@@ -61,7 +67,7 @@ function App() {
 // Route-based splitting (React Router)
 const routes = [
   {
-    path: '/admin',
+    path: "/admin",
     element: (
       <Suspense fallback={<Loading />}>
         <AdminPanel />
@@ -74,7 +80,7 @@ const routes = [
 ## Virtualization
 
 ```tsx
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 function VirtualList({ items }: { items: Item[] }) {
   const parentRef = useRef<HTMLDivElement>(null);
@@ -86,13 +92,13 @@ function VirtualList({ items }: { items: Item[] }) {
   });
 
   return (
-    <div ref={parentRef} style={{ height: '400px', overflow: 'auto' }}>
+    <div ref={parentRef} style={{ height: "400px", overflow: "auto" }}>
       <div style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((virtualItem) => (
           <div
             key={virtualItem.key}
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: virtualItem.start,
               height: virtualItem.size,
             }}
@@ -111,11 +117,14 @@ function VirtualList({ items }: { items: Item[] }) {
 ```tsx
 function Analytics({ data }: { data: DataPoint[] }) {
   // Only recalculate when data changes
-  const stats = useMemo(() => ({
-    total: data.reduce((sum, d) => sum + d.value, 0),
-    average: data.reduce((sum, d) => sum + d.value, 0) / data.length,
-    max: Math.max(...data.map(d => d.value)),
-  }), [data]);
+  const stats = useMemo(
+    () => ({
+      total: data.reduce((sum, d) => sum + d.value, 0),
+      average: data.reduce((sum, d) => sum + d.value, 0) / data.length,
+      max: Math.max(...data.map((d) => d.value)),
+    }),
+    [data]
+  );
 
   return <StatsDisplay stats={stats} />;
 }
@@ -124,10 +133,10 @@ function Analytics({ data }: { data: DataPoint[] }) {
 ## useTransition for Non-urgent Updates
 
 ```tsx
-import { useTransition } from 'react';
+import { useTransition } from "react";
 
 function Search() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<Item[]>([]);
   const [isPending, startTransition] = useTransition();
 
@@ -151,18 +160,18 @@ function Search() {
 
 ## Quick Reference
 
-| Technique | When to Use |
-|-----------|-------------|
-| `memo()` | Prevent re-renders from unchanged props |
-| `useMemo()` | Cache expensive calculations |
-| `useCallback()` | Stable function references |
-| `lazy()` | Code split heavy components |
-| `useTransition()` | Keep UI responsive during updates |
-| Virtualization | Large lists (1000+ items) |
+| Technique         | When to Use                             |
+| ----------------- | --------------------------------------- |
+| `memo()`          | Prevent re-renders from unchanged props |
+| `useMemo()`       | Cache expensive calculations            |
+| `useCallback()`   | Stable function references              |
+| `lazy()`          | Code split heavy components             |
+| `useTransition()` | Keep UI responsive during updates       |
+| Virtualization    | Large lists (1000+ items)               |
 
-| Anti-pattern | Fix |
-|--------------|-----|
-| Inline objects | Lift out or useMemo |
-| Inline functions | useCallback |
-| Large bundle | lazy() + Suspense |
-| Long lists | Virtualization |
+| Anti-pattern     | Fix                 |
+| ---------------- | ------------------- |
+| Inline objects   | Lift out or useMemo |
+| Inline functions | useCallback         |
+| Large bundle     | lazy() + Suspense   |
+| Long lists       | Virtualization      |

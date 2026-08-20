@@ -6,14 +6,14 @@ Pure presentational UI implementing the AuthShell login page from the Stitch des
 
 ## Architecture Decisions
 
-| Decision | Alternatives | Rationale |
-|----------|-------------|-----------|
-| All Server Components | Client Components with state | Zero interactivity — static content only; no hydration cost |
-| Flat component files in `src/ui/components/` | Feature folder per component | Each component is a single file; no co-located hooks/types needed yet |
-| Inline SVG for Google icon | External SVG file, icon library | Multi-color paths (4 brand colors) — inline gives full control, zero deps |
-| Lucide React for security badges | Custom SVGs, heroicons | Already compatible with shadcn/radix-nova; tree-shakeable |
-| Server-side redirect on `/` | Client-side `useEffect` redirect, middleware | Faster — no JS needed; `redirect()` from `next/navigation` in RSC is correct for Next.js 16 App Router |
-| Font migration via CSS variable rename | Add new variable, keep old | `--font-sans` already maps to Inter alias in `globals.css`; just swap the font source |
+| Decision                                     | Alternatives                                 | Rationale                                                                                              |
+| -------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| All Server Components                        | Client Components with state                 | Zero interactivity — static content only; no hydration cost                                            |
+| Flat component files in `src/ui/components/` | Feature folder per component                 | Each component is a single file; no co-located hooks/types needed yet                                  |
+| Inline SVG for Google icon                   | External SVG file, icon library              | Multi-color paths (4 brand colors) — inline gives full control, zero deps                              |
+| Lucide React for security badges             | Custom SVGs, heroicons                       | Already compatible with shadcn/radix-nova; tree-shakeable                                              |
+| Server-side redirect on `/`                  | Client-side `useEffect` redirect, middleware | Faster — no JS needed; `redirect()` from `next/navigation` in RSC is correct for Next.js 16 App Router |
+| Font migration via CSS variable rename       | Add new variable, keep old                   | `--font-sans` already maps to Inter alias in `globals.css`; just swap the font source                  |
 
 ## Component Tree
 
@@ -50,18 +50,18 @@ No data flow — this is a static page. The only "data" is hardcoded copy and de
 
 ## File Changes
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/app/login/page.tsx` | Create | Login route page — composition root assembling all sub-components |
-| `src/ui/components/login-header.tsx` | Create | AuthShell header with brand, nav tabs, help link |
-| `src/ui/components/login-card.tsx` | Create | Centered card with heading, subtext, Google button, security badges |
-| `src/ui/components/login-footer.tsx` | Create | Legal footer with separator, links, copyright |
-| `src/ui/components/google-icon.tsx` | Create | Inline SVG with Google's 4 brand colors |
-| `src/ui/components/security-badges.tsx` | Create | Row of 3 Lucide icons with labels |
-| `src/app/layout.tsx` | Modify | Geist → Inter font, `lang="es"`, updated metadata |
-| `src/app/page.tsx` | Modify | Replace Vercel template with server-side redirect to `/login` |
-| `src/app/globals.css` | Modify | Update `--font-sans` CSS variable to reference Inter |
-| `package.json` | Modify | shadcn add `card` + `separator` |
+| File                                    | Action | Description                                                         |
+| --------------------------------------- | ------ | ------------------------------------------------------------------- |
+| `src/app/login/page.tsx`                | Create | Login route page — composition root assembling all sub-components   |
+| `src/ui/components/login-header.tsx`    | Create | AuthShell header with brand, nav tabs, help link                    |
+| `src/ui/components/login-card.tsx`      | Create | Centered card with heading, subtext, Google button, security badges |
+| `src/ui/components/login-footer.tsx`    | Create | Legal footer with separator, links, copyright                       |
+| `src/ui/components/google-icon.tsx`     | Create | Inline SVG with Google's 4 brand colors                             |
+| `src/ui/components/security-badges.tsx` | Create | Row of 3 Lucide icons with labels                                   |
+| `src/app/layout.tsx`                    | Modify | Geist → Inter font, `lang="es"`, updated metadata                   |
+| `src/app/page.tsx`                      | Modify | Replace Vercel template with server-side redirect to `/login`       |
+| `src/app/globals.css`                   | Modify | Update `--font-sans` CSS variable to reference Inter                |
+| `package.json`                          | Modify | shadcn add `card` + `separator`                                     |
 
 ## Interfaces / Contracts
 
@@ -94,7 +94,7 @@ function LoginFooter(): JSX.Element;
 
 ```tsx
 interface GoogleIconProps {
-  className?: string;  // For size control via Tailwind
+  className?: string; // For size control via Tailwind
 }
 function GoogleIcon({ className }: GoogleIconProps): JSX.Element;
 ```
@@ -108,18 +108,18 @@ function SecurityBadges(): JSX.Element;
 
 ## Design Token Mapping
 
-| Stitch Token | Tailwind Class | CSS Variable | Value |
-|-------------|---------------|-------------|-------|
-| Primary color | `bg-zinc-900` / `text-zinc-900` | `--primary` | `oklch(0.205 0 0)` |
-| Background | `bg-background` | `--background` | `oklch(1 0 0)` |
-| Card surface | `bg-card` | `--card` | `oklch(1 0 0)` |
-| Muted text | `text-muted-foreground` | `--muted-foreground` | `oklch(0.556 0 0)` |
-| Border | `border-border` | `--border` | `oklch(0.922 0 0)` |
-| Radius | `rounded-lg` | `--radius` | `0.625rem` (10px) |
-| Spacing baseline | `gap-1` (4px), `gap-2` (8px), `gap-3` (12px), `gap-4` (16px) | — | 4px scale |
-| Font | `font-sans` | `--font-sans` → Inter | — |
-| Card max-width | `max-w-[440px]` | — | 440px |
-| Container max-width | `max-w-screen-xl` | — | 1280px |
+| Stitch Token        | Tailwind Class                                               | CSS Variable          | Value              |
+| ------------------- | ------------------------------------------------------------ | --------------------- | ------------------ |
+| Primary color       | `bg-zinc-900` / `text-zinc-900`                              | `--primary`           | `oklch(0.205 0 0)` |
+| Background          | `bg-background`                                              | `--background`        | `oklch(1 0 0)`     |
+| Card surface        | `bg-card`                                                    | `--card`              | `oklch(1 0 0)`     |
+| Muted text          | `text-muted-foreground`                                      | `--muted-foreground`  | `oklch(0.556 0 0)` |
+| Border              | `border-border`                                              | `--border`            | `oklch(0.922 0 0)` |
+| Radius              | `rounded-lg`                                                 | `--radius`            | `0.625rem` (10px)  |
+| Spacing baseline    | `gap-1` (4px), `gap-2` (8px), `gap-3` (12px), `gap-4` (16px) | —                     | 4px scale          |
+| Font                | `font-sans`                                                  | `--font-sans` → Inter | —                  |
+| Card max-width      | `max-w-[440px]`                                              | —                     | 440px              |
+| Container max-width | `max-w-screen-xl`                                            | —                     | 1280px             |
 
 ## Layout Strategy
 
@@ -146,21 +146,21 @@ div.flex.min-h-screen.flex-col (page wrapper)
 
 ### Responsive Breakpoints
 
-| Breakpoint | Tailwind | Behavior |
-|-----------|----------|----------|
-| Mobile (375px) | default | `px-4` (16px) margins, full-width card, stacked layout |
-| sm (640px) | `sm:` | `px-6`, slightly larger spacing |
-| md (768px) | `md:` | Card centered with visible whitespace |
-| lg (1024px) | `lg:` | Full desktop layout, header links visible |
-| xl (1280px) | `xl:` | Max container width, card stays at 440px |
+| Breakpoint     | Tailwind | Behavior                                               |
+| -------------- | -------- | ------------------------------------------------------ |
+| Mobile (375px) | default  | `px-4` (16px) margins, full-width card, stacked layout |
+| sm (640px)     | `sm:`    | `px-6`, slightly larger spacing                        |
+| md (768px)     | `md:`    | Card centered with visible whitespace                  |
+| lg (1024px)    | `lg:`    | Full desktop layout, header links visible              |
+| xl (1280px)    | `xl:`    | Max container width, card stays at 440px               |
 
 ## shadcn Integration
 
-| Component | Usage | Variant/Props |
-|-----------|-------|---------------|
-| `Card` | Wraps login form content | Default — `CardHeader`, `CardContent`, `CardFooter` as needed |
-| `Separator` | Divides footer links from copyright | Default (horizontal) |
-| `Button` | "Continuar con Google" | `variant="outline"`, full-width, custom className for zinc-900 background |
+| Component   | Usage                               | Variant/Props                                                             |
+| ----------- | ----------------------------------- | ------------------------------------------------------------------------- |
+| `Card`      | Wraps login form content            | Default — `CardHeader`, `CardContent`, `CardFooter` as needed             |
+| `Separator` | Divides footer links from copyright | Default (horizontal)                                                      |
+| `Button`    | "Continuar con Google"              | `variant="outline"`, full-width, custom className for zinc-900 background |
 
 The Google button uses `variant="outline"` with custom classes to match the Stitch design: dark background (`bg-zinc-900`), white text, full-width, hover state.
 
@@ -190,13 +190,13 @@ This is the correct Next.js 16 App Router pattern — `redirect()` throws a spec
 
 ## Testing Strategy
 
-| Layer | What to Test | Approach |
-|-------|-------------|----------|
-| Visual | Page renders at 375px and 1280px | Manual browser check against Stitch design |
-| Build | `npm run build` passes | CI gate |
-| Lint | `npm run lint` passes | CI gate |
-| Type-check | `npx tsc --noEmit` passes | CI gate |
-| Accessibility | All interactive elements focusable | Manual keyboard navigation |
+| Layer         | What to Test                       | Approach                                   |
+| ------------- | ---------------------------------- | ------------------------------------------ |
+| Visual        | Page renders at 375px and 1280px   | Manual browser check against Stitch design |
+| Build         | `npm run build` passes             | CI gate                                    |
+| Lint          | `npm run lint` passes              | CI gate                                    |
+| Type-check    | `npx tsc --noEmit` passes          | CI gate                                    |
+| Accessibility | All interactive elements focusable | Manual keyboard navigation                 |
 
 No automated tests per user directive.
 
@@ -205,6 +205,7 @@ No automated tests per user directive.
 No migration needed — this is a new page. The redirect on `/` is immediate.
 
 **Rollback Plan** (from proposal):
+
 1. Revert `layout.tsx`: restore Geist, `lang="en"`, original metadata
 2. Restore `page.tsx` from Vercel template
 3. Delete `src/app/login/` and 5 new components

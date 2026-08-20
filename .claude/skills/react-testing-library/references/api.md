@@ -219,7 +219,9 @@ test("useCounter", () => {
 ### With Initial Props
 
 ```ts
-const { result, rerender } = renderHook((props) => useUser(props.id), { initialProps: { id: 1 } });
+const { result, rerender } = renderHook((props) => useUser(props.id), {
+  initialProps: { id: 1 },
+});
 
 expect(result.current.name).toBe("User 1");
 
@@ -279,7 +281,10 @@ const AllProviders = ({ children }) => (
   </ThemeProvider>
 );
 
-const customRender = (ui: React.ReactElement, options?: Omit<RenderOptions, "wrapper">) => render(ui, { wrapper: AllProviders, ...options });
+const customRender = (
+  ui: React.ReactElement,
+  options?: Omit<RenderOptions, "wrapper">
+) => render(ui, { wrapper: AllProviders, ...options });
 
 export * from "@testing-library/react";
 export { customRender as render };
