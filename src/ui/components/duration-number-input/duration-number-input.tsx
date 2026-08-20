@@ -6,7 +6,6 @@ import type { DurationNumberInputProps } from "./duration-number-input.types";
 const DURATION_INPUT_CLASSNAME =
   "font-heading text-primary w-12 border-none bg-transparent p-0 text-center text-2xl focus:border-b-2 focus:border-primary focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
 
-/** Presentational only (A2): all logic lives in `useDurationNumberInput`. */
 export function DurationNumberInput({
   value,
   onChange,

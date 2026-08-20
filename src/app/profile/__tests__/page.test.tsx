@@ -3,11 +3,6 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-// Rewired (Phase 9.5) `ProfilePage`: gates on `getCurrentSession()` and
-// renders the domain `User` directly, dropping the local `User` interface.
-// Supersedes `page.characterization.test.tsx` (deleted) — same rationale
-// as `src/app/page.test.tsx` (D2/D3 legacy plain-JSON cookie now invalid).
-
 vi.mock("next/image", () => ({
   default: (props: Record<string, unknown>) => {
     const rest = { ...props };
@@ -17,10 +12,6 @@ vi.mock("next/image", () => ({
     return <img {...rest} />;
   },
 }));
-
-// Per-entry-point dependency wiring revision: `profile/page.tsx` now
-// constructs `getCurrentSession` inline with `createCookieSessionAdapter()`
-// instead of going through a shared factory module — mock both directly.
 
 const getCurrentSessionExecuteMock = vi.fn();
 const getCurrentSessionMock = vi.fn<

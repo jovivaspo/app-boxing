@@ -4,8 +4,8 @@ export interface TimerConfiguration {
   id: string;
   name: string;
   rounds: number;
-  roundDuration: number; // seconds
-  restDuration: number; // seconds
+  roundDuration: number;
+  restDuration: number;
   warnBeforeEnd: boolean;
   bellSound: boolean;
 }

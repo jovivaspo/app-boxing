@@ -18,7 +18,6 @@ const LEVEL_LABEL: Record<TimerLevel, string> = {
   elite: "Elite",
 };
 
-/** Presentational only — no logic beyond deriving display values from props. */
 export function TimerConfigurationCard({
   config,
   onDelete,

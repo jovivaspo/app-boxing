@@ -5,10 +5,6 @@ interface GetTimerConfigurationDeps {
   repository: TimerConfigurationRepositoryPort;
 }
 
-/**
- * Returns the single configuration identified by `id`.
- * @throws {import("@/domain/errors/timer-configuration-errors").TimerConfigurationNotFound} no stored record matches `id`.
- */
 export function getTimerConfiguration({
   repository,
 }: GetTimerConfigurationDeps) {

@@ -10,11 +10,6 @@ import {
   toTimerConfigurationRequestBody,
 } from "@/infraestructure/timer-configuration/mappers/timer-configuration.mapper";
 
-/**
- * Fails fast on a non-2xx status. When `notFoundId` is passed, a 404 maps to
- * `timerConfigurationNotFound` (D5); every other non-2xx status throws a
- * generic `Error` (D6).
- */
 function ensureOk(response: Response, notFoundId?: string): void {
   if (notFoundId !== undefined && response.status === 404) {
     throw timerConfigurationNotFound(notFoundId);

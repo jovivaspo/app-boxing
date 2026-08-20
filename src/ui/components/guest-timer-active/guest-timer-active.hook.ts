@@ -15,12 +15,8 @@ import type {
 
 export { WARNING_SECONDS } from "@/ui/hooks/use-timer-session-engine";
 
-// A1: browser-only, non-serializable adapter constructed at module scope so
-// it only runs client-side. Exposed as an overridable param so tests and
-// callers can inject a fake at the port boundary.
 const defaultLocalAdapter = createLocalTimerConfigurationAdapter();
 
-/** Owns `/guest-timer-active` session logic (A2): reads the single guest record and delegates tick/cue to the shared engine (J). */
 export function useGuestTimerActive(
   { localAdapter = defaultLocalAdapter }: GuestTimerActiveProps,
   deps: GuestTimerActiveDeps = {}

@@ -9,11 +9,6 @@ import type {
 
 const MIN_ROUNDS = 1;
 
-/**
- * Owns all rounds-stepper logic (A2): +/- clamped to a floor of 1 (design
- * D7, derived from `validateTimerConfiguration`'s `rounds <= 0` rule), and
- * manual-input clamping so an empty/NaN/`0` typed value never propagates.
- */
 export function useRoundsStepper({
   value,
   onChange,

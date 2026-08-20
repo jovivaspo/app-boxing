@@ -8,13 +8,6 @@ import { backendAuthResponseSchema } from "@/infraestructure/auth/dto/backend-au
 import { createHttpClient } from "@/infraestructure/http/httpClient";
 import { toSession } from "@/infraestructure/auth/mappers/user.mapper";
 
-/**
- * Creates the `AuthPort` implementation backed by the real HTTP backend.
- * Reads `BACKEND_URL` (required — no hardcoded fallback, D8) and throws
- * `BackendUnavailable` immediately if it is not configured.
- *
- * NEVER logs the ID token or the raw response body — both are sensitive.
- */
 export function createBackendAuthAdapter(): AuthPort {
   const backendUrl = process.env.BACKEND_URL;
   if (!backendUrl) {

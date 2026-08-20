@@ -4,10 +4,6 @@ interface DeleteTimerConfigurationDeps {
   repository: TimerConfigurationRepositoryPort;
 }
 
-/**
- * Removes the configuration identified by `id`.
- * @throws {import("@/domain/errors/timer-configuration-errors").TimerConfigurationNotFound} no stored record matches `id`.
- */
 export function deleteTimerConfiguration({
   repository,
 }: DeleteTimerConfigurationDeps) {

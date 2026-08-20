@@ -110,7 +110,6 @@ describe("advanceTimerSession", () => {
     };
     const now = 0;
     const state = startTimerSession(plan, now);
-    // work1(0-10s) -> rest1(10-15s) -> work2(15-25s) -> rest2(25-30s): 27s lands 2s into rest2.
     const at = now + 27_000;
 
     const next = advanceTimerSession(state, at);

@@ -32,10 +32,6 @@ const BENEFITS: Benefit[] = [
   },
 ];
 
-/**
- * Landing benefit block (`landing-page` capability) — exactly three items
- * from a local const array, per design D-6. Presentational, session-agnostic.
- */
 export function LandingBenefits() {
   return (
     <section className="border-border mx-auto mt-10 w-full max-w-5xl border-t px-4 pt-10 sm:px-6">

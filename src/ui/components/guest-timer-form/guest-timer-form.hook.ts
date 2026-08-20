@@ -25,12 +25,8 @@ const EMPTY_FORM: GuestTimerFormState = {
   bellSound: true,
 };
 
-// A1: browser-only, non-serializable adapter constructed at module scope so
-// it only runs client-side. Exposed as an overridable param so tests and
-// callers can inject a fake at the port boundary.
 const defaultLocalAdapter = createLocalTimerConfigurationAdapter();
 
-/** Owns the guest-only `/guest-timer` form logic (A2): no `name` field, START gated on rounds/roundDuration only. */
 export function useGuestTimerForm({
   localAdapter = defaultLocalAdapter,
 }: GuestTimerFormProps): UseGuestTimerFormResult {

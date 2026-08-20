@@ -5,8 +5,6 @@ import Link from "next/link";
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 import { getCurrentSession } from "@/application/use-cases/get-current-session/get-current-session";
 
-// See src/app/login/page.tsx for why session-gated routes must force dynamic
-// rendering rather than rely on Next.js's build-time dynamic-API detection.
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
@@ -23,7 +21,6 @@ export default async function ProfilePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 p-4">
       <div className="flex w-full max-w-sm flex-col items-center gap-6">
-        {/* Avatar */}
         <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-full bg-zinc-100 ring-2 ring-zinc-200">
           {user.pictureUrl ? (
             <Image
@@ -40,7 +37,6 @@ export default async function ProfilePage() {
           )}
         </div>
 
-        {/* Name & Role */}
         <div className="text-center">
           <h1 className="text-2xl font-semibold tracking-tight">{user.name}</h1>
           <span className="mt-1 inline-block rounded-full bg-zinc-100 px-3 py-0.5 text-xs font-medium tracking-wider text-zinc-600 uppercase">
@@ -48,7 +44,6 @@ export default async function ProfilePage() {
           </span>
         </div>
 
-        {/* Info */}
         <div className="w-full space-y-3 rounded-xl border border-zinc-200 bg-white p-4">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Email</span>
@@ -74,7 +69,6 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex w-full gap-3">
           <Link
             href="/"

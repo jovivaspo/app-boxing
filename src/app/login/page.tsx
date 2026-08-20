@@ -6,11 +6,6 @@ import { LoginCard } from "@/ui/components/login-card";
 import { Topbar } from "@/ui/components/topbar";
 import { Footer } from "@/ui/components/footer";
 
-// D-1b: `/login` must never statically prerender a session-gated guard —
-// same rationale as `src/app/page.tsx`/`src/app/profile/page.tsx`: the
-// session adapter fails closed to `null` BEFORE touching `cookies()`, which
-// would otherwise let Next.js's build-time analysis miss the dynamic-API
-// usage and bake this redirect into a static page.
 export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {

@@ -9,12 +9,6 @@ import { LandingHero } from "@/ui/components/landing-hero";
 import { LandingBenefits } from "@/ui/components/landing-benefits";
 import { LandingCta } from "@/ui/components/landing-cta";
 
-// Landing page metadata (`seo-metadata` capability) — overrides the root
-// layout defaults for crawlers and link-preview services. `metadataBase` sits
-// here rather than on the layout: this is the only route with relative
-// metadata URLs, and it renders per request, so the origin is resolved from
-// the runtime `SITE_URL` instead of being baked into statically prerendered
-// sibling routes.
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: "Iron Pulse — Timer de boxeo por rounds",
@@ -36,12 +30,6 @@ export const metadata: Metadata = {
   },
 };
 
-// `/` is a public landing (D-1, `landing-page` capability): it never
-// redirects on session state. The session read only drives the Topbar's
-// session-aware state, so `force-dynamic` stays for the same reason as
-// `/login` — the adapter can fail closed to `null` BEFORE touching
-// `cookies()`, which would otherwise let Next.js's build-time analysis miss
-// the dynamic-API usage and bake this into a static page.
 export const dynamic = "force-dynamic";
 
 export default async function Home() {

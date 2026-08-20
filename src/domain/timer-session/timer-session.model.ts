@@ -3,22 +3,19 @@ export type TimerStatus = "running" | "paused" | "finished";
 
 export interface TimerSessionPlan {
   rounds: number;
-  roundDuration: number; // seconds
-  restDuration: number; // seconds
+  roundDuration: number;
+  restDuration: number;
 }
 
 export interface TimerSessionState {
   readonly plan: TimerSessionPlan;
-  readonly round: number; // 1-based
+  readonly round: number;
   readonly phase: TimerPhase;
   readonly status: TimerStatus;
-  readonly phaseStartedAt: number; // epoch ms — the single time origin
-  readonly pausedAt: number | null; // epoch ms while paused
+  readonly phaseStartedAt: number;
+  readonly pausedAt: number | null;
 }
 
-// Applied first in every derived function: while paused, the frozen
-// `pausedAt` timestamp stands in for `now`, so "paused freezes the
-// countdown" is one line here instead of a special case per function.
 function effectiveNow(state: TimerSessionState, now: number): number {
   return state.pausedAt ?? now;
 }
@@ -65,9 +62,6 @@ export function elapsedFraction(state: TimerSessionState, now: number): number {
   return Math.min(1, Math.max(0, elapsedSeconds / duration));
 }
 
-// Walks as many expired phases as `now` covers in one pass (rather than one
-// tick per phase) and returns the exact same reference when nothing expired,
-// so callers can use `next !== prev` as a cheap "did anything change" check.
 export function advanceTimerSession(
   state: TimerSessionState,
   now: number
@@ -82,8 +76,6 @@ export function advanceTimerSession(
     const elapsedMs = at - current.phaseStartedAt;
     if (elapsedMs < durationMs) break;
 
-    // Shift the origin by the leftover time so the next iteration measures
-    // how far into the *new* phase `at` already is.
     const overshootMs = elapsedMs - durationMs;
     const nextPhaseStartedAt = at - overshootMs;
 

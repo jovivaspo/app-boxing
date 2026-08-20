@@ -3,11 +3,6 @@ import { Play } from "lucide-react";
 
 import { Button } from "@/ui/components/shadcn/button";
 
-/**
- * Closing call-to-action (`landing-page` capability) — reaches
- * `/guest-timer`, the product's primary no-signup entry point, per D-6.
- * Presentational, session-agnostic.
- */
 export function LandingCta() {
   return (
     <section className="bg-card border-border mt-10 flex w-full flex-col items-center gap-6 border-y px-4 py-10 text-center sm:px-6">

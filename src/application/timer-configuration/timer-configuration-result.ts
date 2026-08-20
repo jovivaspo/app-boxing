@@ -1,8 +1,5 @@
 export type TimerConfigurationErrorCode =
-  | "invalid-configuration" // InvalidTimerConfiguration
-  | "not-found" // TimerConfigurationNotFound
-  | "unauthenticated" // no session server-side
-  | "unknown"; // network / non-2xx / misconfig
+  "invalid-configuration" | "not-found" | "unauthenticated" | "unknown";
 
 export type Result<T> =
   { ok: true; data: T } | { ok: false; code: TimerConfigurationErrorCode };

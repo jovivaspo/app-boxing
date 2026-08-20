@@ -10,11 +10,6 @@ import type {
 const MIN_VALUE = 0;
 const MAX_VALUE = 59;
 
-/**
- * Owns all duration-number-input logic (A2): keystroke filtering strips
- * non-numeric characters, clamps to [0, 59], and zero-pads the display —
- * mirrors `rounds-stepper.hook.ts`'s `handleInputChange` pattern.
- */
 export function useDurationNumberInput({
   value,
   onChange,

@@ -21,14 +21,6 @@ function toErrorCode(error: unknown): GoogleLoginErrorCode {
   return "unknown";
 }
 
-/**
- * Thin Server Action adapter (lives in `infraestructure/actions`, not
- * `app/`, per hexagonal layering — Server Actions are infra, not routing).
- * Builds the `signInWithGoogle` use case inline with its real adapters,
- * exchanges the Google ID token, and redirects to `/timers` on success. Domain
- * errors are mapped to `{ ok:false, code }` — the raw backend
- * response/idToken are never logged or returned to the client.
- */
 export async function googleLogin(
   idToken: string
 ): Promise<GoogleLoginFailure | void> {

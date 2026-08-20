@@ -7,7 +7,6 @@ import { Button } from "@/ui/components/shadcn/button";
 import { useRoundsStepper } from "./rounds-stepper.hook";
 import type { RoundsStepperProps } from "./rounds-stepper.types";
 
-/** Presentational only (A2): all logic lives in the hook. */
 export function RoundsStepper({ value, onChange }: RoundsStepperProps) {
   const { increment, decrement, handleInputChange } = useRoundsStepper({
     value,

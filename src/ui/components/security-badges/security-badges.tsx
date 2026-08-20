@@ -1,9 +1,5 @@
 import { FingerprintPattern, Lock, ShieldCheck } from "lucide-react";
 
-/**
- * Row of three trust badges: verified, encrypted, secure.
- * Each badge pairs a Lucide icon with a Spanish label.
- */
 export function SecurityBadges() {
   return (
     <ul

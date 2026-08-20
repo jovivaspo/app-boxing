@@ -3,16 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Session } from "@/domain/session.model";
 import { sign } from "../hmac";
 
-// Characterization + new-behavior scaffold (Phase 3.1 + 7.3):
-// - Preserves current `jwt`/`user` cookie NAMES, `maxAge` (7d), `secure`
-//   (prod-only), `sameSite` (lax), `path` (/).
-// - Hardens `user` cookie to `httpOnly: true` (was `false` on the legacy
-//   plain-JSON cookie set by the pre-refactor login Server Action — see
-//   the deleted legacy characterization test for that old flag).
-// - `user` cookie value is now an HMAC-signed string, never plain JSON.
-// - `get()` fails closed to `null` on missing, tampered, or legacy
-//   plain-JSON cookies (D3) — no dual-format compatibility path.
-
 const SESSION_SECRET = "test-session-secret";
 const EXPECTED_MAX_AGE = 60 * 60 * 24 * 7;
 const EXPECTED_SECURE = process.env.NODE_ENV === "production";
@@ -101,7 +91,6 @@ describe("createCookieSessionAdapter", () => {
         path: "/",
         maxAge: EXPECTED_MAX_AGE,
       });
-      // The cookie value must not be plain JSON — it must be signed.
       expect(() => JSON.parse(signedValue as string)).toThrow();
       expect(signedValue).toContain(".");
     });

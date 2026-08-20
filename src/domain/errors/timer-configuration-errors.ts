@@ -12,17 +12,8 @@ export function invalidTimerConfiguration(
   });
 }
 
-/**
- * Upper bound for any duration, in seconds: 59:59. Durations are authored and
- * displayed as a minutes:seconds pair, so a value above this has no
- * representation in the UI.
- */
 export const MAX_DURATION_SECONDS = 3599;
 
-/**
- * @throws {InvalidTimerConfiguration} rounds, roundDuration, or restDuration is <= 0,
- * or roundDuration/restDuration is above `MAX_DURATION_SECONDS`.
- */
 export function validateTimerConfiguration(
   input: TimerConfiguration
 ): TimerConfiguration;

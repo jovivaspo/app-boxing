@@ -4,5 +4,5 @@ export interface User {
   email: string;
   role: string;
   pictureUrl: string | null;
-  createdAt: string; // ISO-8601
+  createdAt: string;
 }

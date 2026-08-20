@@ -1,10 +1,5 @@
 import { Separator } from "@/ui/components/shadcn/separator";
 
-/**
- * Shared footer rendered by both `/` and `/login` (D-2, `app-shell`
- * capability). Content ported verbatim from the retired `LoginFooter`
- * (D-7) — no props, session-agnostic.
- */
 export function Footer() {
   return (
     <footer className="border-border bg-background border-t">

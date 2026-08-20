@@ -9,13 +9,8 @@ import { deleteTimerConfiguration } from "@/application/use-cases/delete-timer-c
 import { createBackendTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/backend-timer-configuration.adapter";
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 
-// Boundary shape validation only (type/presence).
 const idShapeSchema = z.string();
 
-/**
- * Thin Server Action adapter deleting a timer configuration by id. Never
- * throws across the RSC boundary — every branch resolves a `Result<null>`.
- */
 export async function deleteTimerConfigurationAction(
   id: string
 ): Promise<Result<null>> {

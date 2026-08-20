@@ -3,11 +3,6 @@ import Link from "next/link";
 
 import type { TopbarProps } from "./topbar.types";
 
-/**
- * Shared, session-aware topbar rendered by both `/` and `/login` (D-1,
- * `app-shell` capability). Presentational only, zero client JS — logout is a
- * plain POST form (D-3, mobile hamburger deferred).
- */
 export function Topbar({ session }: TopbarProps) {
   return (
     <header className="border-border bg-background sticky top-0 z-50 border-b">
@@ -49,12 +44,6 @@ export function Topbar({ session }: TopbarProps) {
             </>
           ) : (
             <>
-              {/*
-                Emphasised with colour only, never an "active" underline: the
-                shared Topbar has no route awareness, so on `/` that underline
-                claimed a current page it was not on. It was styling inherited
-                from the login-only header, which did know its route.
-              */}
               <Link
                 href="/login"
                 className="text-foreground px-3 py-1.5 font-mono text-xs tracking-widest uppercase"

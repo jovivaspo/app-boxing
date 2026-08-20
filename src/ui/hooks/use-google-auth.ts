@@ -16,17 +16,8 @@ const ERROR_COPY: Record<GsiError, string> = {
   "no-credential": "Google no devolvió un token válido.",
 };
 
-// Real adapter as a module-level singleton so the default `port` argument
-// keeps a stable identity across renders (a fresh instance on every render
-// would retrigger the effect on every render too).
 const defaultPort: GoogleIdentityPort = createGsiLoaderAdapter();
 
-/**
- * Thin UI hook: wires the container ref + success/error callbacks to an
- * injected `GoogleIdentityPort` (real GSI adapter by default, fakeable in
- * tests) and maps `GsiError` to Spanish copy. Owns NO `window`/script logic
- * — that lives entirely in `createGsiLoaderAdapter()`.
- */
 export function useGoogleAuth(
   containerRef: React.RefObject<HTMLDivElement | null>,
   onSuccess: (idToken: string) => void,

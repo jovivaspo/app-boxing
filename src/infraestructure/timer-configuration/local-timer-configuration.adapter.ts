@@ -13,13 +13,6 @@ import {
 const STORAGE_KEY = "guest-timer";
 const GUEST_NAME = "Guest timer";
 
-/**
- * Creates the `GuestTimerConfigurationPort` implementation backed by
- * `localStorage` — used for the guest (no session) path. Single-record
- * strategy (D2): at most one `TimerConfiguration` lives under `STORAGE_KEY`,
- * `id` generated once on first write and reused on every subsequent write
- * (create-overwrites-not-appends), `name` always fixed to `GUEST_NAME`.
- */
 export function createLocalTimerConfigurationAdapter(): GuestTimerConfigurationPort {
   return {
     async read(): Promise<TimerConfiguration | null> {

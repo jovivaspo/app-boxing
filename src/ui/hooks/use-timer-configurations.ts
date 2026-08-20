@@ -18,7 +18,6 @@ export interface TimerConfigurationOperations {
   remove(id: string): Promise<Result<null>>;
 }
 
-/** Authenticated-only (Server Action calls); guest storage now lives entirely in `GuestTimerConfigurationPort` adapters. */
 export function useTimerConfigurations(): TimerConfigurationOperations {
   return useMemo<TimerConfigurationOperations>(
     () => ({

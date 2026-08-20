@@ -3,12 +3,6 @@ import { Timer } from "lucide-react";
 
 import { Button } from "@/ui/components/shadcn/button";
 
-/**
- * Landing hero (D-1, `landing-page` capability). Presentational, session-
- * agnostic — the primary CTA ("Probar el timer" → `/guest-timer`) is
- * visually and structurally prioritized over the secondary one ("Iniciar
- * sesión" → `/login`), per spec.
- */
 export function LandingHero() {
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col items-start gap-6 px-4 pt-10 sm:px-6 md:items-center md:text-center">

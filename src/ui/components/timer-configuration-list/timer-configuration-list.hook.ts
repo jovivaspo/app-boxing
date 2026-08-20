@@ -16,7 +16,6 @@ interface UseTimerConfigurationListResult {
 const LOAD_ERROR = "No se pudieron cargar los timers. Intentá de nuevo.";
 const DELETE_ERROR = "No se pudo eliminar el timer. Intentá de nuevo.";
 
-/** Owns all list-screen logic (A2): load on mount, empty state, optimistic delete. */
 export function useTimerConfigurationList(): UseTimerConfigurationListResult {
   const [configurations, setConfigurations] = useState<TimerConfiguration[]>(
     []

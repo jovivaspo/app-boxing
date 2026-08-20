@@ -11,7 +11,6 @@ import { DurationWheelInput } from "@/ui/components/duration-wheel-input";
 import { useTimerConfigurationForm } from "./timer-configuration-form.hook";
 import type { TimerConfigurationFormProps } from "./timer-configuration-form.types";
 
-/** Presentational only (A2): all logic lives in the hook. */
 export function TimerConfigurationForm(props: TimerConfigurationFormProps) {
   const {
     form,

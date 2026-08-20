@@ -1,4 +1,3 @@
-/** Formats a whole number of seconds as `m:ss` (seconds zero-padded to 2 digits). */
 export function formatDuration(totalSeconds: number): string {
   const { minutes, seconds } = splitDuration(totalSeconds);
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
