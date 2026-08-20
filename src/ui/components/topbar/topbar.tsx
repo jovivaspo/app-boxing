@@ -59,7 +59,7 @@ export function Topbar({ session }: TopbarProps) {
                 href="/login"
                 className="text-foreground px-3 py-1.5 font-mono text-xs tracking-widest uppercase"
               >
-                Iniciar Sesión
+                Iniciar sesión
               </Link>
               <span
                 aria-disabled="true"

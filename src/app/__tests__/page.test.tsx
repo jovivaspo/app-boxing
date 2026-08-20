@@ -90,10 +90,10 @@ describe("Home page (landing)", () => {
     );
   });
 
-  // Scoped to the hero section for the same reason as the primary CTA above:
-  // the landing body renders "Iniciar sesión" in exactly one place today,
-  // but scoping keeps the assertion tied to the hero's secondary CTA rather
-  // than "whichever link matches the name first".
+  // Scoped to the hero section for the same reason as the primary CTA above,
+  // and now load-bearing rather than merely defensive: the Topbar's sign-in
+  // link carries the same accessible name and precedes the hero in DOM order,
+  // so an unscoped query would assert against the Topbar, not the CTA.
   it("should render the secondary CTA linking to /login", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: Home } = await import("../page");
