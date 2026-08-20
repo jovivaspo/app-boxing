@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 import { getCurrentSession } from "@/application/use-cases/get-current-session/get-current-session";
 
-// See src/app/page.tsx for why session-gated routes must force dynamic
+// See src/app/login/page.tsx for why session-gated routes must force dynamic
 // rendering rather than rely on Next.js's build-time dynamic-API detection.
 export const dynamic = "force-dynamic";
 

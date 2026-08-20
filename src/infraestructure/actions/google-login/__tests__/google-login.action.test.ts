@@ -56,7 +56,7 @@ describe("googleLogin (inline dependency wiring Server Action)", () => {
     vi.restoreAllMocks();
   });
 
-  it("exchanges the idToken via signInWithGoogle and redirects to / on success", async () => {
+  it("exchanges the idToken via signInWithGoogle and redirects to /timers on success", async () => {
     const { googleLogin } = await import("../google-login.action");
     executeMock.mockResolvedValue({
       token: "backend-jwt",
@@ -75,7 +75,7 @@ describe("googleLogin (inline dependency wiring Server Action)", () => {
     expect(createBackendAuthAdapterMock).toHaveBeenCalled();
     expect(createCookieSessionAdapterMock).toHaveBeenCalled();
     expect(executeMock).toHaveBeenCalledWith("fake-id-token");
-    expect(redirectMock).toHaveBeenCalledWith("/");
+    expect(redirectMock).toHaveBeenCalledWith("/timers");
     expect(result).toBeUndefined();
   });
 
