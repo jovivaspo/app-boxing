@@ -47,14 +47,27 @@ image).
 ### Requirement: Robots Directives
 
 The system MUST expose `app/robots.ts` as a typed `MetadataRoute.Robots` that allows
-crawling of the public routes (`/`, `/login`, `/guest-timer`) and references the
-sitemap's location.
+crawling of the public routes (`/`, `/login`, `/guest-timer`), disallows the routes
+that must stay out of the index (`/api`, `/profile`, `/timers`, `/guest-timer-active`),
+and references the sitemap's location.
+
+The disallow list is required, not decorative: in robots.txt an `Allow` directive only
+carves an exception out of a disallowed path, so an allow-only rule set leaves every
+unlisted route crawlable and has no effect at all.
 
 #### Scenario: `/robots.txt` resolves and references the sitemap
 
 - GIVEN the application is running
 - WHEN `/robots.txt` is requested
 - THEN it resolves successfully and its content references the sitemap URL
+
+#### Scenario: the authenticated app and the API are excluded from crawling
+
+- GIVEN the application is running
+- WHEN `/robots.txt` is requested
+- THEN `/api`, `/profile`, `/timers` and `/guest-timer-active` are disallowed
+- AND `/guest-timer-active` stays disallowed despite `/guest-timer` being allowed,
+  since robots paths match by prefix and the longer match wins
 
 ### Requirement: Sitemap Surface
 
