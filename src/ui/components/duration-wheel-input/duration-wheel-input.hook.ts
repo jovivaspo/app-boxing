@@ -12,22 +12,15 @@ const MAX_VALUE = 59;
 export const ITEM_HEIGHT = 40;
 export const CONTAINER_HEIGHT = 160;
 
-/** Pure: maps a scroll position to the nearest clamped 0-59 value. */
 export function scrollTopToValue(scrollTop: number, itemHeight: number) {
   const raw = Math.round(scrollTop / itemHeight);
   return Math.min(Math.max(raw, MIN_VALUE), MAX_VALUE);
 }
 
-/** Pure: inverse of `scrollTopToValue` — the scroll offset for a value. */
 export function valueToScrollTop(value: number, itemHeight: number) {
   return value * itemHeight;
 }
 
-/**
- * Owns all duration-wheel-input logic (A2): local `draft` state seeded from
- * `value` on open, committed to `onChange` only on Confirm — cancel/outside
- * click/Escape just close, discarding the draft (design D4).
- */
 export function useDurationWheelInput({
   value,
   onChange,

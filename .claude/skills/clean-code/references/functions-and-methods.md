@@ -1,9 +1,9 @@
 # Functions and Methods
 
-Comprehensive guide to writing small, focused functions that do one thing well. Based on Robert C. Martin's *Clean Code*, Chapters 3 and 4.
-
+Comprehensive guide to writing small, focused functions that do one thing well. Based on Robert C. Martin's _Clean Code_, Chapters 3 and 4.
 
 ## Table of Contents
+
 1. [The First Rule of Functions](#the-first-rule-of-functions)
 2. [Do One Thing](#do-one-thing)
 3. [Function Arguments](#function-arguments)
@@ -23,6 +23,7 @@ Comprehensive guide to writing small, focused functions that do one thing well. 
 **Functions should be small.** The second rule of functions is that they should be smaller than that.
 
 A well-written function:
+
 - Fits on one screen (ideally 4-10 lines)
 - Has a name that describes exactly what it does
 - Takes few arguments (zero is best, three is the maximum)
@@ -97,13 +98,13 @@ The ideal number of arguments for a function is zero (niladic). Next comes one (
 
 ### Argument Count Guide
 
-| Count | Name | When acceptable | Example |
-|-------|------|-----------------|---------|
-| **0** | Niladic | Simple operations | `getCurrentTime()` |
-| **1** | Monadic | Asking a question or transforming input | `isValid(email)`, `parse(json)` |
-| **2** | Dyadic | Natural pairings | `Point(x, y)`, `assertEquals(expected, actual)` |
-| **3** | Triadic | Rarely; consider object | `Color(r, g, b)` |
-| **4+** | Polyadic | Almost never | Wrap in object: `new Config(...)` |
+| Count  | Name     | When acceptable                         | Example                                         |
+| ------ | -------- | --------------------------------------- | ----------------------------------------------- |
+| **0**  | Niladic  | Simple operations                       | `getCurrentTime()`                              |
+| **1**  | Monadic  | Asking a question or transforming input | `isValid(email)`, `parse(json)`                 |
+| **2**  | Dyadic   | Natural pairings                        | `Point(x, y)`, `assertEquals(expected, actual)` |
+| **3**  | Triadic  | Rarely; consider object                 | `Color(r, g, b)`                                |
+| **4+** | Polyadic | Almost never                            | Wrap in object: `new Config(...)`               |
 
 ### Common Monadic Forms
 
@@ -186,12 +187,12 @@ A side effect is when a function promises to do one thing but also does other hi
 
 ### Common Hidden Side Effects
 
-| Declared purpose | Hidden side effect | Danger |
-|-----------------|-------------------|--------|
-| `checkPassword(user, password)` | Initializes a session | Calling "check" unexpectedly logs user in |
-| `getUser(id)` | Creates user if not found | "Get" implies read-only; caller doesn't expect writes |
-| `toString()` | Modifies internal state | Debugging with print statements changes behavior |
-| `validate(input)` | Sends analytics event | Validation during testing triggers real events |
+| Declared purpose                | Hidden side effect        | Danger                                                |
+| ------------------------------- | ------------------------- | ----------------------------------------------------- |
+| `checkPassword(user, password)` | Initializes a session     | Calling "check" unexpectedly logs user in             |
+| `getUser(id)`                   | Creates user if not found | "Get" implies read-only; caller doesn't expect writes |
+| `toString()`                    | Modifies internal state   | Debugging with print statements changes behavior      |
+| `validate(input)`               | Sends analytics event     | Validation during testing triggers real events        |
 
 ### How to Fix Side Effects
 
@@ -207,13 +208,13 @@ If you can extract a named function from a block of code, you should. The extrac
 
 ### When to Extract
 
-| Signal | Action |
-|--------|--------|
-| A block inside an `if`, `else`, `for`, or `while` | Extract to named function |
-| A comment explaining what the next lines do | Replace comment with named function |
-| A function longer than 10 lines | Look for extraction opportunities |
-| Nested indentation deeper than 2 levels | Extract inner blocks |
-| Code that you'd need to re-read to understand | Name it so you don't have to |
+| Signal                                            | Action                              |
+| ------------------------------------------------- | ----------------------------------- |
+| A block inside an `if`, `else`, `for`, or `while` | Extract to named function           |
+| A comment explaining what the next lines do       | Replace comment with named function |
+| A function longer than 10 lines                   | Look for extraction opportunities   |
+| Nested indentation deeper than 2 levels           | Extract inner blocks                |
+| Code that you'd need to re-read to understand     | Name it so you don't have to        |
 
 ### Extraction Example
 
@@ -221,7 +222,7 @@ If you can extract a named function from a block of code, you should. The extrac
 // BEFORE: Deeply nested, hard to follow
 function processOrders(orders: Order[]) {
   for (const order of orders) {
-    if (order.status === 'pending') {
+    if (order.status === "pending") {
       let total = 0;
       for (const item of order.items) {
         if (item.inStock) {
@@ -233,7 +234,7 @@ function processOrders(orders: Order[]) {
       }
       if (total > 0) {
         order.total = total;
-        order.status = 'processed';
+        order.status = "processed";
         db.save(order);
         emailService.sendConfirmation(order);
       }
@@ -243,9 +244,7 @@ function processOrders(orders: Order[]) {
 
 // AFTER: Each function does one thing
 function processOrders(orders: Order[]) {
-  orders
-    .filter(isPending)
-    .forEach(processOrder);
+  orders.filter(isPending).forEach(processOrder);
 }
 
 function processOrder(order: Order) {
@@ -257,7 +256,7 @@ function processOrder(order: Order) {
 
 function calculateOrderTotal(order: Order): number {
   return order.items
-    .filter(item => item.inStock)
+    .filter((item) => item.inStock)
     .reduce((sum, item) => sum + calculateItemPrice(item), 0);
 }
 
@@ -270,7 +269,7 @@ function calculateItemPrice(item: Item): number {
 
 function finalizeOrder(order: Order, total: number) {
   order.total = total;
-  order.status = 'processed';
+  order.status = "processed";
   db.save(order);
   emailService.sendConfirmation(order);
 }
@@ -307,12 +306,12 @@ Duplication is the root of all evil in software. Every piece of knowledge should
 
 ### Types of Duplication
 
-| Type | Example | Fix |
-|------|---------|-----|
-| **Exact duplication** | Same code block in three places | Extract to shared function |
-| **Structural duplication** | Same algorithm with different data | Template Method or Strategy pattern |
+| Type                       | Example                                  | Fix                                     |
+| -------------------------- | ---------------------------------------- | --------------------------------------- |
+| **Exact duplication**      | Same code block in three places          | Extract to shared function              |
+| **Structural duplication** | Same algorithm with different data       | Template Method or Strategy pattern     |
 | **Conceptual duplication** | Same business rule expressed differently | Consolidate into single source of truth |
-| **Data duplication** | Same value computed in multiple places | Compute once, pass result |
+| **Data duplication**       | Same value computed in multiple places   | Compute once, pass result               |
 
 ### The Rule of Three
 
@@ -363,11 +362,11 @@ private void shipOrder(Order order) {
 
 ## Common Function Anti-Patterns
 
-| Anti-pattern | Problem | Refactoring |
-|-------------|---------|-------------|
-| **Output arguments** | `appendFooter(report)` -- is `report` input or output? | Make it a method: `report.appendFooter()` |
-| **Selector arguments** | `calculate(MONTHLY)` enum switches behavior | Split: `calculateMonthly()`, `calculateAnnual()` |
-| **Dead functions** | Never called, just sitting there | Delete them. Version control remembers. |
-| **Switch statements** | Long switches violate SRP and OCP | Replace with polymorphism or strategy pattern |
-| **Temporal coupling** | Functions must be called in a specific order | Make ordering explicit through return values or builder |
-| **Leaky abstraction** | Function exposes implementation details | Hide internals, return domain objects |
+| Anti-pattern           | Problem                                                | Refactoring                                             |
+| ---------------------- | ------------------------------------------------------ | ------------------------------------------------------- |
+| **Output arguments**   | `appendFooter(report)` -- is `report` input or output? | Make it a method: `report.appendFooter()`               |
+| **Selector arguments** | `calculate(MONTHLY)` enum switches behavior            | Split: `calculateMonthly()`, `calculateAnnual()`        |
+| **Dead functions**     | Never called, just sitting there                       | Delete them. Version control remembers.                 |
+| **Switch statements**  | Long switches violate SRP and OCP                      | Replace with polymorphism or strategy pattern           |
+| **Temporal coupling**  | Functions must be called in a specific order           | Make ordering explicit through return values or builder |
+| **Leaky abstraction**  | Function exposes implementation details                | Hide internals, return domain objects                   |

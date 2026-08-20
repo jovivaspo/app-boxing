@@ -14,40 +14,61 @@ untestable window-global GSI hook. Follows the project's flat layer layout
 
 ## Architecture Decisions
 
-| # | Decision | Alternatives rejected | Rationale |
-|---|----------|-----------------------|-----------|
-| D1 | Domain `User` evolves to backend truth: `{id,name,email,role:string,pictureUrl:string\|null,createdAt:string}`. Drop `isActive` and the `Role` union. | Keep union + synthesize `isActive=true`, narrow `role` with `"user"` fallback, carry `createdAt` outside `User`. | `isActive` is never provided/used; the `admin\|user` union is wrong for a boxing app (coach/boxer/etc.) — narrowing would silently drop backend roles. This IS "what the mapper needs" to produce a valid object supporting current profile rendering. Minimal + behavior-preserving. |
-| D2 | Sign the `user` cookie with HMAC-SHA256 (`SESSION_SECRET`); verify before trust. | JWE/encryption; store profile in `jwt` only; sign both cookies. | Integrity (not secrecy) is the requirement; profile is non-secret. HMAC is stdlib (`node:crypto`), zero deps. `jwt` stays opaque/httpOnly as-is. |
-| D3 | Force re-login on invalid/unsigned cookie: `get()` returns `null`. No dual-format read path. | Legacy plain-JSON fallback / migration shim. | Per scope decision #4. Simpler, fail-closed, no drift risk. |
-| D4 | `SessionPort` = `create/get/clear`; verification folded into fail-closed `get(): Session\|null`. | Separate `verify()` per proposal sketch. | A standalone `verify` is redundant and opens a TOCTOU gap; `create` is required (use case must persist the session — the proposal's sketch omitted it). |
-| D5 | GSI isolated behind `GoogleIdentityPort`; per-file `@vitest-environment jsdom` pragma for its non-visual tests. | Global jsdom env; keep window-globals in the hook. | Keeps pure domain/application tests on `node`; makes the adapter fakeable and the hook DOM-light. |
-| D6 | **(Superseded — see revision note below)** Each entry point (Server Action, RSC, Route Handler) constructs its own dependencies inline, at the point of use, instead of importing a shared factory module. | Centralized `infraestructure/composition.ts` factory (original D6, PR6); singletons; module-level instances; DI container. | User-directed revision after reviewing PR6: a shared composition-root file was rejected in favor of per-entry-point inline wiring — each Server Action/RSC/Route Handler is itself the composition root (still consistent with "RSC/actions are the sanctioned composition roots"), just without an intermediate shared module. Adapters (`createBackendAuthAdapter()`, `createCookieSessionAdapter()`) and use cases (`signInWithGoogle`, `getCurrentSession`, `signOut`) are imported directly and called inline. This trades a small amount of per-entry-point repetition for removing an indirection layer the user didn't want; `BACKEND_URL`/`SESSION_SECRET` reads remain adapter-local (unchanged). |
-| D7 | Domain errors as tagged `Error` objects built via factory functions (`_tag` discriminant, e.g. `invalidCredentials()`); UI owns Spanish copy. **(Revised in PR1 — see below)** | ES6 classes (`class X extends Error`); Result objects; raw strings (current). | Preserves error *meaning* across layers; localization stays out of domain/infra. Classes rejected because this codebase is functional-only (no `class` anywhere in `src/`) — factory functions returning `Object.assign(new Error(...), {_tag})` keep `instanceof Error` true while staying idiomatic. **Consumers MUST discriminate on `_tag`, not `instanceof InvalidCredentials`/etc., since those are TS interfaces with no runtime representation.** |
-| D8 | No hardcoded `BACKEND_URL` fallback — missing env fails closed. | Keep `?? "http://10.142…"`. | Security fix; a private LAN IP must never ship as default. |
+| #   | Decision                                                                                                                                                                                                   | Alternatives rejected                                                                                                      | Rationale                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Domain `User` evolves to backend truth: `{id,name,email,role:string,pictureUrl:string\|null,createdAt:string}`. Drop `isActive` and the `Role` union.                                                      | Keep union + synthesize `isActive=true`, narrow `role` with `"user"` fallback, carry `createdAt` outside `User`.           | `isActive` is never provided/used; the `admin\|user` union is wrong for a boxing app (coach/boxer/etc.) — narrowing would silently drop backend roles. This IS "what the mapper needs" to produce a valid object supporting current profile rendering. Minimal + behavior-preserving.                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| D2  | Sign the `user` cookie with HMAC-SHA256 (`SESSION_SECRET`); verify before trust.                                                                                                                           | JWE/encryption; store profile in `jwt` only; sign both cookies.                                                            | Integrity (not secrecy) is the requirement; profile is non-secret. HMAC is stdlib (`node:crypto`), zero deps. `jwt` stays opaque/httpOnly as-is.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| D3  | Force re-login on invalid/unsigned cookie: `get()` returns `null`. No dual-format read path.                                                                                                               | Legacy plain-JSON fallback / migration shim.                                                                               | Per scope decision #4. Simpler, fail-closed, no drift risk.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| D4  | `SessionPort` = `create/get/clear`; verification folded into fail-closed `get(): Session\|null`.                                                                                                           | Separate `verify()` per proposal sketch.                                                                                   | A standalone `verify` is redundant and opens a TOCTOU gap; `create` is required (use case must persist the session — the proposal's sketch omitted it).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| D5  | GSI isolated behind `GoogleIdentityPort`; per-file `@vitest-environment jsdom` pragma for its non-visual tests.                                                                                            | Global jsdom env; keep window-globals in the hook.                                                                         | Keeps pure domain/application tests on `node`; makes the adapter fakeable and the hook DOM-light.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| D6  | **(Superseded — see revision note below)** Each entry point (Server Action, RSC, Route Handler) constructs its own dependencies inline, at the point of use, instead of importing a shared factory module. | Centralized `infraestructure/composition.ts` factory (original D6, PR6); singletons; module-level instances; DI container. | User-directed revision after reviewing PR6: a shared composition-root file was rejected in favor of per-entry-point inline wiring — each Server Action/RSC/Route Handler is itself the composition root (still consistent with "RSC/actions are the sanctioned composition roots"), just without an intermediate shared module. Adapters (`createBackendAuthAdapter()`, `createCookieSessionAdapter()`) and use cases (`signInWithGoogle`, `getCurrentSession`, `signOut`) are imported directly and called inline. This trades a small amount of per-entry-point repetition for removing an indirection layer the user didn't want; `BACKEND_URL`/`SESSION_SECRET` reads remain adapter-local (unchanged). |
+| D7  | Domain errors as tagged `Error` objects built via factory functions (`_tag` discriminant, e.g. `invalidCredentials()`); UI owns Spanish copy. **(Revised in PR1 — see below)**                             | ES6 classes (`class X extends Error`); Result objects; raw strings (current).                                              | Preserves error _meaning_ across layers; localization stays out of domain/infra. Classes rejected because this codebase is functional-only (no `class` anywhere in `src/`) — factory functions returning `Object.assign(new Error(...), {_tag})` keep `instanceof Error` true while staying idiomatic. **Consumers MUST discriminate on `_tag`, not `instanceof InvalidCredentials`/etc., since those are TS interfaces with no runtime representation.**                                                                                                                                                                                                                                                   |
+| D8  | No hardcoded `BACKEND_URL` fallback — missing env fails closed.                                                                                                                                            | Keep `?? "http://10.142…"`.                                                                                                | Security fix; a private LAN IP must never ship as default.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 ## Interfaces / Contracts
 
 ### Domain — `src/domain/`
+
 ```ts
 // user.model.ts  (evolved per D1; remove Role union + isActive)
-export interface User { id: string; name: string; email: string;
-  role: string; pictureUrl: string | null; createdAt: string; } // createdAt ISO-8601
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  pictureUrl: string | null;
+  createdAt: string;
+} // createdAt ISO-8601
 
 // session.model.ts  (new)
-export interface Session { token: string; user: User; } // token = opaque backend JWT
+export interface Session {
+  token: string;
+  user: User;
+} // token = opaque backend JWT
 
 // errors/auth-errors.ts  (implemented in PR1 — tagged factory functions, D7 revised: no classes)
-export interface InvalidCredentials extends Error { readonly _tag: "InvalidCredentials"; }
+export interface InvalidCredentials extends Error {
+  readonly _tag: "InvalidCredentials";
+}
 export function invalidCredentials(message?: string): InvalidCredentials;
-export interface BackendUnavailable extends Error { readonly _tag: "BackendUnavailable"; }
-export function backendUnavailable(cause?: unknown, message?: string): BackendUnavailable;
-export interface SessionInvalid extends Error { readonly _tag: "SessionInvalid"; }
+export interface BackendUnavailable extends Error {
+  readonly _tag: "BackendUnavailable";
+}
+export function backendUnavailable(
+  cause?: unknown,
+  message?: string
+): BackendUnavailable;
+export interface SessionInvalid extends Error {
+  readonly _tag: "SessionInvalid";
+}
 export function sessionInvalid(message?: string): SessionInvalid;
-export type AuthError = InvalidCredentials | BackendUnavailable | SessionInvalid;
+export type AuthError =
+  InvalidCredentials | BackendUnavailable | SessionInvalid;
 // Discriminate with `error._tag === "InvalidCredentials"`, NOT `instanceof InvalidCredentials`.
 ```
 
 ### Application ports — `src/application/ports/`
+
 ```ts
 // auth.port.ts
 export interface AuthPort {
@@ -56,20 +77,25 @@ export interface AuthPort {
 }
 // session.port.ts
 export interface SessionPort {
-  create(session: Session): Promise<void>;       // sets signed jwt + user cookies
-  get(): Promise<Session | null>;                // reads + HMAC-verifies; null if absent/tampered
-  clear(): Promise<void>;                         // deletes jwt + user
+  create(session: Session): Promise<void>; // sets signed jwt + user cookies
+  get(): Promise<Session | null>; // reads + HMAC-verifies; null if absent/tampered
+  clear(): Promise<void>; // deletes jwt + user
 }
 // google-identity.port.ts  (driven; browser infra behind boundary)
-export type GsiError = "missing-client-id" | "script-load-failed" | "no-credential";
+export type GsiError =
+  "missing-client-id" | "script-load-failed" | "no-credential";
 export interface GoogleIdentityPort {
-  load(cfg: { clientId: string; onCredential: (idToken: string) => void;
-              onError: (e: GsiError) => void }): Promise<void>;
+  load(cfg: {
+    clientId: string;
+    onCredential: (idToken: string) => void;
+    onError: (e: GsiError) => void;
+  }): Promise<void>;
   renderButton(container: HTMLElement): void;
 }
 ```
 
 ### Use cases — `src/application/use-cases/` (factory + injected ports; no `next/*`, no fetch)
+
 ```ts
 signInWithGoogle({auth, session}) => (idToken) => Promise<Session>
   // deps: AuthPort + SessionPort. Empty idToken → InvalidCredentials.
@@ -81,6 +107,7 @@ signOut({session}) => () => Promise<void>
 ```
 
 ### Infrastructure — `src/infraestructure/`
+
 - **`auth/backend-auth.adapter.ts`** (implements `AuthPort`): reads `BACKEND_URL` (required, D8);
   `POST ${BACKEND_URL}/api/v1/auth/google` body `{ idToken }`, header `content-type: application/json`;
   NO logging of token/response. Mapping: `401|403 → InvalidCredentials`; `5xx / fetch reject → BackendUnavailable`;
@@ -96,15 +123,16 @@ signOut({session}) => () => Promise<void>
 - **`actions/google-login.action.ts`** (D6, revised): the `"use server"` Server Action, relocated here from `src/app/login/` — constructs `signInWithGoogle({ auth: createBackendAuthAdapter(), session: createCookieSessionAdapter() })` inline, no shared factory module.
 
 ### App/UI changes (before → after responsibility; not full code)
-| File | After |
-|------|-------|
+
+| File                                                 | After                                                                                                                                                                                                         |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/infraestructure/actions/google-login.action.ts` | Thin `"use server"` adapter (moved out of `app/`): builds adapters inline, runs `signInWithGoogle`, `redirect("/")` on success; catch typed errors → return `{ ok:false, code }`. No logging, no IP fallback. |
-| `src/ui/hooks/use-google-auth.ts` | Thin UI hook: consumes injected `GoogleIdentityPort` (default = real adapter, fake in tests); wires container ref + callbacks; maps `GsiError` → Spanish copy. No window/script logic. |
-| `src/ui/components/login-card.tsx` | Keeps local loading/error UI state (legit UI state); maps action's `code` → Spanish copy via a small UI map. Rendering tests deferred. |
-| `src/app/page.tsx` | `getCurrentSession()` → `null` ⇒ `redirect("/login")`; render `session.user.name`. No inline parse/verify. |
-| `src/app/profile/page.tsx` | Same guard; render from domain `User`; drop local `User` interface; guard `pictureUrl === null` (fallback avatar); `createdAt` still parsed to `Date` for display. |
-| `src/app/api/logout/route.ts` | `signOut()` then `NextResponse.redirect("/login", 303)`. Deletion moves into `clear()`. |
-| `vitest.config.mts`, `package.json` | Add `@testing-library/react` + `jsdom` (+`@testing-library/jest-dom`) dev deps; keep global `node`, opt jsdom per-file via pragma (D5). |
+| `src/ui/hooks/use-google-auth.ts`                    | Thin UI hook: consumes injected `GoogleIdentityPort` (default = real adapter, fake in tests); wires container ref + callbacks; maps `GsiError` → Spanish copy. No window/script logic.                        |
+| `src/ui/components/login-card.tsx`                   | Keeps local loading/error UI state (legit UI state); maps action's `code` → Spanish copy via a small UI map. Rendering tests deferred.                                                                        |
+| `src/app/page.tsx`                                   | `getCurrentSession()` → `null` ⇒ `redirect("/login")`; render `session.user.name`. No inline parse/verify.                                                                                                    |
+| `src/app/profile/page.tsx`                           | Same guard; render from domain `User`; drop local `User` interface; guard `pictureUrl === null` (fallback avatar); `createdAt` still parsed to `Date` for display.                                            |
+| `src/app/api/logout/route.ts`                        | `signOut()` then `NextResponse.redirect("/login", 303)`. Deletion moves into `clear()`.                                                                                                                       |
+| `vitest.config.mts`, `package.json`                  | Add `@testing-library/react` + `jsdom` (+`@testing-library/jest-dom`) dev deps; keep global `node`, opt jsdom per-file via pragma (D5).                                                                       |
 
 ## Data Flow
 
@@ -127,6 +155,7 @@ signOut({session}) => () => Promise<void>
 ## Testing Strategy (TDD — `strict_tdd: true`, zero existing tests)
 
 Sequence (red first each step):
+
 1. **Characterization contract FIRST**: encode current observable behavior as failing expectations the new code must satisfy — cookie names `jwt`/`user`, flags, `maxAge` 7d, redirect `/` (login) and `/login` (logout), backend request URL/body. They fail because adapters don't exist yet.
 2. **Mapper** (node): field-by-field DTO→User, `pictureUrl` null-coalesce, `role` passthrough, `createdAt` passthrough (decision #6 cases).
 3. **Use cases** (node, mocked ports): success persists+returns; empty idToken→`InvalidCredentials`; port errors propagate; `getCurrentSession` null path; `signOut` calls `clear`.
@@ -134,13 +163,13 @@ Sequence (red first each step):
 5. **Cookie adapter + hmac** (node, faked `cookies()`): create sets both cookies w/ correct flags + signed value; get verifies + returns; tampered→null; missing→null; legacy plain-JSON→null; clear deletes both; HMAC sign/verify roundtrip + tamper detection.
 6. **GSI adapter** (jsdom pragma): idempotent single script tag; onload→init; onerror→`script-load-failed`; missing clientId→`missing-client-id`; empty credential→`no-credential`. Hook test w/ fake port: `GsiError`→Spanish copy mapping.
 
-| Layer | Test | Env | Focus |
-|-------|------|-----|-------|
-| Domain | unit | node | error construction / tags |
-| Application | unit + port mocks | node | use-case orchestration |
-| Infra (mapper, backend, cookie, hmac) | unit/contract | node | translation + integrity + error mapping |
-| Infra (GSI) + hook | non-visual | jsdom | script lifecycle, error→copy |
-| **UI (`login-card` rendering)** | **DEFERRED** | — | out of design scope (future redesign) |
+| Layer                                 | Test              | Env   | Focus                                   |
+| ------------------------------------- | ----------------- | ----- | --------------------------------------- |
+| Domain                                | unit              | node  | error construction / tags               |
+| Application                           | unit + port mocks | node  | use-case orchestration                  |
+| Infra (mapper, backend, cookie, hmac) | unit/contract     | node  | translation + integrity + error mapping |
+| Infra (GSI) + hook                    | non-visual        | jsdom | script lifecycle, error→copy            |
+| **UI (`login-card` rendering)**       | **DEFERRED**      | —     | out of design scope (future redesign)   |
 
 ## Migration / Rollout
 
@@ -150,4 +179,7 @@ Force re-login (D3): existing unsigned `user` cookies verify-fail → treated as
 
 - [ ] `SESSION_SECRET` provisioning in deploy env — confirm it exists before merge (blocks runtime, not design).
 - [ ] `@testing-library/jest-dom` — include now or defer with the rendering tests? (Leaning: install now, unused until redesign.)
+
+```
+
 ```

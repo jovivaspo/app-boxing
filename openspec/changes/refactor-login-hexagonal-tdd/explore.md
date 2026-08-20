@@ -10,14 +10,14 @@ The shipped login implementation bypasses every hexagonal boundary defined in AG
 
 ## Violations Found (file:line)
 
-| File | Violation |
-|---|---|
-| `src/app/login/actions.ts:8-65` | God Server Action: backend fetch, cookie/session creation, error mapping, redirect all inline in `app/`. No port/use case. Logs raw idToken (line 9) and full backend response (line 17). Hardcoded private-IP fallback (line 6). |
-| `src/ui/hooks/use-google-auth.ts:1-111` | "UI hook" that is actually an infrastructure adapter — loads Google's 3rd-party script, manages `window.google` / `window.__googleAuthInitDone` globals. No port behind it. |
-| `src/ui/components/login-card.tsx:1-68` | Calls the Server Action directly (lines 12, 24) — Component-calls-API-directly anti-pattern. Owns loading/error state itself (God Component). |
-| `src/app/page.tsx:1-15`, `src/app/profile/page.tsx:15-29` | Session-cookie reading/parsing duplicated inline in two Server Components. No signature verification of the `user` cookie. No use case/port abstraction. |
-| `src/app/api/logout/route.ts:1-12` | Session teardown (cookie deletion) inline in the route handler. |
-| `src/domain/user.model.ts` | Only compliant file — pure interface, no framework imports — though anemic. |
+| File                                                      | Violation                                                                                                                                                                                                                         |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/login/actions.ts:8-65`                           | God Server Action: backend fetch, cookie/session creation, error mapping, redirect all inline in `app/`. No port/use case. Logs raw idToken (line 9) and full backend response (line 17). Hardcoded private-IP fallback (line 6). |
+| `src/ui/hooks/use-google-auth.ts:1-111`                   | "UI hook" that is actually an infrastructure adapter — loads Google's 3rd-party script, manages `window.google` / `window.__googleAuthInitDone` globals. No port behind it.                                                       |
+| `src/ui/components/login-card.tsx:1-68`                   | Calls the Server Action directly (lines 12, 24) — Component-calls-API-directly anti-pattern. Owns loading/error state itself (God Component).                                                                                     |
+| `src/app/page.tsx:1-15`, `src/app/profile/page.tsx:15-29` | Session-cookie reading/parsing duplicated inline in two Server Components. No signature verification of the `user` cookie. No use case/port abstraction.                                                                          |
+| `src/app/api/logout/route.ts:1-12`                        | Session teardown (cookie deletion) inline in the route handler.                                                                                                                                                                   |
+| `src/domain/user.model.ts`                                | Only compliant file — pure interface, no framework imports — though anemic.                                                                                                                                                       |
 
 Confirmed via glob: `src/application/` and `src/infraestructure/` do not exist for this feature.
 

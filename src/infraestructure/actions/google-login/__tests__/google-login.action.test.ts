@@ -5,13 +5,6 @@ import {
   invalidCredentials,
 } from "@/domain/errors/auth-errors";
 
-// Rewired (per-entry-point dependency wiring revision): `googleLogin` Server
-// Action now constructs its `signInWithGoogle` use case inline from the
-// auth/session adapters instead of going through a shared factory module.
-// Also relocated out of `src/app/login/` (the Server Action's old home) to
-// `src/infraestructure/actions/google-login/google-login.action.ts` — Server
-// Actions are infrastructure adapters, not app-routing code.
-
 const executeMock = vi.fn();
 const signInWithGoogleMock = vi.fn<(deps: unknown) => typeof executeMock>(
   () => executeMock

@@ -6,10 +6,6 @@ interface CreateTimerConfigurationDeps {
   repository: TimerConfigurationRepositoryPort;
 }
 
-/**
- * Validates a candidate timer configuration and persists it.
- * @throws {import("@/domain/errors/timer-configuration-errors").InvalidTimerConfiguration} rounds, roundDuration, or restDuration is <= 0.
- */
 export function createTimerConfiguration({
   repository,
 }: CreateTimerConfigurationDeps) {

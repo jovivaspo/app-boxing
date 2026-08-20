@@ -1,9 +1,9 @@
 # Testing Principles
 
-Comprehensive guide to writing clean, maintainable tests that serve as executable documentation. Based on Robert C. Martin's *Clean Code*, Chapter 9.
-
+Comprehensive guide to writing clean, maintainable tests that serve as executable documentation. Based on Robert C. Martin's _Clean Code_, Chapter 9.
 
 ## Table of Contents
+
 1. [Why Tests Matter](#why-tests-matter)
 2. [The Three Laws of TDD](#the-three-laws-of-tdd)
 3. [Clean Tests](#clean-tests)
@@ -27,11 +27,11 @@ Test code is just as important as production code. It is not a second-class citi
 
 Test-Driven Development follows three simple rules:
 
-| Law | Rule | What it means |
-|-----|------|---------------|
-| **First** | You may not write production code until you have written a failing unit test | Tests drive the design, not the other way around |
-| **Second** | You may not write more of a unit test than is sufficient to fail (compilation failures count) | Write the minimum test that fails |
-| **Third** | You may not write more production code than is sufficient to pass the currently failing test | Write the minimum code that passes |
+| Law        | Rule                                                                                          | What it means                                    |
+| ---------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| **First**  | You may not write production code until you have written a failing unit test                  | Tests drive the design, not the other way around |
+| **Second** | You may not write more of a unit test than is sufficient to fail (compilation failures count) | Write the minimum test that fails                |
+| **Third**  | You may not write more production code than is sufficient to pass the currently failing test  | Write the minimum code that passes               |
 
 ### The Red-Green-Refactor Cycle
 
@@ -43,13 +43,13 @@ This cycle runs in seconds to minutes, not hours. Each cycle produces one small,
 
 ### Benefits of TDD
 
-| Benefit | Why |
-|---------|-----|
-| **Nearly 100% coverage** | Every line of production code was written to pass a test |
-| **Tests as documentation** | Tests show exactly how the code is intended to be used |
-| **Fearless refactoring** | You know immediately if a change breaks something |
-| **Better design** | Hard-to-test code is hard to use; TDD pushes toward clean design |
-| **Debugging reduction** | When a test fails, the bug is in the last few lines you wrote |
+| Benefit                    | Why                                                              |
+| -------------------------- | ---------------------------------------------------------------- |
+| **Nearly 100% coverage**   | Every line of production code was written to pass a test         |
+| **Tests as documentation** | Tests show exactly how the code is intended to be used           |
+| **Fearless refactoring**   | You know immediately if a change breaks something                |
+| **Better design**          | Hard-to-test code is hard to use; TDD pushes toward clean design |
+| **Debugging reduction**    | When a test fails, the bug is in the last few lines you wrote    |
 
 ---
 
@@ -168,11 +168,11 @@ Clean tests follow five principles that form the acronym F.I.R.S.T.:
 
 Tests should be fast. When tests run slowly, you won't run them frequently. When you don't run them frequently, you won't find problems early. When you don't find problems early, you won't fix them easily.
 
-| Guideline | Target | How |
-|-----------|--------|-----|
-| Unit test suite | Under 10 seconds | Mock all external dependencies |
-| Individual test | Under 100ms | No I/O, no network, no database |
-| Integration tests | Separate suite | Run separately, not on every save |
+| Guideline         | Target           | How                               |
+| ----------------- | ---------------- | --------------------------------- |
+| Unit test suite   | Under 10 seconds | Mock all external dependencies    |
+| Individual test   | Under 100ms      | No I/O, no network, no database   |
+| Integration tests | Separate suite   | Run separately, not on every save |
 
 ### Independent
 
@@ -202,14 +202,14 @@ def test_update_user():
 
 Tests should produce the same result every time, in any environment -- development machine, CI server, production-like staging. Tests that depend on network availability, current time, or random data are flaky.
 
-| Flaky dependency | Fix |
-|-----------------|-----|
-| Current time | Inject a clock; mock `datetime.now()` |
-| Random data | Use seeded random or fixed test data |
-| Network calls | Mock HTTP clients |
-| Database state | Use transactions that roll back, or in-memory DB |
-| File system | Use temp directories; clean up in teardown |
-| Environment variables | Set explicitly in test setup |
+| Flaky dependency      | Fix                                              |
+| --------------------- | ------------------------------------------------ |
+| Current time          | Inject a clock; mock `datetime.now()`            |
+| Random data           | Use seeded random or fixed test data             |
+| Network calls         | Mock HTTP clients                                |
+| Database state        | Use transactions that roll back, or in-memory DB |
+| File system           | Use temp directories; clean up in teardown       |
+| Environment variables | Set explicitly in test setup                     |
 
 ### Self-Validating
 
@@ -241,21 +241,21 @@ Test names should describe the scenario being tested and the expected behavior.
 
 ### Naming Patterns
 
-| Pattern | Example | When to use |
-|---------|---------|-------------|
-| `should_[expected]_when_[condition]` | `should_reject_login_when_password_expired` | Most common; clear cause-effect |
-| `[method]_[scenario]_[expected]` | `withdraw_insufficient_funds_throws_exception` | When testing a specific method |
-| `given_[state]_when_[action]_then_[result]` | `given_empty_cart_when_checkout_then_error` | BDD-style |
-| `test_[behavior_description]` | `test_expired_tokens_are_rejected` | Simple, readable |
+| Pattern                                     | Example                                        | When to use                     |
+| ------------------------------------------- | ---------------------------------------------- | ------------------------------- |
+| `should_[expected]_when_[condition]`        | `should_reject_login_when_password_expired`    | Most common; clear cause-effect |
+| `[method]_[scenario]_[expected]`            | `withdraw_insufficient_funds_throws_exception` | When testing a specific method  |
+| `given_[state]_when_[action]_then_[result]` | `given_empty_cart_when_checkout_then_error`    | BDD-style                       |
+| `test_[behavior_description]`               | `test_expired_tokens_are_rejected`             | Simple, readable                |
 
 ### Bad Test Names
 
-| Bad name | Problem | Better name |
-|----------|---------|-------------|
-| `test1` | Meaningless | `test_empty_input_returns_empty_list` |
-| `testProcess` | What about process? | `test_process_skips_inactive_users` |
-| `testCalculate` | Too vague | `test_calculate_applies_weekend_surcharge` |
-| `testBug1234` | Won't make sense in 6 months | `test_duplicate_orders_are_rejected` |
+| Bad name        | Problem                      | Better name                                |
+| --------------- | ---------------------------- | ------------------------------------------ |
+| `test1`         | Meaningless                  | `test_empty_input_returns_empty_list`      |
+| `testProcess`   | What about process?          | `test_process_skips_inactive_users`        |
+| `testCalculate` | Too vague                    | `test_calculate_applies_weekend_surcharge` |
+| `testBug1234`   | Won't make sense in 6 months | `test_duplicate_orders_are_rejected`       |
 
 ---
 
@@ -327,14 +327,14 @@ def test_should_raise_on_insufficient_funds():
 
 Test the edges, not just the middle.
 
-| Boundary | Tests needed |
-|----------|-------------|
-| Empty input | `[]`, `""`, `None`, `{}` |
-| Single element | List with one item, string with one char |
-| Maximum values | `MAX_INT`, full capacity, max length |
-| Off-by-one | `n-1`, `n`, `n+1` for any threshold |
-| Transition points | Just below and just above limits |
-| Overflow/underflow | Values that exceed type boundaries |
+| Boundary           | Tests needed                             |
+| ------------------ | ---------------------------------------- |
+| Empty input        | `[]`, `""`, `None`, `{}`                 |
+| Single element     | List with one item, string with one char |
+| Maximum values     | `MAX_INT`, full capacity, max length     |
+| Off-by-one         | `n-1`, `n`, `n+1` for any threshold      |
+| Transition points  | Just below and just above limits         |
+| Overflow/underflow | Values that exceed type boundaries       |
 
 ---
 
@@ -342,12 +342,12 @@ Test the edges, not just the middle.
 
 Clean tests serve as the most reliable documentation of how the system behaves. Unlike comments or wiki pages, tests are always up to date -- if they weren't, they'd be failing.
 
-| Documentation type | Tests provide |
-|-------------------|---------------|
-| **API usage** | Test setup shows how to call the API |
-| **Expected behavior** | Assertions describe what should happen |
-| **Edge cases** | Boundary tests document special cases |
-| **Error behavior** | Error path tests document failure modes |
-| **Business rules** | Test names describe domain rules |
+| Documentation type    | Tests provide                           |
+| --------------------- | --------------------------------------- |
+| **API usage**         | Test setup shows how to call the API    |
+| **Expected behavior** | Assertions describe what should happen  |
+| **Edge cases**        | Boundary tests document special cases   |
+| **Error behavior**    | Error path tests document failure modes |
+| **Business rules**    | Test names describe domain rules        |
 
 When a new developer asks "how does this work?", point them to the tests. Clean tests answer the question better than any comment or README.

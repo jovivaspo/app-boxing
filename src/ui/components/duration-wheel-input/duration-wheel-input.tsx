@@ -22,7 +22,6 @@ import type { DurationWheelInputProps } from "./duration-wheel-input.types";
 const WHEEL_VALUES = Array.from({ length: 60 }, (_, index) => index);
 const CENTER_PADDING = (CONTAINER_HEIGHT - ITEM_HEIGHT) / 2;
 
-/** Presentational only (A2): all logic lives in `useDurationWheelInput`. */
 export function DurationWheelInput({
   value,
   onChange,

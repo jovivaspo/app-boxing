@@ -5,7 +5,6 @@ interface ListTimerConfigurationsDeps {
   repository: TimerConfigurationRepositoryPort;
 }
 
-/** Returns all stored timer configurations. */
 export function listTimerConfigurations({
   repository,
 }: ListTimerConfigurationsDeps) {

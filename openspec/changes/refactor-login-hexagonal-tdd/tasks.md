@@ -2,14 +2,14 @@
 
 ## Review Workload Forecast
 
-| Field | Value |
-|-------|-------|
-| Estimated changed lines | ~1300–1500 (20+ new files incl. tests, 6 rewired entry points) |
-| 400-line budget risk | High |
-| Chained PRs recommended | Yes |
-| Suggested split | PR1 → PR6 (see Work Units) |
-| Delivery strategy | ask-on-risk |
-| Chain strategy | pending (feature-branch-chain suggested — auth rollback control) |
+| Field                   | Value                                                            |
+| ----------------------- | ---------------------------------------------------------------- |
+| Estimated changed lines | ~1300–1500 (20+ new files incl. tests, 6 rewired entry points)   |
+| 400-line budget risk    | High                                                             |
+| Chained PRs recommended | Yes                                                              |
+| Suggested split         | PR1 → PR6 (see Work Units)                                       |
+| Delivery strategy       | ask-on-risk                                                      |
+| Chain strategy          | pending (feature-branch-chain suggested — auth rollback control) |
 
 Decision needed before apply: Yes
 Chained PRs recommended: Yes
@@ -18,14 +18,14 @@ Chain strategy: pending
 
 ### Suggested Work Units
 
-| Unit | Goal | Likely PR | Notes |
-|------|------|-----------|-------|
-| 1 | Domain + ports + test tooling deps (Phase 1–2) | PR 1 | ~150 lines. Base: tracker branch. No behavior change. |
-| 2 | Use cases w/ mocked ports (Phase 5) | PR 2 | ~220 lines. Base: PR1 branch. |
-| 3 | Mapper + backend HTTP adapter + characterization (Phase 3.2, 4, 6) | PR 3 | ~300 lines. Base: PR2 branch. Includes no-logging spy. |
-| 4 | HMAC + cookie session adapter + characterization (Phase 3.1, 7) | PR 4 | ~330 lines. Base: PR3 branch. Highest security risk — signed cookie. |
-| 5 | GSI loader adapter + hook rewrite (Phase 8) | PR 5 | ~300 lines. Base: PR4 branch. jsdom-only tests. |
-| 6 | Composition root + 6 entry-point rewires + final verification (Phase 9–10) | PR 6 | ~250 lines. Base: PR5 branch. Merges tracker → main. |
+| Unit | Goal                                                                       | Likely PR | Notes                                                                |
+| ---- | -------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------- |
+| 1    | Domain + ports + test tooling deps (Phase 1–2)                             | PR 1      | ~150 lines. Base: tracker branch. No behavior change.                |
+| 2    | Use cases w/ mocked ports (Phase 5)                                        | PR 2      | ~220 lines. Base: PR1 branch.                                        |
+| 3    | Mapper + backend HTTP adapter + characterization (Phase 3.2, 4, 6)         | PR 3      | ~300 lines. Base: PR2 branch. Includes no-logging spy.               |
+| 4    | HMAC + cookie session adapter + characterization (Phase 3.1, 7)            | PR 4      | ~330 lines. Base: PR3 branch. Highest security risk — signed cookie. |
+| 5    | GSI loader adapter + hook rewrite (Phase 8)                                | PR 5      | ~300 lines. Base: PR4 branch. jsdom-only tests.                      |
+| 6    | Composition root + 6 entry-point rewires + final verification (Phase 9–10) | PR 6      | ~250 lines. Base: PR5 branch. Merges tracker → main.                 |
 
 ## Phase 1: Test Tooling & Domain Foundation
 

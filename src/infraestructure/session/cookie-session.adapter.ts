@@ -7,13 +7,6 @@ import { sign, verify } from "./hmac";
 
 const SEVEN_DAYS_IN_SECONDS = 60 * 60 * 24 * 7;
 
-/**
- * Shared cookie flags for both `jwt` and `user` cookies: `httpOnly` (the
- * `user` cookie is now hardened to `true` — nothing client-side reads it
- * anymore, unlike the legacy plain-JSON cookie), `secure` in production
- * only, `sameSite: "lax"`, root `path`, and a 7-day `maxAge` — all
- * preserved from the pre-refactor behavior.
- */
 function cookieOptions() {
   return {
     httpOnly: true,
@@ -24,12 +17,6 @@ function cookieOptions() {
   };
 }
 
-/**
- * Creates the `SessionPort` implementation backed by signed HTTP cookies.
- * Reads `SESSION_SECRET` on every call (required, no fallback) — signing
- * fails closed (throws) on `create`, and reading fails closed (`null`) on
- * `get`, forcing re-login instead of trusting an unsigned/tampered value.
- */
 export function createCookieSessionAdapter(): SessionPort {
   return {
     async create(session: Session): Promise<void> {

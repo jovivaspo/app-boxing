@@ -49,7 +49,6 @@ function toFormState(config: TimerConfiguration): TimerConfigurationFormState {
   };
 }
 
-/** Owns all create/edit form logic (A2), authenticated-only, shared by /timers/new and /timers/[id]/edit. */
 export function useTimerConfigurationForm({
   initialConfiguration,
 }: TimerConfigurationFormProps): UseTimerConfigurationFormResult {

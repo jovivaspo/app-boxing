@@ -7,7 +7,6 @@ import { TimerConfigurationCard } from "@/ui/components/timer-configuration-card
 
 import { useTimerConfigurationList } from "./timer-configuration-list.hook";
 
-/** Presentational only (A2): all logic lives in the hook, authenticated-only. */
 export function TimerConfigurationList() {
   const { configurations, isEmpty, error, remove } =
     useTimerConfigurationList();

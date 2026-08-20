@@ -1,4 +1,5 @@
-export type GsiError = "missing-client-id" | "script-load-failed" | "no-credential";
+export type GsiError =
+  "missing-client-id" | "script-load-failed" | "no-credential";
 
 export interface GoogleIdentityPort {
   load(cfg: {

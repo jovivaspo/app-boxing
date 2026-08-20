@@ -7,9 +7,11 @@ license: MIT
 # Next.js 16 Complete Guide
 
 ## Purpose
+
 Comprehensive reference for Next.js 16's revolutionary features: Cache Components with "use cache", stable Turbopack as default bundler, proxy.ts architecture, DevTools MCP integration, and React Compiler support.
 
 ## When to Use
+
 - Starting new Next.js projects (use 16 from day one)
 - Migrating from Next.js 15 to 16
 - Understanding Cache Components and Partial Pre-Rendering (PPR)
@@ -21,19 +23,20 @@ Comprehensive reference for Next.js 16's revolutionary features: Cache Component
 ## What Changed: Next.js 15 → 16
 
 ### The Big Picture
+
 Next.js 15 was **transition phase** - async APIs, experimental Turbopack, changing cache defaults.
 Next.js 16 is **the payoff** - everything becomes stable, fast, and production-ready.
 
 ### Key Differences
 
-| Feature | Next.js 15 | Next.js 16 |
-|---------|-----------|-----------|
-| **Bundler** | Webpack (default), Turbopack (opt-in beta) | Turbopack (default, stable) |
-| **Caching** | Implicit, confusing defaults | Explicit with "use cache" |
-| **Network Layer** | middleware.ts (edge runtime) | proxy.ts (Node.js runtime) |
-| **DevTools** | Basic error messages | MCP integration for AI debugging |
-| **React Compiler** | Experimental | Stable, production-ready |
-| **Performance** | Baseline | 2-5× faster builds, 10× faster Fast Refresh |
+| Feature            | Next.js 15                                 | Next.js 16                                  |
+| ------------------ | ------------------------------------------ | ------------------------------------------- |
+| **Bundler**        | Webpack (default), Turbopack (opt-in beta) | Turbopack (default, stable)                 |
+| **Caching**        | Implicit, confusing defaults               | Explicit with "use cache"                   |
+| **Network Layer**  | middleware.ts (edge runtime)               | proxy.ts (Node.js runtime)                  |
+| **DevTools**       | Basic error messages                       | MCP integration for AI debugging            |
+| **React Compiler** | Experimental                               | Stable, production-ready                    |
+| **Performance**    | Baseline                                   | 2-5× faster builds, 10× faster Fast Refresh |
 
 ---
 
@@ -42,11 +45,13 @@ Next.js 16 is **the payoff** - everything becomes stable, fast, and production-r
 ### 1. Cache Components + "use cache"
 
 **The Problem in Next.js 15:**
+
 - Implicit caching was "magic" - hard to predict what cached
 - Switching between static/dynamic was unclear
 - Performance optimization felt like guesswork
 
 **The Solution in Next.js 16:**
+
 ```typescript
 // Enable in next.config.ts
 const nextConfig = {
@@ -57,6 +62,7 @@ export default nextConfig;
 ```
 
 **Usage Pattern:**
+
 ```typescript
 // app/dashboard/page.tsx
 import { Suspense } from 'react';
@@ -90,12 +96,14 @@ export default function Dashboard() {
 ```
 
 **Why This Matters:**
+
 - **Instant navigation** - Cached parts load immediately
 - **Selective freshness** - Only dynamic parts fetch on demand
 - **Predictable behavior** - You control what caches
 - **SaaS dashboards** - Perfect for panels with mixed static/dynamic content
 
 **Cache Granularity:**
+
 ```typescript
 // Cache entire page
 export default async function Page() {
@@ -121,23 +129,27 @@ async function getStats() {
 ### 2. Turbopack: Default Bundler (Stable)
 
 **Performance Numbers (Official Vercel Benchmarks):**
+
 - **2-5× faster production builds**
 - **Up to 10× faster Fast Refresh** in development
 - **File system caching** - Even faster restarts on large projects
 
 **No Configuration Needed:**
+
 ```typescript
 // next.config.ts
 // Turbopack is now default - no config required!
 ```
 
 **Opt-out (if needed):**
+
 ```bash
 # Use Webpack instead
 next build --webpack
 ```
 
 **File System Caching (Beta):**
+
 ```typescript
 // next.config.ts
 const nextConfig = {
@@ -148,12 +160,14 @@ const nextConfig = {
 ```
 
 **Why This Matters:**
+
 - **Faster feedback loop** - See changes instantly (10× faster)
 - **Shorter CI/CD times** - 2-5× faster production builds
 - **Better DX** - Less waiting, more shipping
 - **Large projects** - Scales better than Webpack
 
 **What You Notice:**
+
 ```bash
 # Before (Webpack)
 ✓ Compiled in 4.2s
@@ -167,6 +181,7 @@ const nextConfig = {
 ### 3. proxy.ts Replaces middleware.ts
 
 **The Change:**
+
 ```bash
 # Old (Next.js 15)
 middleware.ts  # Edge runtime, confusing
@@ -176,40 +191,44 @@ proxy.ts       # Node.js runtime, explicit
 ```
 
 **Migration Example:**
+
 ```typescript
 // OLD: middleware.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  return NextResponse.redirect(new URL('/home', request.url));
+  return NextResponse.redirect(new URL("/home", request.url));
 }
 
 export const config = {
-  matcher: '/about/:path*',
+  matcher: "/about/:path*",
 };
 ```
 
 ```typescript
 // NEW: proxy.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default function proxy(request: NextRequest) {  // Changed function name
-  return NextResponse.redirect(new URL('/home', request.url));
+export default function proxy(request: NextRequest) {
+  // Changed function name
+  return NextResponse.redirect(new URL("/home", request.url));
 }
 
 export const config = {
-  matcher: '/about/:path*',
+  matcher: "/about/:path*",
 };
 ```
 
 **Key Changes:**
+
 1. Rename file: `middleware.ts` → `proxy.ts`
 2. Rename export: `export function middleware` → `export default function proxy`
 3. Runtime: Runs on Node.js (not edge)
 
 **Why This Matters:**
+
 - **Clearer boundary** - "Proxy" = network entry point
 - **Predictable runtime** - Always Node.js, no edge ambiguity
 - **Better debugging** - Standard Node.js environment
@@ -220,17 +239,20 @@ export const config = {
 
 **What It Does:**
 Next.js 16 integrates Model Context Protocol (MCP) so AI agents can:
+
 - Read unified browser + server logs
 - Understand Next.js routing and caching
 - Access error stack traces automatically
 - Provide page-aware debugging context
 
 **Why This Matters:**
+
 - **AI copilots** can debug your Next.js app natively
 - **Faster debugging** - AI understands framework internals
 - **Better DX** - Agent sees what you see (and more)
 
 **Use Case:**
+
 ```
 You: "Why is this page not caching?"
 AI Agent (with MCP):
@@ -252,6 +274,7 @@ Works automatically with Claude Code, Cursor, and other MCP-compatible tools.
 Automatically memoizes components - no more manual `useMemo`, `useCallback`, `React.memo`.
 
 **Setup:**
+
 ```bash
 npm install babel-plugin-react-compiler@latest
 ```
@@ -259,11 +282,12 @@ npm install babel-plugin-react-compiler@latest
 ```typescript
 // next.config.ts
 const nextConfig = {
-  reactCompiler: true,  // Moved from experimental to stable
+  reactCompiler: true, // Moved from experimental to stable
 };
 ```
 
 **Before (Manual Optimization):**
+
 ```typescript
 // You had to do this everywhere
 const MemoizedComponent = React.memo(function Component({ data }) {
@@ -277,6 +301,7 @@ const MemoizedComponent = React.memo(function Component({ data }) {
 ```
 
 **After (React Compiler Does It):**
+
 ```typescript
 // Just write code, compiler optimizes automatically
 function Component({ data }) {
@@ -290,6 +315,7 @@ function Component({ data }) {
 ```
 
 **Why This Matters:**
+
 - **Less boilerplate** - Write cleaner code
 - **Better performance** - Compiler is smarter than manual optimization
 - **No bugs** - Compiler never forgets dependencies
@@ -301,6 +327,7 @@ function Component({ data }) {
 ### Required Changes
 
 #### 1. Node.js Version
+
 ```bash
 # Minimum: Node.js 20.9+
 # Next.js 15: Node.js 18 worked
@@ -308,47 +335,51 @@ function Component({ data }) {
 ```
 
 #### 2. Async params & searchParams
+
 ```typescript
 // ❌ OLD (Next.js 15)
 export default function Page({ params, searchParams }) {
-  const id = params.id;  // Synchronous
+  const id = params.id; // Synchronous
 }
 
 // ✅ NEW (Next.js 16)
 export default async function Page({ params, searchParams }) {
-  const { id } = await params;  // Must await
+  const { id } = await params; // Must await
   const { query } = await searchParams;
 }
 ```
 
 #### 3. Async cookies(), headers(), draftMode()
+
 ```typescript
 // ❌ OLD
-import { cookies } from 'next/headers';
+import { cookies } from "next/headers";
 
 export function MyComponent() {
-  const token = cookies().get('token');  // Synchronous
+  const token = cookies().get("token"); // Synchronous
 }
 
 // ✅ NEW
-import { cookies } from 'next/headers';
+import { cookies } from "next/headers";
 
 export async function MyComponent() {
-  const cookieStore = await cookies();  // Must await
-  const token = cookieStore.get('token');
+  const cookieStore = await cookies(); // Must await
+  const token = cookieStore.get("token");
 }
 ```
 
 #### 4. revalidateTag() Now Requires cacheLife Profile
+
 ```typescript
 // ❌ OLD
-revalidateTag('posts');
+revalidateTag("posts");
 
 // ✅ NEW
-revalidateTag('posts', 'max');     // Options: 'max', 'hours', 'days'
+revalidateTag("posts", "max"); // Options: 'max', 'hours', 'days'
 ```
 
 #### 5. middleware.ts → proxy.ts
+
 ```bash
 # Required migration
 mv middleware.ts proxy.ts
@@ -390,9 +421,10 @@ npx @next/codemod@canary upgrade latest
 ### 3. Manual Changes
 
 **Update next.config:**
+
 ```typescript
 // next.config.ts
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Enable Cache Components
@@ -411,6 +443,7 @@ export default nextConfig;
 ```
 
 **Rename middleware:**
+
 ```bash
 # If you have middleware.ts
 git mv middleware.ts proxy.ts
@@ -422,6 +455,7 @@ export default function proxy(request: NextRequest) {
 ```
 
 **Update async APIs:**
+
 ```typescript
 // Search codebase for:
 // - params.
@@ -459,27 +493,30 @@ npm test
 ## 🎯 Best Practices
 
 ### 1. Start New Projects with Next.js 16
+
 ```bash
 npx create-next-app@latest my-app
 # Automatically uses Next.js 16, Turbopack, TypeScript, Tailwind
 ```
 
 ### 2. Use "use cache" Strategically
+
 ```typescript
 // ✅ Good: Cache expensive, infrequent-changing data
 async function MonthlyReport() {
-  'use cache';
+  "use cache";
   return await generateReport();
 }
 
 // ❌ Bad: Don't cache user-specific real-time data
 async function CurrentBalance() {
-  'use cache';  // Wrong! This should be fresh
+  "use cache"; // Wrong! This should be fresh
   return await getUserBalance();
 }
 ```
 
 ### 3. Monitor Build Performance
+
 ```bash
 # Next.js 16 shows detailed timing
 npm run build
@@ -494,14 +531,16 @@ Build time: 14.2s  # Was 57s in Next.js 15 with Webpack
 ```
 
 ### 4. Leverage DevTools MCP
+
 - Use Claude Code / Cursor with MCP support
 - Let AI agent read Next.js internals
 - Ask: "Why is my page slow?" - Agent sees server logs
 
 ### 5. Enable React Compiler for Large Apps
+
 ```typescript
 // Only if you have performance issues
-reactCompiler: true
+reactCompiler: true;
 ```
 
 ---
@@ -509,6 +548,7 @@ reactCompiler: true
 ## 📊 When to Upgrade (Decision Matrix)
 
 ### ✅ Upgrade Now If:
+
 - Starting new project (use 16 from day one)
 - Small/medium codebase (<50 routes)
 - Using Vercel (tested platform)
@@ -516,6 +556,7 @@ reactCompiler: true
 - Need instant navigation (Cache Components)
 
 ### ⏳ Wait 1-2 Weeks If:
+
 - Large production app (>100 routes)
 - Heavy middleware.ts usage (needs proxy.ts migration)
 - Custom Webpack config
@@ -523,6 +564,7 @@ reactCompiler: true
 - Risk-averse deployment policy
 
 ### 🚫 Don't Upgrade Yet If:
+
 - Using AMP pages (removed in 16)
 - Stuck on Node.js 18 (can't upgrade)
 - Custom build pipelines (need adapter testing)
@@ -543,23 +585,26 @@ reactCompiler: true
 ## 💡 Quick Reference
 
 ### Installation
+
 ```bash
 npm install next@latest react@latest react-dom@latest
 ```
 
 ### Enable Features
+
 ```typescript
 // next.config.ts
 const nextConfig = {
-  cacheComponents: true,           // Cache Components
-  reactCompiler: true,             // React Compiler
+  cacheComponents: true, // Cache Components
+  reactCompiler: true, // React Compiler
   experimental: {
-    turbopackFileSystemCacheForDev: true,  // Faster dev restarts
+    turbopackFileSystemCacheForDev: true, // Faster dev restarts
   },
 };
 ```
 
 ### Migration Checklist
+
 - [ ] Node.js 20.9+ installed
 - [ ] `npm install next@latest`
 - [ ] Run `npx @next/codemod@canary upgrade latest`

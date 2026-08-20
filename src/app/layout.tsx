@@ -19,13 +19,6 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
-// Deliberately carries no `metadataBase`. It would be evaluated at build time
-// for any statically prerendered descendant (`/guest-timer`,
-// `/guest-timer-active`), baking the build-time origin into their metadata.
-// `metadataBase` lives on the landing page instead — the only route with
-// relative metadata URLs, and one that renders per request. A future route
-// that adds a relative URL without one gets a build error, which is loud,
-// rather than a silently wrong origin.
 export const metadata: Metadata = {
   title: "Iron Pulse",
   description: "Inicia sesión con tu cuenta de Google",

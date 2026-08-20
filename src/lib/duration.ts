@@ -1,10 +1,8 @@
-/** Formats a whole number of seconds as `m:ss` (seconds zero-padded to 2 digits). */
 export function formatDuration(totalSeconds: number): string {
   const { minutes, seconds } = splitDuration(totalSeconds);
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-/** Splits a whole number of seconds into whole minutes and remaining seconds. */
 export function splitDuration(totalSeconds: number): {
   minutes: number;
   seconds: number;
@@ -15,7 +13,6 @@ export function splitDuration(totalSeconds: number): {
   };
 }
 
-/** Combines minutes and seconds into total seconds. Empty/`NaN` inputs count as 0. */
 export function toTotalSeconds(minutes: number, seconds: number): number {
   const safeMinutes = Number.isNaN(minutes) ? 0 : minutes;
   const safeSeconds = Number.isNaN(seconds) ? 0 : seconds;

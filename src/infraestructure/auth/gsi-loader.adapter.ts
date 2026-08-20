@@ -1,10 +1,5 @@
 import type { GoogleIdentityPort } from "@/application/ports/google-identity.port";
 
-// Google Identity Services — Sign In With Google.
-// This global state (`window.google`, `__googleAuthInitDone`) and the
-// script-injection logic used to live inline inside the `useGoogleAuth`
-// hook. Isolating it here behind `GoogleIdentityPort` makes the hook
-// fakeable in tests without touching `window`/`document`.
 declare global {
   interface Window {
     google?: {
@@ -32,14 +27,6 @@ declare global {
 const SCRIPT_ID = "google-identity-services";
 const GSI_SCRIPT_URL = "https://accounts.google.com/gsi/client";
 
-/**
- * Creates the `GoogleIdentityPort` implementation backed by the real GSI
- * `<script>` tag. `load()` injects the script at most once (idempotent),
- * initializes `window.google.accounts.id` on load, and reports failures via
- * `onError` instead of throwing — `script-load-failed` (script `onerror`),
- * `missing-client-id` (empty `clientId`), and `no-credential` (GSI callback
- * without a credential).
- */
 export function createGsiLoaderAdapter(): GoogleIdentityPort {
   return {
     load(cfg): Promise<void> {

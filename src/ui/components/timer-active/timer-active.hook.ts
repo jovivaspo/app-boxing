@@ -12,7 +12,6 @@ import type {
 
 export { WARNING_SECONDS } from "@/ui/hooks/use-timer-session-engine";
 
-/** Owns Timer Activo session logic (A2), delegating tick/cue/session state to the shared engine (J). */
 export function useTimerActive(
   { initialConfiguration }: TimerActiveProps,
   deps: TimerActiveDeps = {}

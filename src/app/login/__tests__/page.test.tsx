@@ -3,10 +3,6 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-// D-1b: `/login` gains an authenticated-visitor guard — redirects to
-// `/timers` before render. Mirrors the `next/navigation` mock style dropped
-// from `src/app/__tests__/page.test.tsx` now that `/` no longer redirects.
-
 const getCurrentSessionExecuteMock = vi.fn();
 const getCurrentSessionMock = vi.fn<
   (deps: unknown) => typeof getCurrentSessionExecuteMock
@@ -84,10 +80,6 @@ describe("Login page", () => {
     ).not.toBeInTheDocument();
   });
 
-  // `app-shell` scenario "No Functioning Registration Entry Point": the
-  // affordance is visible but must not be reachable. Asserting it is not a
-  // link is the whole point — a plain presence check would pass even if it
-  // were wired to a route.
   it("should render Registrarse as a non-interactive affordance", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: LoginPage } = await import("../page");

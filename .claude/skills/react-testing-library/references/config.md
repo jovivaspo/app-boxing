@@ -107,7 +107,9 @@ Custom error formatting:
 ```ts
 configure({
   getElementError: (message, container) => {
-    const error = new Error([message, prettyDOM(container), "Custom debug info here"].join("\n\n"));
+    const error = new Error(
+      [message, prettyDOM(container), "Custom debug info here"].join("\n\n")
+    );
     error.name = "TestingLibraryError";
     return error;
   },

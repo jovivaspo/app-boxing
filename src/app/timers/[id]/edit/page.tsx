@@ -7,8 +7,6 @@ import { toTimerConfigurationErrorCode } from "@/application/timer-configuration
 import { createBackendTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/backend-timer-configuration.adapter";
 import { TimerConfigurationForm } from "@/ui/components/timer-configuration-form";
 
-// See src/app/login/page.tsx for why session-gated routes must force dynamic
-// rendering rather than rely on Next.js's build-time dynamic-API detection.
 export const dynamic = "force-dynamic";
 
 type EditTimerPageProps = {
@@ -16,7 +14,6 @@ type EditTimerPageProps = {
 };
 
 export default async function EditTimerPage(props: EditTimerPageProps) {
-  // Next.js 16: `params` is a Promise.
   const { id } = await props.params;
   const session = await getCurrentSession({
     session: createCookieSessionAdapter(),

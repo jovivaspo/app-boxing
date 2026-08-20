@@ -15,19 +15,19 @@ export interface TimerActiveDeps {
 export interface UseTimerActiveResult {
   status: TimerActiveStatus;
   name: string;
-  phase: TimerPhase; // "work" while idle
-  round: number; // 1 while idle
+  phase: TimerPhase;
+  round: number;
   totalRounds: number;
-  remainingLabel: string; // formatDuration -> "m:ss"
-  elapsedFraction: number; // 0..1, drives stroke-dashoffset
-  isWarning: boolean; // warnBeforeEnd && running && remaining <= 10
+  remainingLabel: string;
+  elapsedFraction: number;
+  isWarning: boolean;
   showBellChip: boolean;
   showWarnChip: boolean;
-  primaryLabel: string; // "INICIAR" | "REANUDAR" | "PAUSA"
+  primaryLabel: string;
   primaryIcon: "play" | "pause";
-  onPrimaryAction(): void; // start | resume | pause, depending on status
+  onPrimaryAction(): void;
   start(): void;
   pause(): void;
   resume(): void;
-  stop(): void; // stop -> router.push("/timers")
+  stop(): void;
 }

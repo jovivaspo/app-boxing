@@ -8,11 +8,6 @@ interface SignInWithGoogleDeps {
   session: SessionPort;
 }
 
-/**
- * Exchanges a Google ID token for a session and persists it.
- * @throws {import("@/domain/errors/auth-errors").InvalidCredentials} empty idToken, or backend rejects it (401/403).
- * @throws {import("@/domain/errors/auth-errors").BackendUnavailable} network failure, 5xx, or malformed response.
- */
 export function signInWithGoogle({ auth, session }: SignInWithGoogleDeps) {
   return async function execute(idToken: string): Promise<Session> {
     if (!idToken) {

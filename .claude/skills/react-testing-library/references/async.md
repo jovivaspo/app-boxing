@@ -59,7 +59,10 @@ await waitFor(() => {
 });
 
 // Wait with custom timeout
-await waitFor(() => expect(element).toBeVisible(), { timeout: 5000, interval: 100 });
+await waitFor(() => expect(element).toBeVisible(), {
+  timeout: 5000,
+  interval: 100,
+});
 ```
 
 ### Options
@@ -130,7 +133,9 @@ await waitForElementToBeRemoved(loader);
 await waitForElementToBeRemoved(() => screen.queryByText("Loading..."));
 
 // With timeout
-await waitForElementToBeRemoved(() => screen.queryByText("Loading..."), { timeout: 5000 });
+await waitForElementToBeRemoved(() => screen.queryByText("Loading..."), {
+  timeout: 5000,
+});
 ```
 
 ### Important Notes
@@ -216,7 +221,9 @@ test("shows error on failure", async () => {
   render(<DataComponent />);
 
   // Wait for error
-  expect(await screen.findByRole("alert")).toHaveTextContent("Error loading data");
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Error loading data"
+  );
 });
 ```
 

@@ -11,7 +11,6 @@ import { DurationWheelInput } from "@/ui/components/duration-wheel-input";
 import { useGuestTimerForm } from "./guest-timer-form.hook";
 import type { GuestTimerFormProps } from "./guest-timer-form.types";
 
-/** Presentational only (A2): all logic lives in `useGuestTimerForm`. No `name` field — guest-only route. */
 export function GuestTimerForm(props: GuestTimerFormProps) {
   const {
     form,

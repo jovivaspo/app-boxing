@@ -8,11 +8,6 @@ import { listTimerConfigurations } from "@/application/use-cases/list-timer-conf
 import { createBackendTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/backend-timer-configuration.adapter";
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 
-/**
- * Thin Server Action adapter listing the authenticated user's timer
- * configurations. Never throws across the RSC boundary — every branch
- * resolves a `Result<TimerConfiguration[]>`.
- */
 export async function listTimerConfigurationsAction(): Promise<
   Result<TimerConfiguration[]>
 > {

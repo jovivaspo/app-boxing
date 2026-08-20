@@ -12,17 +12,8 @@ export function invalidTimerConfiguration(
   });
 }
 
-/**
- * Upper bound for any duration, in seconds: 59:59. Durations are authored and
- * displayed as a minutes:seconds pair, so a value above this has no
- * representation in the UI.
- */
 export const MAX_DURATION_SECONDS = 3599;
 
-/**
- * @throws {InvalidTimerConfiguration} rounds, roundDuration, or restDuration is <= 0,
- * or roundDuration/restDuration is above `MAX_DURATION_SECONDS`.
- */
 export function validateTimerConfiguration(
   input: TimerConfiguration
 ): TimerConfiguration;
@@ -52,12 +43,6 @@ export function validateTimerConfiguration(
   return input;
 }
 
-/**
- * @throws {InvalidTimerConfiguration} rounds or roundDuration is <= 0, or
- * roundDuration is above `MAX_DURATION_SECONDS`.
- * Guest-only sibling of `validateTimerConfiguration`: intentionally skips
- * `restDuration` (guests don't set it), never weakens the shared validator.
- */
 export function validateGuestTimerConfiguration<
   T extends Pick<TimerConfiguration, "rounds" | "roundDuration">,
 >(input: T): T {

@@ -17,12 +17,6 @@ function request(method: string) {
   };
 }
 
-/**
- * Thin `fetch` wrapper. Never inspects the status code — non-2xx responses
- * resolve normally; only a network failure throws.
- *
- * @throws {Error} name `HttpRequestFailed` — network failure only.
- */
 export function createHttpClient(): HttpClient {
   return {
     get: request("GET"),

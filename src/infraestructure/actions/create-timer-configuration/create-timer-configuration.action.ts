@@ -10,8 +10,6 @@ import { createTimerConfiguration } from "@/application/use-cases/create-timer-c
 import { createBackendTimerConfigurationAdapter } from "@/infraestructure/timer-configuration/backend-timer-configuration.adapter";
 import { createCookieSessionAdapter } from "@/infraestructure/session/cookie-session.adapter";
 
-// Boundary shape validation only (type/presence) — the `>0` business rule
-// stays in the domain's `validateTimerConfiguration`.
 const candidateShapeSchema = z.object({
   name: z.string(),
   rounds: z.number(),
@@ -21,10 +19,6 @@ const candidateShapeSchema = z.object({
   bellSound: z.boolean(),
 });
 
-/**
- * Thin Server Action adapter creating a timer configuration. Never throws
- * across the RSC boundary — every branch resolves a `Result<TimerConfiguration>`.
- */
 export async function createTimerConfigurationAction(
   config: Omit<TimerConfiguration, "id">
 ): Promise<Result<TimerConfiguration>> {

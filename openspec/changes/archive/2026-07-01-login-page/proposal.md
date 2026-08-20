@@ -7,6 +7,7 @@ Replace the default Vercel homepage with a `/login` route implementing the AuthS
 ## Scope
 
 ### In Scope
+
 - `/login` route (`src/app/login/page.tsx`) replacing the default homepage
 - AuthShell header with brand, Login/Sign Up tabs, Help link
 - Centered login card: "Bienvenido" heading, "Inicia sesión en tu cuenta" subtext, Google "Continuar con Google" button (zinc-900, full-width, multi-color SVG icon)
@@ -16,6 +17,7 @@ Replace the default Vercel homepage with a `/login` route implementing the AuthS
 - shadcn/ui additions: Card, Separator
 
 ### Out of Scope
+
 - OAuth token exchange, session management, callback handling
 - Sign-up page, password login, form inputs
 - Dark mode support (deferred)
@@ -25,9 +27,11 @@ Replace the default Vercel homepage with a `/login` route implementing the AuthS
 ## Capabilities
 
 ### New Capabilities
+
 - `login-page`: Login page route with Google OAuth button, site header, and legal footer. Spec SHALL cover layout, visual tokens, and component contracts.
 
 ### Modified Capabilities
+
 None — first behavioral change in the project.
 
 ## Approach
@@ -36,22 +40,22 @@ Pure presentational UI. No domain/application/infrastructure layers touched — 
 
 ## Affected Areas
 
-| Area | Impact | Description |
-|------|--------|-------------|
-| `src/app/layout.tsx` | Modified | Geist → Inter, lang="es", metadata |
-| `src/app/page.tsx` | Modified | Vercel template → redirect to `/login` |
-| `src/app/login/page.tsx` | New | Login route page |
-| `src/ui/components/` | New (5) | login-header, login-card, login-footer, google-icon, security-badges |
-| `package.json` | Modified | shadcn add card + separator |
-| `globals.css` typography | Modified | `--font-sans` maps to Inter |
+| Area                     | Impact   | Description                                                          |
+| ------------------------ | -------- | -------------------------------------------------------------------- |
+| `src/app/layout.tsx`     | Modified | Geist → Inter, lang="es", metadata                                   |
+| `src/app/page.tsx`       | Modified | Vercel template → redirect to `/login`                               |
+| `src/app/login/page.tsx` | New      | Login route page                                                     |
+| `src/ui/components/`     | New (5)  | login-header, login-card, login-footer, google-icon, security-badges |
+| `package.json`           | Modified | shadcn add card + separator                                          |
+| `globals.css` typography | Modified | `--font-sans` maps to Inter                                          |
 
 ## Risks
 
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| Stitch tokens mismatch with shadcn neutral theme | Low | Both use zinc-900 primary; globals.css already compatible |
-| Geist removal breaks other pages | Low | Only homepage exists; rename `--font-sans` to Inter variable |
-| Next.js 16 App Router breaking changes | Low | Static page — no server APIs used |
+| Risk                                             | Likelihood | Mitigation                                                   |
+| ------------------------------------------------ | ---------- | ------------------------------------------------------------ |
+| Stitch tokens mismatch with shadcn neutral theme | Low        | Both use zinc-900 primary; globals.css already compatible    |
+| Geist removal breaks other pages                 | Low        | Only homepage exists; rename `--font-sans` to Inter variable |
+| Next.js 16 App Router breaking changes           | Low        | Static page — no server APIs used                            |
 
 ## Rollback Plan
 

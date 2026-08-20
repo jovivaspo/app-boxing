@@ -109,6 +109,17 @@ Everything under `src/` is importable via `@/` (e.g. `@/lib/utils`, `@/ui/compon
 - Use `cn()` from `@/lib/utils` for conditional class merging (clsx + tailwind-merge).
 - Path aliases with `@/` — never use relative paths across layer boundaries.
 
+### Comments
+
+Comments are forbidden in `.ts`/`.tsx` files. They rot, they cost tokens, and code that needs one is code that should be renamed or split instead. The `local/no-comments` ESLint rule enforces this and runs on every commit and in CI.
+
+Only these are allowed:
+
+- `TODO` — agree it with the team first.
+- Tooling directives: `// @vitest-environment`, `// eslint-disable*`, `// @ts-*`, `// prettier-ignore`, `/// <reference>`.
+
+Anything else — rationale, decision records, API contracts — belongs in `openspec/` or the PR description, not in the source.
+
 ### File & Folder Naming
 
 - **Folders**: `kebab-case` (e.g. `user-profile/`, `auth-provider/`)

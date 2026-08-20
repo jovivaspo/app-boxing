@@ -25,7 +25,6 @@ const PHASE_RING_CLASS: Record<TimerPhase, string> = {
   rest: "stroke-accent",
 };
 
-/** Presentational only (A2): all session logic lives in `useTimerActive`. */
 export function TimerActive(props: TimerActiveProps) {
   const {
     status,

@@ -33,4 +33,5 @@ export function sessionInvalid(message = "Session invalid"): SessionInvalid {
   });
 }
 
-export type AuthError = InvalidCredentials | BackendUnavailable | SessionInvalid;
+export type AuthError =
+  InvalidCredentials | BackendUnavailable | SessionInvalid;

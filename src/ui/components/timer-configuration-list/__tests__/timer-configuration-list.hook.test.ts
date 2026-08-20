@@ -7,9 +7,6 @@ import { buildTimerConfiguration } from "@/domain/timer-configuration/__builders
 
 const listMock = vi.fn();
 const removeMock = vi.fn();
-// Stable reference across renders, mirroring the real hook's `useMemo`
-// identity guarantee — a fresh object per call would retrigger the
-// mount effect on every re-render.
 const ops = {
   list: listMock,
   create: vi.fn(),

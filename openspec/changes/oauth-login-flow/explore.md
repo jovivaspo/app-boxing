@@ -10,15 +10,15 @@ The project has a login page with a Google button but no click handler. All Clea
 
 ## Codebase State
 
-| Layer | Status |
-|---|---|
-| UI | LoginCard is Server Component. Button has no onClick/action. page.tsx redirects / → /login. |
-| Domain | User interface defined with 6 fields. Role type: "admin" | "user". |
-| Application | Empty directory. |
-| Infrastructure | Empty directory. |
-| App Routes | Only / (redirects to /login) and /login. No API routes, no server actions. |
-| Testing | Not configured. No vitest/jest runner. strict_tdd: false. |
-| Styling | Tailwind v4, shadcn/ui (neutral), Inter font. |
+| Layer          | Status                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------- |
+| UI             | LoginCard is Server Component. Button has no onClick/action. page.tsx redirects / → /login. |
+| Domain         | User interface defined with 6 fields. Role type: "admin"                                    | "user". |
+| Application    | Empty directory.                                                                            |
+| Infrastructure | Empty directory.                                                                            |
+| App Routes     | Only / (redirects to /login) and /login. No API routes, no server actions.                  |
+| Testing        | Not configured. No vitest/jest runner. strict_tdd: false.                                   |
+| Styling        | Tailwind v4, shadcn/ui (neutral), Inter font.                                               |
 
 ## Authentication Flow (from README)
 

@@ -7,8 +7,6 @@ const BASE_PATH = `${BACKEND_URL}/api/v1/timer-configurations`;
 const TOKEN = "test-session-token";
 const AUTH_HEADER = { Authorization: `Bearer ${TOKEN}` };
 
-// The backend's wire shape (`rest`) differs from the domain's `restDuration` —
-// confirmed against the real API (see requests/boxing.http).
 const validDto = {
   id: "config-1",
   name: "Amateur bout",
@@ -212,7 +210,6 @@ describe("createBackendTimerConfigurationAdapter", () => {
       }
     );
 
-    // delete has no response body, so it can't hit a JSON-parse failure.
     it.each(rows("create", "list", "getById", "update"))(
       "should reject %s with a generic Error when the response body is not valid JSON",
       async (_name, run) => {
@@ -228,9 +225,6 @@ describe("createBackendTimerConfigurationAdapter", () => {
       }
     );
 
-    // delete has no response body to validate; list validates an array shape
-    // (different mock body), so it gets its own case right below instead of
-    // sharing this table's single-object mock.
     it.each(rows("create", "getById", "update"))(
       "should reject %s with a generic Error when the response fails DTO validation",
       async (_name, run) => {

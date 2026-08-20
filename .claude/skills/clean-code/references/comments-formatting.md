@@ -1,9 +1,9 @@
 # Comments and Formatting
 
-Comprehensive guide to comment discipline and code formatting. Based on Robert C. Martin's *Clean Code*, Chapters 4 and 5.
-
+Comprehensive guide to comment discipline and code formatting. Based on Robert C. Martin's _Clean Code_, Chapters 4 and 5.
 
 ## Table of Contents
+
 1. [The Truth About Comments](#the-truth-about-comments)
 2. [Good Comments](#good-comments)
 3. [Bad Comments](#bad-comments)
@@ -48,7 +48,7 @@ Even here, a named constant or custom type could eliminate the need: `TIMESTAMP_
 
 ### Explanation of Intent
 
-Explain *why* a decision was made, not *what* the code does.
+Explain _why_ a decision was made, not _what_ the code does.
 
 ```python
 # We sort by creation date descending because the business requirement
@@ -57,7 +57,7 @@ Explain *why* a decision was made, not *what* the code does.
 items.sort(key=lambda x: x.created_at, reverse=True)
 ```
 
-This is valuable because the *what* is visible in the code, but the *why* would otherwise be lost.
+This is valuable because the _what_ is visible in the code, but the _why_ would otherwise be lost.
 
 ### Warning of Consequences
 
@@ -81,6 +81,7 @@ def get_user_preferences(user_id):
 ```
 
 **Rules for TODOs:**
+
 - Include a ticket number or issue reference
 - Scan and resolve them regularly (they are not permanent)
 - Never use TODO as an excuse to leave broken code
@@ -252,6 +253,7 @@ Code formatting is about communication, and communication is the professional de
 #### The Newspaper Metaphor
 
 Source files should be organized like a newspaper article:
+
 - **Name** should be simple but explanatory (the headline)
 - **Top** should provide high-level concepts and algorithms (the synopsis)
 - **Bottom** should contain the lowest-level functions and details (the body)
@@ -326,6 +328,7 @@ public class ReporterConfig {
 Closely related concepts should be kept vertically close to each other. Don't force the reader to hop around the file.
 
 **Rules:**
+
 - **Local variables:** Declare at the top of the function or as close to first usage as practical
 - **Instance variables:** Declare at the top of the class (everyone needs to know about them)
 - **Dependent functions:** The caller should be above the callee, and they should be close
@@ -377,13 +380,13 @@ if (condition) {
 
 The best way to enforce team rules:
 
-| Approach | Tool examples | Benefit |
-|----------|---------------|---------|
-| **Automated formatter** | Prettier, Black, gofmt, rustfmt | Eliminates all style debates |
-| **Linter with auto-fix** | ESLint, Pylint, RuboCop | Catches style and quality issues |
-| **Pre-commit hooks** | Husky, pre-commit, lefthook | Prevents style violations from entering repo |
-| **CI enforcement** | Format check in pipeline | Catches anything hooks miss |
-| **EditorConfig** | `.editorconfig` file | Consistent settings across editors |
+| Approach                 | Tool examples                   | Benefit                                      |
+| ------------------------ | ------------------------------- | -------------------------------------------- |
+| **Automated formatter**  | Prettier, Black, gofmt, rustfmt | Eliminates all style debates                 |
+| **Linter with auto-fix** | ESLint, Pylint, RuboCop         | Catches style and quality issues             |
+| **Pre-commit hooks**     | Husky, pre-commit, lefthook     | Prevents style violations from entering repo |
+| **CI enforcement**       | Format check in pipeline        | Catches anything hooks miss                  |
+| **EditorConfig**         | `.editorconfig` file            | Consistent settings across editors           |
 
 **The best formatting rule:** Use an automated formatter and never think about formatting again. Time spent debating tabs versus spaces is time not spent writing clean code.
 
@@ -393,13 +396,13 @@ The best way to enforce team rules:
 
 Despite the general advice to minimize comments, certain situations genuinely require them:
 
-| Situation | Why code alone isn't enough | Example |
-|-----------|---------------------------|---------|
-| **Regulatory requirement** | Law/compliance requires documentation | HIPAA, SOX, GDPR compliance notes |
-| **Non-obvious performance choice** | Algorithm choice isn't self-evident | "Using radix sort here because n > 10M and keys are bounded" |
-| **External system quirk** | Workaround for third-party bug | "API returns 200 for errors; we check response body instead" |
-| **Concurrency rationale** | Threading decisions need explanation | "Double-checked locking required here because..." |
-| **Domain formula** | Mathematical formula from spec | "Amortization formula from IRS Publication 936" |
-| **Public API contract** | Users cannot read implementation | Javadoc for library interfaces |
+| Situation                          | Why code alone isn't enough           | Example                                                      |
+| ---------------------------------- | ------------------------------------- | ------------------------------------------------------------ |
+| **Regulatory requirement**         | Law/compliance requires documentation | HIPAA, SOX, GDPR compliance notes                            |
+| **Non-obvious performance choice** | Algorithm choice isn't self-evident   | "Using radix sort here because n > 10M and keys are bounded" |
+| **External system quirk**          | Workaround for third-party bug        | "API returns 200 for errors; we check response body instead" |
+| **Concurrency rationale**          | Threading decisions need explanation  | "Double-checked locking required here because..."            |
+| **Domain formula**                 | Mathematical formula from spec        | "Amortization formula from IRS Publication 936"              |
+| **Public API contract**            | Users cannot read implementation      | Javadoc for library interfaces                               |
 
-The key: comments should explain *why*, never *what*. If you find yourself explaining *what* the code does, the code needs to be clearer, not the comment.
+The key: comments should explain _why_, never _what_. If you find yourself explaining _what_ the code does, the code needs to be clearer, not the comment.

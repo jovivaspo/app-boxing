@@ -10,11 +10,6 @@ import {
   toTimerConfigurationRequestBody,
 } from "@/infraestructure/timer-configuration/mappers/timer-configuration.mapper";
 
-/**
- * Fails fast on a non-2xx status. When `notFoundId` is passed, a 404 maps to
- * `timerConfigurationNotFound` (D5); every other non-2xx status throws a
- * generic `Error` (D6).
- */
 function ensureOk(response: Response, notFoundId?: string): void {
   if (notFoundId !== undefined && response.status === 404) {
     throw timerConfigurationNotFound(notFoundId);
@@ -26,7 +21,6 @@ function ensureOk(response: Response, notFoundId?: string): void {
   }
 }
 
-/** Parses and validates the JSON body against `schema`, or throws a generic `Error` (D6). */
 async function parseDto<T>(
   response: Response,
   schema: z.ZodType<T>
@@ -46,22 +40,6 @@ async function parseDto<T>(
   return parsed.data;
 }
 
-/**
- * Creates the `TimerConfigurationRepositoryPort` implementation backed by the
- * real HTTP backend — used for the logged-in path. Reads `BACKEND_URL`
- * (required — no hardcoded fallback) and throws immediately (fail-closed) if
- * it is not configured. `token` is the session's opaque backend JWT
- * (`Session.token`), sent as a `Bearer` token on every request so the backend
- * can identify whose timer configurations are being read/written.
- *
- * Non-404 failures (network error, non-2xx status, non-JSON body, or Zod
- * validation failure) all throw a plain `Error` with no `_tag` (D6) — no
- * domain error exists for backend unavailability in this slice. Network
- * failures propagate `httpClient`'s generic, adapter-agnostic message
- * (`name: "HttpRequestFailed"`) uncaught; the other three are re-thrown here
- * with a timer-configuration-specific message (intentional asymmetry, D2 —
- * see design.md for the tradeoff).
- */
 export function createBackendTimerConfigurationAdapter(
   token: string
 ): TimerConfigurationRepositoryPort {

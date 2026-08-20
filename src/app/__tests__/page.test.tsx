@@ -3,11 +3,6 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-// Rewritten (PR2, issue #46): `/` is now a public landing — session no
-// longer gates rendering, so the `next/navigation` redirect mock is dropped
-// entirely. A successful render with `session: null` IS the no-redirect
-// proof (see design.md D-1 / landing-page spec "No Root-Path Auth Gate").
-
 const getCurrentSessionExecuteMock = vi.fn();
 const getCurrentSessionMock = vi.fn<
   (deps: unknown) => typeof getCurrentSessionExecuteMock
@@ -69,10 +64,6 @@ describe("Home page (landing)", () => {
     expect(loggedInBody).toBe(loggedOutBody);
   });
 
-  // Scoped to the hero section on purpose: the closing LandingCta shares the
-  // same "Probar el timer" label and /guest-timer href (both instances are
-  // legitimate), so an unscoped/index-based query would only be correct by
-  // coincidence of DOM order rather than identifying the hero's CTA.
   it("should render the primary CTA linking to /guest-timer", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: Home } = await import("../page");
@@ -90,10 +81,6 @@ describe("Home page (landing)", () => {
     );
   });
 
-  // Scoped to the hero section for the same reason as the primary CTA above,
-  // and now load-bearing rather than merely defensive: the Topbar's sign-in
-  // link carries the same accessible name and precedes the hero in DOM order,
-  // so an unscoped query would assert against the Topbar, not the CTA.
   it("should render the secondary CTA linking to /login", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(null);
     const { default: Home } = await import("../page");
@@ -137,9 +124,6 @@ describe("Home page (landing)", () => {
     );
   });
 
-  // Scoped to the Topbar on purpose: the landing body's secondary CTA also
-  // links to /login and stays put in both session states (D-2), so an
-  // unscoped query would either pass by accident or assert the wrong thing.
   it("should not render the Topbar sign-in link when a session exists", async () => {
     getCurrentSessionExecuteMock.mockResolvedValue(SESSION);
     const { default: Home } = await import("../page");

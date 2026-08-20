@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-/**
- * Raw shape returned by `POST /api/v1/auth/google`. Validated at the
- * infrastructure boundary only — never leaks past the mapper into the domain.
- */
 export const backendAuthResponseSchema = z.object({
   token: z.string(),
   user: z.object({

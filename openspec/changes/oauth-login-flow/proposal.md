@@ -7,6 +7,7 @@ Wire the existing "Continuar con Google" button to initiate and complete a Googl
 ## Scope
 
 ### In Scope
+
 - `application/ports/auth.port.ts` — `OAuthPort` interface (generateAuthUrl, exchangeCode, verifySession)
 - `infraestructure/adapters/google-oauth.adapter.ts` — implements `OAuthPort` with Google APIs
 - `infraestructure/server-actions/auth.ts` — `signInWithGoogle` Server Action (generates PKCE state, sets cookies, redirects)
@@ -16,6 +17,7 @@ Wire the existing "Continuar con Google" button to initiate and complete a Googl
 - `.env.local.example` — template with `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `JWT_SECRET`
 
 ### Out of Scope
+
 - User registration or auto-creation (assumed to exist or handled later)
 - Token refresh / offline access / refresh tokens
 - Logout or session revocation
@@ -26,14 +28,17 @@ Wire the existing "Continuar con Google" button to initiate and complete a Googl
 ## Capabilities
 
 ### New Capabilities
+
 - `oauth-authentication`: Google OAuth 2.0 authorization code + PKCE flow, JWT session creation, and session verification. Covers the port interface, adapter implementation, Server Action, API callback route, and cookie-based session management.
 
 ### Modified Capabilities
+
 - `login-page`: Root path redirect logic changes from unconditional `/login` redirect to conditional redirect (only when unauthenticated). LoginCard becomes a Client Component with a button wired to the `signInWithGoogle` Server Action. Error state via `?error=` query param displayed on the login page.
 
 ## Approach
 
 Follow Clean Architecture (domain ← application ← infraestructure):
+
 1. **Port** (`application/ports/auth.port.ts`): define `OAuthPort` with `generateAuthUrl()`, `exchangeCode()`, `verifySession()`.
 2. **Adapter** (`infraestructure/adapters/`): implement `OAuthPort` using `googleapis` or raw fetch + `jsonwebtoken`.
 3. **Server Action** (`infraestructure/server-actions/`): generate PKCE code_verifier via `crypto.randomBytes`, store in httpOnly cookie, redirect to Google.
@@ -43,25 +48,25 @@ Follow Clean Architecture (domain ← application ← infraestructure):
 
 ## Affected Areas
 
-| Area | Impact | Description |
-|------|--------|-------------|
-| `src/application/ports/` | New | `auth.port.ts` — OAuthPort interface |
-| `src/infraestructure/adapters/` | New | `google-oauth.adapter.ts` |
-| `src/infraestructure/server-actions/` | New | `auth.ts` — signInWithGoogle action |
-| `src/app/api/auth/callback/` | New | `route.ts` — callback handler |
-| `src/ui/components/login-card.tsx` | Modified | Client Component + click handler + error display |
-| `src/app/page.tsx` | Modified | Conditional redirect |
-| `src/app/login/page.tsx` | Modified | Pass/receive error state |
-| `.env.local.example` | New | Required env vars template |
+| Area                                  | Impact   | Description                                      |
+| ------------------------------------- | -------- | ------------------------------------------------ |
+| `src/application/ports/`              | New      | `auth.port.ts` — OAuthPort interface             |
+| `src/infraestructure/adapters/`       | New      | `google-oauth.adapter.ts`                        |
+| `src/infraestructure/server-actions/` | New      | `auth.ts` — signInWithGoogle action              |
+| `src/app/api/auth/callback/`          | New      | `route.ts` — callback handler                    |
+| `src/ui/components/login-card.tsx`    | Modified | Client Component + click handler + error display |
+| `src/app/page.tsx`                    | Modified | Conditional redirect                             |
+| `src/app/login/page.tsx`              | Modified | Pass/receive error state                         |
+| `.env.local.example`                  | New      | Required env vars template                       |
 
 ## Risks
 
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| Redirect URI mismatch with Google Cloud Console | High | Document exact URI in setup instructions |
-| JWT secret missing in dev environment | Medium | Generate with `openssl rand -base64 32`; document in .env.local.example |
-| No automated tests | Medium | Manual verification via `npm run build`, `npm run lint`, `npx tsc --noEmit` |
-| Cookie not accessible server-side after redirect | Low | Verify SameSite=Lax allows same-origin redirect; test in dev |
+| Risk                                             | Likelihood | Mitigation                                                                  |
+| ------------------------------------------------ | ---------- | --------------------------------------------------------------------------- |
+| Redirect URI mismatch with Google Cloud Console  | High       | Document exact URI in setup instructions                                    |
+| JWT secret missing in dev environment            | Medium     | Generate with `openssl rand -base64 32`; document in .env.local.example     |
+| No automated tests                               | Medium     | Manual verification via `npm run build`, `npm run lint`, `npx tsc --noEmit` |
+| Cookie not accessible server-side after redirect | Low        | Verify SameSite=Lax allows same-origin redirect; test in dev                |
 
 ## Rollback Plan
 
