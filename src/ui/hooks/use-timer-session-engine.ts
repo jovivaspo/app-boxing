@@ -181,8 +181,6 @@ export function useTimerSessionEngine(
     remainingSecondsValue <= WARNING_SECONDS
   );
 
-  // Status -> primary-action mapping (A2: a business rule, not a display
-  // concern, so it's computed here rather than in the presentational .tsx).
   const primaryLabel =
     status === "idle" ? "INICIAR" : status === "paused" ? "REANUDAR" : "PAUSA";
   const primaryIcon: "play" | "pause" =

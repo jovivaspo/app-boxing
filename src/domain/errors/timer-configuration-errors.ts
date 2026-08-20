@@ -43,12 +43,6 @@ export function validateTimerConfiguration(
   return input;
 }
 
-/**
- * @throws {InvalidTimerConfiguration} rounds or roundDuration is <= 0, or
- * roundDuration is above `MAX_DURATION_SECONDS`.
- * Guest-only sibling of `validateTimerConfiguration`: intentionally skips
- * `restDuration` (guests don't set it), never weakens the shared validator.
- */
 export function validateGuestTimerConfiguration<
   T extends Pick<TimerConfiguration, "rounds" | "roundDuration">,
 >(input: T): T {

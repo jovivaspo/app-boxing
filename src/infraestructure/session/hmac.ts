@@ -9,12 +9,6 @@ export function sign(payload: string, secret: string): string {
   return `${encodedPayload}.${mac}`;
 }
 
-/**
- * Verifies a signed value produced by `sign()`. Returns the original
- * plaintext payload when the signature is intact, or `null` when the value
- * is missing, malformed, tampered, or was signed with a different secret.
- * Uses a timing-safe comparison to avoid leaking signature-match timing.
- */
 export function verify(value: string, secret: string): string | null {
   if (!value) {
     return null;
