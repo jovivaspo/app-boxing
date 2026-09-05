@@ -18,9 +18,7 @@
 
 <!-- Given/When/Then scenarios this PR must satisfy. If this PR implements an
 openspec change, copy/adapt the relevant scenarios from
-openspec/changes/<change>/specs/*/spec.md; otherwise write new ones here.
-The AC Explorer CI job (Claude + Playwright) reads this section to decide
-what to exercise against the running app. -->
+openspec/changes/<change>/specs/*/spec.md; otherwise write new ones here. -->
 
 ## How to test
 
