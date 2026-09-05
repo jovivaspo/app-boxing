@@ -20,6 +20,14 @@ vi.mock("@/infraestructure/session/cookie-session.adapter", () => ({
   createCookieSessionAdapter: () => createCookieSessionAdapterMock(),
 }));
 
+class StubIntersectionObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+vi.stubGlobal("IntersectionObserver", StubIntersectionObserver);
+
 const SESSION = {
   token: "backend-jwt",
   user: {
@@ -46,7 +54,10 @@ describe("Home page (landing)", () => {
     render(await Home());
 
     expect(
-      screen.getByText(/TU RING\. TU RITMO\. TU ROUND\./i)
+      screen.getByRole("heading", {
+        level: 1,
+        name: /tu ring\.\s*tu ritmo\.\s*tu round\./i,
+      })
     ).toBeInTheDocument();
   });
 
@@ -72,7 +83,7 @@ describe("Home page (landing)", () => {
 
     const hero = within(
       screen
-        .getByRole("heading", { name: /tu ring\. tu ritmo\. tu round\./i })
+        .getByRole("heading", { name: /tu ring\.\s*tu ritmo\.\s*tu round\./i })
         .closest("section") as HTMLElement
     );
     expect(hero.getByRole("link", { name: "Probar el timer" })).toHaveAttribute(
@@ -89,7 +100,7 @@ describe("Home page (landing)", () => {
 
     const hero = within(
       screen
-        .getByRole("heading", { name: /tu ring\. tu ritmo\. tu round\./i })
+        .getByRole("heading", { name: /tu ring\.\s*tu ritmo\.\s*tu round\./i })
         .closest("section") as HTMLElement
     );
     expect(hero.getByRole("link", { name: "Iniciar sesión" })).toHaveAttribute(
